@@ -590,7 +590,7 @@
                                     </div>
                                     <div className="md:col-span-4 flex flex-col gap-0.5">
                                         <label className="text-xs text-stone-400 uppercase tracking-tighter font-normal">推薦連結/備註</label>
-                                        <textarea value={newBook.reviewUrl} onChange={e=>setNewBook({...newBook, reviewUrl:e.target.value})} className="w-full p-1 bg-transparent border-b border-stone-200 outline-none resize-none overflow-hidden min-h-[40px] min-w-0" onInput={(e) => {e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px';}} />
+                                        <textarea value={newBook.reviewUrl} onChange={e=>setNewBook({...newBook, reviewUrl:e.target.value})} className="w-full py-0.5 px-1 bg-transparent border-b border-stone-200 outline-none resize-none overflow-hidden min-h-[24px] min-w-0" onInput={(e) => {e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px';}} />
                                     </div>
                                     <div className="md:col-span-12 flex flex-col gap-0.5">
                                         <label className="text-xs text-stone-400 uppercase tracking-tighter font-normal">故事大綱</label>
@@ -719,7 +719,7 @@
                                             </div>
                                             <div className="flex flex-col gap-0.5">
                                                 <label className="text-xs text-stone-400 uppercase tracking-tighter font-normal">連結/備註</label>
-                                                <textarea value={editForm.reviewUrl || ''} onChange={e=>setEditForm({...editForm, reviewUrl:e.target.value})} className="w-full p-1 border-b outline-none bg-transparent resize-none min-h-[40px] min-w-0" onInput={(e) => {e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px';}} />
+                                                <textarea value={editForm.reviewUrl || ''} onChange={e=>setEditForm({...editForm, reviewUrl:e.target.value})} className="w-full py-0.5 px-1 border-b outline-none bg-transparent resize-none min-h-[24px] min-w-0" onInput={(e) => {e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px';}} />
                                             </div>
                                             {book.status === 'dropped' && (
                                                 <div className="flex flex-col gap-0.5">
