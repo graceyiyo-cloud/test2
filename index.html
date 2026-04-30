@@ -520,10 +520,10 @@
             }
 
             return (
-                <div className="min-h-screen max-w-3xl mx-auto px-2 py-3 md:p-6 space-y-4 pb-20 bg-paper animate-fade-in">
+                <div className="min-h-screen max-w-full mx-auto px-1 py-1 md:px-2 md:py-2 space-y-4 pb-20 bg-paper animate-fade-in">
                     {toast && <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full shadow-2xl animate-fade-in text-white flex items-center gap-2 ${toast.type === 'error' ? 'bg-dried-500' : 'bg-wood-500'}`}>{toast.message}</div>}
                     
-                    <header className="flex justify-between items-center pt-1 pb-1 border-b border-stone-200 px-2 md:px-0">
+                    <header className="flex justify-between items-center pt-1 pb-1 border-b border-stone-200 px-1">
                         <div className="flex items-center gap-2 text-xl tracking-widest text-ink font-title"><BookOpen className="text-wood-400"/> 閱讀手帳</div>
                         <div className="flex items-center gap-4 text-xs text-sub">
                             <span className="flex items-center gap-1 font-medium"><User size={14}/> {customId}</span>
@@ -531,7 +531,7 @@
                         </div>
                     </header>
 
-                    <section className="space-y-2.5 px-1 md:px-0">
+                    <section className="space-y-2.5 px-0">
                         <div className="grid grid-cols-2 gap-3">
                             <div className="bg-white p-4 rounded-2xl border border-stone-100 flex justify-between items-center overflow-hidden soft-shadow">
                                 <div><p className="text-xs text-sub mb-1">未讀</p><p className="text-2xl text-ink font-normal">{stats.reading}</p></div>
@@ -542,7 +542,7 @@
                                 <Trophy className="text-wood-200 -mr-4" size={48} />
                             </div>
                         </div>
-                        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 px-1 flex-nowrap">
+                        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 px-0 flex-nowrap">
                             {stats.sortedYears.map(y => (
                                 <div key={y} 
                                      onClick={() => setYearFilter(yearFilter === y ? null : y)}
@@ -558,7 +558,7 @@
                         </div>
                     </section>
 
-                    <section className="bg-white rounded-3xl border border-stone-200 overflow-hidden soft-shadow transition-all mx-1 md:mx-0">
+                    <section className="bg-white rounded-3xl border border-stone-200 overflow-hidden soft-shadow transition-all mx-0">
                         <div onClick={() => setIsAddFormOpen(!isAddFormOpen)} className="p-4 flex justify-between cursor-pointer hover:bg-stone-50 transition-colors font-normal">
                             <div className="flex items-center gap-2 text-ink font-title"><PenTool className="text-wood-400" size={18} /> 紀錄新書</div>
                             {isAddFormOpen ? <ChevronUp className="text-stone-400"/> : <Plus className="text-wood-400"/>}
@@ -579,7 +579,7 @@
                         )}
                     </section>
 
-                    <div className="space-y-2.5 font-normal px-1 md:px-0">
+                    <div className="space-y-2.5 font-normal px-0">
                         <div className="flex flex-wrap items-center justify-between gap-3 font-normal">
                             <div className="flex gap-1 bg-white p-1 rounded-xl shadow-inner border border-stone-200">
                                 {['all', 'reading', 'finished', 'dropped'].map(f => (
@@ -656,7 +656,7 @@
                     <div className="grid gap-2 md:gap-3">
                         {books.length === 0 && !loading && <div className="text-center py-20 text-stone-300 text-sm tracking-widest font-normal">書櫃空空的，開始記錄第一本書吧</div>}
                         {filteredBooks.map(book => (
-                            <div key={book.id} className="bg-white p-3.5 md:p-5 rounded-[1.5rem] md:rounded-[2rem] border border-stone-200 shadow-sm flex flex-col md:flex-row gap-3 md:gap-5 relative overflow-hidden group/card font-normal mx-0.5 md:mx-0">
+                            <div key={book.id} className="bg-white p-3.5 md:p-5 rounded-[1.5rem] md:rounded-[2rem] border border-stone-200 shadow-sm flex flex-col md:flex-row gap-3 md:gap-5 relative overflow-hidden group/card font-normal mx-0">
                                 <div className={`absolute left-0 top-0 bottom-0 w-1 ${book.status==='finished'?'bg-sage-500':book.status==='dropped'?'bg-dried-500':'bg-stone-200'}`}></div>
                                 <div className="flex-1 space-y-1.5">
                                     {editingId === book.id ? (
