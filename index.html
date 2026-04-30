@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>訂單金額統計助手</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* --- 變數定義：深色質感配色 --- */
+        :root {
+            --primary-color: #3a6351; /* 深森林綠 */
+            --primary-hover: #2a4a3c;
+            --success-color: #6a9c89;
+            --success-hover: #567f6f;
+            --danger-color: #c94c4c; /* 深磚紅 */
+            --gray-color: #7d8597; /* 深灰藍 */
+            --gray-hover: #5c6370;
+            --bg-color: #e5e9e7; /* 帶綠調的深淺灰 */
+            --card-bg: #ffffff;
+            --text-color: #24292e;
+            --border-color: #cbd5e0;
+            --hint-bg: #f0f4f2;
+            --hint-border: #c8d6cf;
+            --hint-text: #2d4f3f;
+            --warning-bg: #fff5f5;
+            --warning-border: #feb2b2;
+            --warning-text: #c53030;
+        }
+
+        /* --- 基礎樣式 --- */
+        body { 
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; 
+            max-width: 488px; 
+            margin: 10px auto; 
+            padding: 6px; /* 最小化行動端邊距 */
+            line-height: 1.6; 
+            background-color: var(--bg-color); 
+            color: var(--text-color);
+        }
+
+        .container { 
+            background: var(--card-bg); 
+            padding: 25px 15px; /* 縮減水平邊距 */
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(58, 99, 81, 0.15); 
+        }
+
+        .header-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px; 
+            position: relative;
+        }
+
+        h2 { 
+            text-align: center; 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+        
+        .help-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--gray-color);
+            cursor: pointer;
+            padding: 5px;
+            min-width: auto;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+        }
+        .help-toggle-btn:hover {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+        .help-toggle-btn.active {
+            color: var(--primary-color);
+        }
+
+        .lucide {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2.5px; 
+        }
+
+        /* --- 提示區域 --- */
+        .hint { 
+            background-color: var(--hint-bg); 
+            border: 1px solid var(--hint-border); 
+            color: var(--hint-text); 
+            font-size: 13px; 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            display: none; 
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hint span { 
+            display: block; 
+            position: relative; 
+            padding-left: 20px; 
+            margin-bottom: 4px;
+        }
+        .hint span::before { 
+            content: "◆"; 
+            position: absolute; 
+            left: 0; 
+            font-size: 10px;
+            top: 2px;
+        }
+
+        /* 解析失敗提醒區域 */
+        .parsing-warning {
+            background-color: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+            color: var(--warning-text);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            display: none;
+        }
+        .parsing-warning b { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+
+        /* --- 模式切換樣式 --- */
+        .mode-selector {
+            display: flex;
+            background: #dfe4e2;
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .mode-selector label {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 9px;
+            transition: all 0.3s;
+        }
+        .mode-selector input { display: none; }
+        .mode-selector input:checked + span {
+            background: white;
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* --- 輸入區域 --- */
+        textarea { 
+            width: 100%; 
+            height: 180px; 
+            padding: 15px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 14px; 
+            font-size: 14px; 
+            margin-bottom: 20px; 
+            box-sizing: border-box; 
+            resize: vertical; 
+            transition: all 0.3s;
+            background-color: #f8faf9;
+        }
+        textarea:focus { 
+            outline: none; 
+            border-color: var(--primary-color); 
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(58, 99, 81, 0.1);
+        }
+
+        /* --- 按鈕樣式 --- */
+        .btn-group { 
+            display: flex; 
+            flex-wrap: wrap;
+            gap: 12px; 
+            margin-bottom: 25px; 
+        }
+        button { 
+            flex: 1; 
+            min-width: 100px;
+            padding: 12px 10px; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 700; 
+            transition: all 0.3s; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button:active { transform: scale(0.96); }
+        
+        .process-btn { background-color: var(--primary-color); color: white; box-shadow: 0 4px 12px rgba(58, 99, 81, 0.25); }
+        .process-btn:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+        
+        .copy-btn { background-color: var(--success-color); color: white; box-shadow: 0 4px 12px rgba(106, 156, 137, 0.2); }
+        .copy-btn:hover { background-color: var(--success-hover); transform: translateY(-2px); }
+        
+        .clear-btn { background-color: var(--gray-color); color: white; }
+        .clear-btn:hover { background-color: var(--gray-hover); transform: translateY(-2px); }
+
+        /* --- 結果區域與分類標題 --- */
+        #resultArea { margin-top: 25px; display: none; animation: fadeIn 0.6s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .category-block { margin-bottom: 35px; }
+        .category-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--primary-color);
+            background: #f1f4f3;
+            padding: 4px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .table-header-tools {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            gap: 10px;
+        }
+
+        /* 迷你模式切換按鈕 */
+        .cat-mode-switch {
+            display: flex;
+            background: #dfe4e2;
+            padding: 2px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+        .cat-mode-switch label {
+            padding: 2px 8px;
+            cursor: pointer;
+            border-radius: 18px;
+            color: #718096;
+            transition: all 0.2s;
+        }
+        .cat-mode-switch input { display: none; }
+        .cat-mode-switch input:checked + span {
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 18px;
+            display: block;
+            font-weight: bold;
+        }
+
+        .reset-check-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 11px;
+            cursor: pointer;
+            padding: 2px 5px;
+            min-width: auto;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .reset-check-btn:hover { background: rgba(58, 99, 81, 0.08); }
+
+        .result-table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0;
+            margin-bottom: 15px; 
+            background: #fff; 
+            border-radius: 12px;
+            overflow: hidden;
+            font-size: 14px;
+            table-layout: fixed;
+            border: 1px solid var(--border-color);
+        }
+        .result-table th { 
+            background-color: #f1f4f3; 
+            color: #4a5568; 
+            padding: 8px; 
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 700;
+        }
+        .result-table td { 
+            padding: 6px 8px; 
+            border-bottom: 1px solid #edf2f0; 
+            color: var(--text-color); 
+            cursor: grab; 
+            position: relative; 
+            vertical-align: middle; 
+            word-break: break-all;
+            transition: background 0.2s;
+        }
+
+        .result-table th:nth-child(1), .result-table td:nth-child(1) { width: 45px; text-align: center; }
+        .result-table th:nth-child(2), .result-table td:nth-child(2) { text-align: left; }
+        .result-table th:nth-child(3), .result-table td:nth-child(3) { width: 55px; text-align: center; font-weight: 800; }
+
+        .check-cell { 
+            cursor: pointer !important; 
+            user-select: none; 
+            color: #cbd5e0; 
+            display: flex !important;
+            align-items: center; 
+            justify-content: center; 
+            min-height: 24px;
+        }
+        .row-checked { background-color: #f7f9f8 !important; }
+        .row-checked td { color: #a0aec0 !important; }
+        .row-checked .check-cell { color: var(--success-color); }
+        .row-checked td:nth-child(2) { text-decoration: line-through; opacity: 0.7; }
+
+        .dragging { opacity: 0.5; background-color: #edf2f1; }
+        .drop-merge { background-color: #fffaf0 !important; outline: 2px solid #ed8936; z-index: 10; }
+        .drop-before td { border-top: 4px solid var(--primary-color) !important; }
+        .drop-after td { border-bottom: 4px solid var(--primary-color) !important; }
+
+        .summary-box { 
+            background: #f8faf9; 
+            border: 1px solid #dce4e1;
+            border-left: 6px solid var(--primary-color); 
+            padding: 12px 15px; 
+            border-radius: 10px; 
+            margin-top: 10px;
+        }
+        .summary-line { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 14px; 
+            font-weight: 700; 
+            margin-bottom: 4px;
+            color: #4a5568;
+        }
+        .total-price { color: var(--danger-color); font-size: 18px; font-weight: 900; }
+
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(30, 39, 35, 0.6); 
+            backdrop-filter: blur(3px);
+            z-index: 2000; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .modal-content { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            width: 85%;
+            max-width: 320px; 
+            text-align: center; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
+        }
+        .modal-input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 15px 0 20px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 10px; 
+            font-size: 18px; 
+            text-align: center; 
+            box-sizing: border-box;
+        }
+
+        .msg-box { 
+            position: fixed; 
+            bottom: 40px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: #2d3748; 
+            color: white; 
+            padding: 12px 28px; 
+            border-radius: 50px; 
+            display: none; 
+            z-index: 3000; 
+            font-size: 14px; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .star-mark { color: var(--danger-color); font-weight: bold; margin-left: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="toast" class="msg-box"></div>
+
+<div id="mainModal" class="modal">
+    <div class="modal-content">
+        <p id="modalMsg" style="margin-top: 0; font-weight: 700; color: var(--text-color);">訊息內容</p>
+        <div id="priceInputArea" style="display: none;">
+            <p style="font-size: 13px; color: #718096;">請確認或修改合併後的單價：</p>
+            <input type="number" id="customPrice" class="modal-input" placeholder="金額">
+        </div>
+        <div class="modal-btns" style="display: flex; gap: 12px;">
+            <button class="process-btn" id="modalYes">確定合併</button>
+            <button class="clear-btn" id="modalNo">取消</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header-area">
+        <h2><i data-lucide="shield-check"></i> 訂單金額統計助手 <i data-lucide="shield-check"></i></h2>
+        <button class="help-toggle-btn" onclick="toggleHint()" title="顯示幫助">
+            <i data-lucide="help-circle"></i>
+        </button>
+    </div>
+
+    <div class="hint" id="hintBox">
+        <span><b>標準模式：</b>自動拆分「+」號，將複數品項分開統計。</span>
+        <span><b>套餐模式：</b>完整保留整行品項名稱（不拆分）。</span>
+        <span><b>分區統計：</b>支援同時貼入午餐、飲料等分類，系統將自動分區統計。</span>
+        <span><b>格式範例：</b>姓名-餐點 價格 (支援元字)。</span>
+        <span><b>互動操作：</b>可針對各分類獨立切換模式，拖拉品項可合併或排序。</span>
+    </div>
+
+    <!-- 異常提醒區域 -->
+    <div id="warnBox" class="parsing-warning">
+        <div id="warnList"></div>
+    </div>
+
+    <div class="mode-selector">
+        <label>
+            <input type="radio" name="calcMode" value="split" checked>
+            <span>標準模式</span>
+        </label>
+        <label>
+            <input type="radio" name="calcMode" value="combo">
+            <span>套餐模式</span>
+        </label>
+    </div>
+
+    <textarea id="inputData" placeholder="請輸入訂單內容..."></textarea>
+
+    <div class="btn-group">
+        <button class="process-btn" onclick="processOrder()"><i data-lucide="rocket"></i> 開始統計</button>
+        <button class="copy-btn" onclick="copyResult()"><i data-lucide="copy"></i> 複製結果</button>
+        <button class="clear-btn" onclick="clearContent()"><i data-lucide="trash-2"></i> 清除</button>
+    </div>
+
+    <div id="resultArea">
+        <div id="categoryContainer"></div>
+    </div>
+</div>
+
+<script>
+    function initIcons() {
+        lucide.createIcons();
+    }
+    
+    let categoryData = []; 
+    let dragSrcInfo = null;
+    let currentDropTargetInfo = null;
+    let dropAction = null; 
+
+    function showMessage(text) {
+        const toast = document.getElementById('toast');
+        toast.innerText = text;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    }
+
+    function toggleHint() {
+        const hintBox = document.getElementById('hintBox');
+        const btn = document.querySelector('.help-toggle-btn');
+        const isHidden = window.getComputedStyle(hintBox).display === 'none';
+        hintBox.style.display = isHidden ? 'block' : 'none';
+        isHidden ? btn.classList.add('active') : btn.classList.remove('active');
+    }
+
+    // 輔助函式：將字串按「+」號拆分，但忽略括號內的「+」
+    function splitByPlusOutsideBrackets(str) {
+        const result = [];
+        let current = "";
+        let depth = 0; // 追蹤括號深度
+        for (let i = 0; i < str.length; i++) {
+            const char = str[i];
+            if (char === '(' || char === '（') depth++;
+            else if (char === ')' || char === '）') depth--;
+
+            if (char === '+' && depth === 0) {
+                result.push(current.trim());
+                current = "";
+            } else {
+                current += char;
+            }
+        }
+        result.push(current.trim());
+        return result.filter(item => item !== "");
+    }
+
+    function parseLinesToItems(lines, mode) {
+        const summaryObj = {};
+        let parsedAny = false;
+
+        lines.forEach(line => {
+            let trimmed = line.trim();
+            if (trimmed.includes('=')) trimmed = trimmed.split('=')[0].trim();
+            const parts = trimmed.split('-');
+            const content = parts.slice(1).join('-').trim();
+            if (!content) return;
+
+            // 如果是標準模式，使用優化後的拆分邏輯
+            const rawItems = (mode === 'combo') ? [content] : splitByPlusOutsideBrackets(content);
+
+            rawItems.forEach(rawItem => {
+                const subItem = rawItem.trim();
+                if (!subItem) return;
+
+                // 強化正則：即使沒有金額，也應保留品項（預設 0 元）
+                const match = subItem.match(/^(.*?)(\d+)\s*元?$/);
+                
+                let detail, price;
+                if (match) {
+                    detail = match[1].trim();
+                    price = parseInt(match[2], 10);
+                } else {
+                    // 如果沒有匹配到金額，保留全稱並設為 0 元
+                    detail = subItem;
+                    price = 0;
+                }
+
+                if (detail) {
+                    detail = detail.replace(/([^\s])(無糖|微糖|一分糖|二分糖|三分糖|半糖|少糖|七分糖|去冰|微冰|少冰|多冰|正常|熱)/g, '$1 $2').replace(/\s+/g, ' ').trim();
+                    const key = `${detail}_${price}`;
+                    if (!summaryObj[key]) {
+                        summaryObj[key] = { name: detail, qty: 0, price: price, isMinor: false, checked: false };
+                    }
+                    summaryObj[key].qty += 1;
+                    parsedAny = true;
+                }
+            });
+        });
+        const items = Object.values(summaryObj);
+        items.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+        return { items, hasData: parsedAny };
+    }
+
+    function processOrder() {
+        const input = document.getElementById('inputData').value.trim();
+        if (!input) return;
+
+        const lines = input.split('\n');
+        const defaultMode = document.querySelector('input[name="calcMode"]:checked').value;
+        const tempCategoryMap = new Map();
+        const failedLines = [];
+        
+        let currentCatName = "一般品項";
+
+        lines.forEach(line => {
+            let trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('---')) return;
+
+            // 判斷是否為分類行（不含減號，且不是樓層或無效字元）
+            if (!trimmed.includes('-')) {
+                if (trimmed.match(/^\d+[fF樓]$/) || trimmed.length <= 1) return;
+                if (trimmed.includes('結單')) return;
+                currentCatName = trimmed;
+                return;
+            }
+
+            // 判斷是否為點餐行
+            if (!tempCategoryMap.has(currentCatName)) {
+                tempCategoryMap.set(currentCatName, []);
+            }
+            tempCategoryMap.get(currentCatName).push(trimmed);
+        });
+
+        categoryData = Array.from(tempCategoryMap).map(([name, rawLines]) => {
+            const result = parseLinesToItems(rawLines, defaultMode);
+            // 如果該行有內容但解析後什麼都沒有，記錄下來
+            if (rawLines.length > 0 && !result.hasData) {
+                rawLines.forEach(rl => failedLines.push(rl));
+            }
+            return { catName: name, mode: defaultMode, rawLines, items: result.items };
+        });
+
+        // 彙整未輸入金額的品項 (price === 0)
+        let zeroPriceItems = [];
+        categoryData.forEach(cat => {
+            cat.items.forEach(item => {
+                if (item.price === 0) {
+                    zeroPriceItems.push(`「${cat.catName}」中的 ${item.name}`);
+                }
+            });
+        });
+
+        // 處理警告視窗內容
+        const warnBox = document.getElementById('warnBox');
+        const warnList = document.getElementById('warnList');
+        
+        if (failedLines.length > 0 || zeroPriceItems.length > 0) {
+            warnBox.style.display = 'block';
+            let warnHtml = "";
+            
+            if (failedLines.length > 0) {
+                warnHtml += `<b><i data-lucide="alert-triangle"></i> 偵測到無法解析的行：</b>`;
+                warnHtml += `<div style="margin-bottom: 10px;">${failedLines.map(line => `· ${line}`).join('<br>')}</div>`;
+            }
+            
+            if (zeroPriceItems.length > 0) {
+                warnHtml += `<b><i data-lucide="info"></i> 偵測到未輸入金額的品項（預設 0 元）：</b>`;
+                warnHtml += `<div>${zeroPriceItems.map(item => `· ${item}`).join('<br>')}</div>`;
+            }
+            
+            warnList.innerHTML = warnHtml;
+            initIcons();
+        } else {
+            warnBox.style.display = 'none';
+        }
+
+        checkAllMinorItems();
+        renderDisplay();
+    }
+
+    function changeCatMode(catIdx, newMode) {
+        const cat = categoryData[catIdx];
+        cat.mode = newMode;
+        cat.items = parseLinesToItems(cat.rawLines, newMode).items;
+        checkAllMinorItems();
+        renderDisplay();
+        showMessage(`「${cat.catName}」已切換模式`);
+    }
+
+    function checkAllMinorItems() {
+        categoryData.forEach(cat => {
+            cat.items.forEach(item => item.isMinor = false);
+            const nameGroups = {};
+            cat.items.forEach(item => {
+                const cleanName = item.name.replace(/\s+/g, ''); 
+                if (!nameGroups[cleanName]) nameGroups[cleanName] = [];
+                nameGroups[cleanName].push(item);
+            });
+            Object.values(nameGroups).forEach(group => {
+                if (group.length > 1) {
+                    group.sort((a, b) => (b.qty !== a.qty) ? (b.qty - a.qty) : (a.price - b.price));
+                    for (let i = 1; i < group.length; i++) group[i].isMinor = true;
+                }
+            });
+        });
+    }
+
+    function renderDisplay() {
+        const container = document.getElementById('categoryContainer');
+        container.innerHTML = "";
+
+        categoryData.forEach((cat, catIdx) => {
+            if (cat.items.length === 0) return; // 跳過空的分類
+
+            let catQty = 0;
+            let catAmount = 0;
+            
+            const block = document.createElement('div');
+            block.className = "category-block";
+            
+            block.innerHTML = `
+                <div class="category-title"><i data-lucide="tag"></i> ${cat.catName}</div>
+                <div class="table-header-tools">
+                    <div class="cat-mode-switch">
+                        <label onclick="changeCatMode(${catIdx}, 'split')">
+                            <input type="radio" name="m-${catIdx}" ${cat.mode === 'split' ? 'checked' : ''}>
+                            <span>標準</span>
+                        </label>
+                        <label onclick="changeCatMode(${catIdx}, 'combo')">
+                            <input type="radio" name="m-${catIdx}" ${cat.mode === 'combo' ? 'checked' : ''}>
+                            <span>套餐</span>
+                        </label>
+                    </div>
+                    <button class="reset-check-btn" onclick="resetCatChecks(${catIdx})"><i data-lucide="refresh-cw"></i> 重設勾選</button>
+                </div>
+                <table class="result-table">
+                    <thead><tr><th><i data-lucide="check-circle"></i></th><th>品項與備註</th><th>數量</th></tr></thead>
+                    <tbody id="tbody-${catIdx}"></tbody>
+                </table>
+                <div class="summary-box">
+                    <div class="summary-line"><span>份數統計</span><span id="qty-${catIdx}">0 份</span></div>
+                    <div class="summary-line" style="margin-top: 5px; padding-top: 5px; border-top: 1px dashed #cbd5e0;">
+                        <span>分類金額</span><span id="amt-${catIdx}" class="total-price">$0</span>
+                    </div>
+                </div>
+            `;
+
+            const tbody = block.querySelector(`#tbody-${catIdx}`);
+            cat.items.forEach((item, itemIdx) => {
+                const tr = document.createElement('tr');
+                tr.draggable = true;
+                tr.dataset.catIdx = catIdx;
+                tr.dataset.itemIdx = itemIdx;
+                if (item.checked) tr.classList.add('row-checked');
+
+                const starHtml = item.isMinor ? '<span class="star-mark">*</span>' : '';
+                const checkIconName = item.checked ? 'check-circle' : 'circle';
+
+                tr.innerHTML = `
+                    <td><div class="check-cell" onclick="toggleCheck(${catIdx}, ${itemIdx}, event)"><i data-lucide="${checkIconName}"></i></div></td>
+                    <td>${item.name}${starHtml}</td>
+                    <td>${item.qty}</td>
+                `;
+
+                tr.addEventListener('dragstart', handleDragStart);
+                tr.addEventListener('dragover', handleDragOver);
+                tr.addEventListener('dragleave', handleDragLeave);
+                tr.addEventListener('drop', handleDrop);
+                tr.addEventListener('dragend', handleDragEnd);
+
+                tbody.appendChild(tr);
+                catQty += item.qty;
+                catAmount += (item.qty * item.price);
+            });
+
+            block.querySelector(`#qty-${catIdx}`).innerText = `${catQty} 份`;
+            block.querySelector(`#amt-${catIdx}`).innerText = `$${catAmount.toLocaleString()}`;
+            container.appendChild(block);
+        });
+
+        document.getElementById('resultArea').style.display = 'block';
+        initIcons();
+    }
+
+    function toggleCheck(catIdx, itemIdx, event) {
+        event.stopPropagation();
+        categoryData[catIdx].items[itemIdx].checked = !categoryData[catIdx].items[itemIdx].checked;
+        renderDisplay();
+    }
+
+    function resetCatChecks(catIdx) {
+        categoryData[catIdx].items.forEach(item => item.checked = false);
+        renderDisplay();
+    }
+
+    function handleDragStart(e) {
+        dragSrcInfo = { catIdx: parseInt(this.dataset.catIdx), itemIdx: parseInt(this.dataset.itemIdx) };
+        this.classList.add('dragging');
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        const targetCatIdx = parseInt(this.dataset.catIdx);
+        const targetItemIdx = parseInt(this.dataset.itemIdx);
+        if (targetCatIdx !== dragSrcInfo.catIdx) return;
+        const rect = this.getBoundingClientRect();
+        const relY = e.clientY - rect.top;
+        this.classList.remove('drop-before', 'drop-after', 'drop-merge');
+        if (relY < rect.height * 0.3) {
+            this.classList.add('drop-before');
+            dropAction = 'before';
+        } else if (relY > rect.height * 0.7) {
+            this.classList.add('drop-after');
+            dropAction = 'after';
+        } else {
+            this.classList.add('drop-merge');
+            dropAction = 'merge';
+        }
+        currentDropTargetInfo = { catIdx: targetCatIdx, itemIdx: targetItemIdx };
+    }
+
+    function handleDragLeave() { this.classList.remove('drop-before', 'drop-after', 'drop-merge'); }
+
+    function handleDrop(e) {
+        e.stopPropagation();
+        if (!currentDropTargetInfo || dragSrcInfo.catIdx !== currentDropTargetInfo.catIdx) return;
+        const cat = categoryData[dragSrcInfo.catIdx];
+        if (dropAction === 'merge') {
+            triggerMerge(dragSrcInfo, currentDropTargetInfo);
+        } else {
+            const item = cat.items.splice(dragSrcInfo.itemIdx, 1)[0];
+            cat.items.splice(currentDropTargetInfo.itemIdx, 0, item);
+            renderDisplay();
+        }
+    }
+
+    function handleDragEnd() {
+        document.querySelectorAll('.result-table tr').forEach(row => row.classList.remove('dragging', 'drop-before', 'drop-after', 'drop-merge'));
+    }
+
+    function triggerMerge(src, target) {
+        const cat = categoryData[src.catIdx];
+        const srcItem = cat.items[src.itemIdx];
+        const targetItem = cat.items[target.itemIdx];
+        const modal = document.getElementById('mainModal');
+        const priceArea = document.getElementById('priceInputArea');
+        const priceInput = document.getElementById('customPrice');
+        priceArea.style.display = (srcItem.price !== targetItem.price) ? 'block' : 'none';
+        if (srcItem.price !== targetItem.price) {
+            document.getElementById('modalMsg').innerHTML = `⚠️ 單價不同！使用哪個金額？<br><small>${srcItem.name}($${srcItem.price}) / ${targetItem.name}($${targetItem.price})</small>`;
+            priceInput.value = targetItem.price;
+        } else {
+            document.getElementById('modalMsg').innerText = `將「${srcItem.name}」併入「${targetItem.name}」？`;
+        }
+        modal.style.display = 'flex';
+        document.getElementById('modalYes').onclick = () => {
+            if (srcItem.price !== targetItem.price) targetItem.price = parseInt(priceInput.value) || targetItem.price;
+            targetItem.qty += srcItem.qty;
+            cat.items.splice(src.itemIdx, 1);
+            checkAllMinorItems();
+            modal.style.display = 'none';
+            renderDisplay();
+            showMessage("品項已合併");
+        };
+        document.getElementById('modalNo').onclick = () => modal.style.display = 'none';
+    }
+
+    function copyResult() {
+        if (categoryData.length === 0) return;
+        let blocks = [];
+        categoryData.forEach(cat => {
+            if (cat.items.length === 0) return;
+            let catQty = 0;
+            let catAmount = 0;
+            let itemLines = [];
+            cat.items.forEach(item => {
+                const starText = item.isMinor ? "*" : "";
+                itemLines.push(`${item.name}${starText} * ${item.qty}`);
+                catQty += item.qty;
+                catAmount += (item.qty * item.price);
+            });
+            let blockText = `【${cat.catName}】\n` + itemLines.join('\n');
+            blockText += `\n\n份數：${catQty} 份\n金額：$${catAmount.toLocaleString()}`;
+            blocks.push(blockText);
+        });
+        
+        const finalCopyText = blocks.join('\n\n----------------\n\n');
+        
+        const el = document.createElement('textarea');
+        el.value = finalCopyText;
+        document.body.appendChild(el); 
+        el.select();
+        try {
+            document.execCommand('copy');
+            showMessage("統計結果已複製！");
+        } catch (err) {
+            showMessage("複製失敗，請手動複製");
+        }
+        document.body.removeChild(el);
+    }
+
+    function clearContent() {
+        document.getElementById('inputData').value = "";
+        document.getElementById('resultArea').style.display = 'none';
+        document.getElementById('warnBox').style.display = 'none';
+        categoryData = [];
+    }
+
+    window.onload = initIcons;
+</script>
+
+</body>
+</html>
