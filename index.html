@@ -566,13 +566,36 @@
                         {isAddFormOpen && (
                             <form onSubmit={addBook} className="p-5 pt-3 space-y-2 border-t border-stone-50 animate-fade-in font-normal">
                                 <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-2">
-                                    <div className="md:col-span-7"><label className="text-xs text-stone-400 uppercase tracking-tighter">書名</label><input placeholder="書名" value={newBook.title} onChange={e=>setNewBook({...newBook, title:e.target.value})} className="w-full p-2 bg-transparent border-b border-stone-200 outline-none focus:border-wood-300 font-title" required /></div>
-                                    <div className="md:col-span-5"><label className="text-xs text-stone-400 uppercase tracking-tighter">作者</label><input placeholder="作者" value={newBook.author} onChange={e=>setNewBook({...newBook, author:e.target.value})} className="w-full p-2 bg-transparent border-b border-stone-200 outline-none focus:border-wood-300" /></div>
-                                    <div className="md:col-span-12"><label className="text-xs text-stone-400 uppercase tracking-tighter font-normal">分類標籤</label><CategoryPicker selectedCategories={newBook.category} allCategories={categories} onToggle={c => setNewBook(p => ({...p, category: p.category.includes(c) ? p.category.filter(x=>x!==c) : [...p.category, c]}))} onAddNew={c => handleUpdateCategories([...categories, c])} onDelete={c => handleUpdateCategories(categories.filter(x => x !== c))} /></div>
-                                    <div className="md:col-span-4"><label className="text-xs text-stone-400 uppercase tracking-tighter">字數/頁數</label><input type="number" placeholder="字數/頁數" value={newBook.wordCount} onChange={e=>setNewBook({...newBook, wordCount:e.target.value, isWordCountManual:true})} className="w-full p-2 bg-transparent border-b border-stone-200 outline-none" /></div>
-                                    <div className="md:col-span-4"><label className="text-xs text-stone-400 uppercase tracking-tighter font-normal">加入日期</label><input type="date" value={newBook.addDate} onChange={e=>setNewBook({...newBook, addDate:e.target.value})} className="w-full p-2 bg-transparent border-b border-stone-200 text-sub outline-none" /></div>
-                                    <div className="md:col-span-4"><label className="text-xs text-stone-400 uppercase tracking-tighter">推薦連結/備註</label><textarea placeholder="URL 或 文字" value={newBook.reviewUrl} onChange={e=>setNewBook({...newBook, reviewUrl:e.target.value})} className="w-full p-2 bg-transparent border-b border-stone-200 outline-none resize-none overflow-hidden min-h-[40px]" onInput={(e) => {e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px';}} /></div>
-                                    <div className="md:col-span-12"><label className="text-xs text-stone-400 uppercase tracking-tighter font-normal">故事大綱</label><textarea placeholder="..." value={newBook.synopsis} onChange={e=>setNewBook({...newBook, synopsis:e.target.value})} className="w-full p-3 bg-stone-50 rounded-xl h-32 outline-none resize-none font-normal" /></div>
+                                    <div className="md:col-span-7 flex items-center gap-2">
+                                        <label className="text-xs text-stone-400 uppercase tracking-tighter w-20 shrink-0">書名</label>
+                                        <input value={newBook.title} onChange={e=>setNewBook({...newBook, title:e.target.value})} className="flex-1 p-2 bg-transparent border-b border-stone-200 outline-none focus:border-wood-300 font-title" required />
+                                    </div>
+                                    <div className="md:col-span-5 flex items-center gap-2">
+                                        <label className="text-xs text-stone-400 uppercase tracking-tighter w-20 shrink-0">作者</label>
+                                        <input value={newBook.author} onChange={e=>setNewBook({...newBook, author:e.target.value})} className="flex-1 p-2 bg-transparent border-b border-stone-200 outline-none focus:border-wood-300" />
+                                    </div>
+                                    <div className="md:col-span-12 flex items-center gap-2">
+                                        <label className="text-xs text-stone-400 uppercase tracking-tighter w-20 shrink-0 font-normal">分類標籤</label>
+                                        <div className="flex-1">
+                                            <CategoryPicker selectedCategories={newBook.category} allCategories={categories} onToggle={c => setNewBook(p => ({...p, category: p.category.includes(c) ? p.category.filter(x=>x!==c) : [...p.category, c]}))} onAddNew={c => handleUpdateCategories([...categories, c])} onDelete={c => handleUpdateCategories(categories.filter(x => x !== c))} />
+                                        </div>
+                                    </div>
+                                    <div className="md:col-span-4 flex items-center gap-2">
+                                        <label className="text-xs text-stone-400 uppercase tracking-tighter w-20 shrink-0">字數/頁數</label>
+                                        <input type="number" value={newBook.wordCount} onChange={e=>setNewBook({...newBook, wordCount:e.target.value, isWordCountManual:true})} className="flex-1 p-2 bg-transparent border-b border-stone-200 outline-none" />
+                                    </div>
+                                    <div className="md:col-span-4 flex items-center gap-2">
+                                        <label className="text-xs text-stone-400 uppercase tracking-tighter w-20 shrink-0 font-normal">加入日期</label>
+                                        <input type="date" value={newBook.addDate} onChange={e=>setNewBook({...newBook, addDate:e.target.value})} className="flex-1 p-2 bg-transparent border-b border-stone-200 text-sub outline-none" />
+                                    </div>
+                                    <div className="md:col-span-4 flex items-center gap-2">
+                                        <label className="text-xs text-stone-400 uppercase tracking-tighter w-20 shrink-0">推薦連結</label>
+                                        <textarea value={newBook.reviewUrl} onChange={e=>setNewBook({...newBook, reviewUrl:e.target.value})} className="flex-1 p-2 bg-transparent border-b border-stone-200 outline-none resize-none overflow-hidden min-h-[40px]" onInput={(e) => {e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px';}} />
+                                    </div>
+                                    <div className="md:col-span-12 flex items-start gap-2">
+                                        <label className="text-xs text-stone-400 uppercase tracking-tighter w-20 shrink-0 font-normal mt-3">故事大綱</label>
+                                        <textarea value={newBook.synopsis} onChange={e=>setNewBook({...newBook, synopsis:e.target.value})} className="flex-1 p-3 bg-stone-50 rounded-xl h-32 outline-none resize-none font-normal" />
+                                    </div>
                                 </div>
                                 <div className="flex justify-end gap-3 pt-2 font-normal"><button type="submit" className="bg-wood-500 text-white px-8 py-2 rounded-xl shadow-lg hover:bg-wood-600 font-title transition-all">存入書櫃</button></div>
                             </form>
@@ -598,7 +621,7 @@
                                 {isRatingMenuOpen && (
                                     <div className="absolute left-0 top-full mt-2 w-full bg-white rounded-xl shadow-xl border border-stone-100 z-40 overflow-hidden animate-fade-in">
                                         {[0, 4.5, 4, 3].map(val => (
-                                            <button key={val} onClick={() => { setRatingFilter(val); setIsRatingMenuOpen(false); }} className="w-full text-center px-4 py-2 text-xs hover:bg-stone-50 text-sub font-normal border-b border-stone-50 last:border-none">{val === 0 ? '全部評分' : `${val} 星+`}</button>
+                                            <button key={val} onClick={() => { setRatingFilter(val); setIsRatingMenuOpen(false); }} className="w-full text-center px-4 py-2.5 text-xs hover:bg-stone-50 text-sub font-normal border-b border-stone-50 last:border-none">{val === 0 ? '全部評分' : `${val} 星+`}</button>
                                         ))}
                                     </div>
                                 )}
@@ -617,7 +640,7 @@
                                             { val: '50to100', label: '50-100萬字' },
                                             { val: 'over100', label: '100萬字以上' }
                                         ].map(opt => (
-                                            <button key={opt.val} onClick={() => { setWordCountFilter(opt.val); setIsWordCountMenuOpen(false); }} className="w-full text-center px-4 py-2 text-xs hover:bg-stone-50 text-sub font-normal border-b border-stone-50 last:border-none">{opt.label}</button>
+                                            <button key={opt.val} onClick={() => { setWordCountFilter(opt.val); setIsWordCountMenuOpen(false); }} className="w-full text-center px-4 py-2.5 text-xs hover:bg-stone-50 text-sub font-normal border-b border-stone-50 last:border-none">{opt.label}</button>
                                         ))}
                                     </div>
                                 )}
