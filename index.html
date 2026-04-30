@@ -512,7 +512,7 @@
                                 <button type="submit" disabled={isSearching} className="w-full bg-wood-500 text-white py-4 rounded-2xl font-title shadow-lg hover:bg-wood-600 transition-all flex items-center justify-center gap-2">
                                     {isSearching ? <RefreshCw className="animate-spin" /> : '進入書房'}
                                 </button>
-                                <p className="text-[10px] text-stone-400 mt-4導致設定新ID時，輸入的密碼將設為專屬密碼。<br/>其他瀏覽器必須輸入正確密碼才能存取。</p>
+                                <p className="text-[10px] text-stone-400 mt-4 leading-relaxed">首次登入新 ID 時，輸入的密碼將設為專屬密碼。<br/>其他瀏覽器必須輸入正確密碼才能存取。</p>
                             </form>
                         </div>
                     </div>
@@ -825,8 +825,8 @@
                                     {book.status === 'reading' ? (
                                         <>
                                             <button onClick={(e) => { e.stopPropagation(); updateBook(book.id, { isReadingNow: !book.isReadingNow }); }} className={`h-9 w-9 md:h-10 md:w-10 flex items-center justify-center rounded-xl border ${book.isReadingNow ? 'bg-sage-500 text-white border-sage-600' : 'bg-white text-stone-300 border-stone-100'} font-normal`} title="標記正在閱讀"><BookOpen size={16}/></button>
-                                            <button onClick={() => { setInlineActionId(book.id); setModalType('finish'); setInlineData({ date: new Date().toISOString().split('T')[0], rating: 0, review: '' }); }} className="h-9 w-9 md:h-10 md:w-10 flex items-center justify-center text-sage-600 bg-sage-50 rounded-xl border border-sage-100" title="完食"><BookCheck size={18}/></button>
-                                            <button onClick={() => { setInlineActionId(book.id); setModalType('drop'); setInlineData({ date: new Date().toISOString().split('T')[0], chapter: '', dropReason: '' }); }} className="h-9 w-9 md:h-10 md:w-10 flex items-center justify-center text-dried-500 bg-dried-50 rounded-xl border border-dried-100" title="棄書"><BookX size={18}/></button>
+                                            <button onClick={() => { setInlineActionId(book.id); setModalType('finish'); setInlineData({ date: book.finishDate, rating: book.rating || 0, review: book.review || '' }); }} className="h-9 w-9 md:h-10 md:w-10 flex items-center justify-center text-sage-600 bg-sage-50 rounded-xl border border-sage-100" title="完食"><BookCheck size={18}/></button>
+                                            <button onClick={() => { setInlineActionId(book.id); setModalType('drop'); setInlineData({ date: book.dropDate, chapter: book.dropChapter || '', dropReason: book.dropReason || '' }); }} className="h-9 w-9 md:h-10 md:w-10 flex items-center justify-center text-dried-500 bg-dried-50 rounded-xl border border-dried-100" title="棄書"><BookX size={18}/></button>
                                         </>
                                     ) : <button onClick={() => updateBook(book.id, { status:'reading', finishDate:null, dropChapter:null, dropDate:null, rating:null, review:null, dropReason:null, isReadingNow: false })} className="h-9 w-9 md:h-10 md:w-10 flex items-center justify-center text-stone-400 bg-stone-50 rounded-xl font-normal" title="恢復閱讀狀態/重讀"><RotateCcw size={18}/></button>}
                                     <button onClick={(e) => { e.stopPropagation(); updateBook(book.id, { isPinned: !book.isPinned }); }} className={`h-9 w-9 md:h-10 md:w-10 flex items-center justify-center rounded-xl border ${book.isPinned ? 'bg-wood-500 text-white border-wood-600' : 'bg-white text-stone-300 border-stone-100'} font-normal`} title="置頂">{book.isPinned ? <PinOff size={16}/> : <Pin size={16}/>}</button>
