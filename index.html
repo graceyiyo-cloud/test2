@@ -212,18 +212,24 @@
 
       const isAdmin = useMemo(() => user && user.email === ADMIN_EMAIL, [user]);
 
-      // 嚴謹的日期權重計算工具（抽取為共用，確保排序邏輯唯一）
       const getRecordDateWeight = (r) => {
-        // 優先順序：手動欄位(匯款日期) > 匯入欄位(日期) > 其他包含日期的欄位(排除發票日期)
         const dateKey = Object.keys(r).find(k => k === '匯款日期' || k === '日期') || 
                         Object.keys(r).find(k => k.includes('日期') && !k.includes('發票')) || 
                         '日期';
-        const v = r[dateKey];
+        let v = r[dateKey];
         if (v === undefined || v === null || v === '') return 0;
-        if (!isNaN(v) && Number(v) > 20000) return Number(v); // Excel 序號
-        const p = String(v).split('/');
+        
+        if (!isNaN(v) && Number(v) > 20000) {
+          const date = new Date(Math.round((Number(v) - 25569) * 86400 * 1000));
+          const mYear = date.getUTCFullYear() - 1911;
+          return mYear * 10000 + (date.getUTCMonth() + 1) * 100 + date.getUTCDate();
+        }
+
+        const p = String(v).replace(/-/g, '/').split('/');
         if (p.length === 3) {
-          return parseInt(p[0]) * 10000 + parseInt(p[1]) * 100 + parseInt(p[2]);
+          let y = parseInt(p[0]), m = parseInt(p[1]), d = parseInt(p[2]);
+          if (y > 1911) y -= 1911; 
+          return y * 10000 + m * 100 + d;
         }
         return 0;
       };
@@ -272,7 +278,7 @@
               const allowed = customData?.allowedViewers || [];
               const isAllowed = allowed.some(v => (typeof v === 'string' ? v : v.email) === user.email);
               if (!isAllowed) {
-                  signOut(auth).then(() => { setAuthError(`帳號 ${user.email} 未獲授權，請聯絡管理員。`); });
+                  signOut(auth).then(() => { setAuthError(`帳號 ${user.email} 未獲授權。`); });
               } else { setAuthError(""); }
           }
       }, [user, cloudStatus, customData?.allowedViewers]);
@@ -283,7 +289,7 @@
         return () => document.removeEventListener("mousedown", handleClickOutside);
       }, []);
 
-      const handleGoogleLogin = async () => { setAuthError(""); try { await signInWithPopup(auth, provider); } catch (e) { console.error("Login Error", e); } };
+      const handleGoogleLogin = async () => { try { await signInWithPopup(auth, provider); } catch (e) { console.error(e); } };
 
       const handleFileUpload = (e) => {
         if (!isAdmin) return;
@@ -443,7 +449,6 @@
         const rems = allRems.filter(r => r.unitKey === uK).map(r => ({ ...r, _id: r.id, _isCustom: true }));
         info.匯款紀錄 = [...info.匯款紀錄, ...rems];
 
-        // 【精準修復】：嚴格日期排序，排除發票日期干擾
         info.匯款紀錄.sort((a, b) => getRecordDateWeight(a) - getRecordDateWeight(b));
         
         info.客變紀錄 = (customData.customChanges || []).filter(r => r.unitKey === uK);
@@ -457,20 +462,16 @@
         const rows = sheetsData[salesTabKey] || [];
         const seen = new Set();
         rows.forEach(row => {
-            const uInfo = parseUnitInfo(row);
-            const key = `${uInfo.f}_${uInfo.u}`;
+            const uInfo = parseUnitInfo(row); const key = `${uInfo.f}_${uInfo.u}`;
             if (key !== "_" && !seen.has(key) && !uInfo.f.includes('合計')) {
                 seen.add(key);
                 const details = getUnitFullDetails(uInfo.f, uInfo.u, uInfo.b);
-                const house = details.財務款項.house || {};
-                const land = details.財務款項.land || {};
+                const house = details.財務款項.house || {}; const land = details.財務款項.land || {};
                 const receipts = details.匯款紀錄.reduce((s,r) => s + (parseFloat(String(r[Object.keys(r).find(k=>k.includes('金額'))||'金額']).replace(/,/g,''))||0), 0);
                 const charges = (details.客變紀錄 || []).reduce((s,r) => s + (Number(r.客變金額)||0), 0);
-                let rem = receipts;
-                const stageStatus = {};
+                let rem = receipts; const stageStatus = {};
                 PAYMENT_STAGES.forEach(st => {
-                    let exp = 0;
-                    if (st.k === '客變') { exp = charges; } else {
+                    let exp = 0; if (st.k === '客變') { exp = charges; } else {
                         const kMatchH = Object.keys(house).find(x=>x.includes(st.k));
                         const kMatchL = Object.keys(land).find(x=>x.includes(st.k));
                         const hA = kMatchH ? (parseFloat(String(house[kMatchH]).replace(/,/g,''))||0) : 0;
@@ -561,8 +562,7 @@
 
       const handleInvoiceChange = async (rK, field, val) => {
         if (!isAdmin) return;
-        let finalVal = val;
-        if (field === '發票日期') { finalVal = convertToMinguo(val); }
+        let finalVal = val; if (field === '發票日期') finalVal = convertToMinguo(val);
         const updated = { ...firebaseInvoices, [rK]: { ...(firebaseInvoices[rK] || {}), [field]: finalVal } };
         setFirebaseInvoices(updated);
         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'invoices', 'all_invoices'), updated);
@@ -593,7 +593,7 @@
             const charges = (details.客變紀錄 || []).reduce((s,r) => s + (Number(r.客變金額)||0), 0);
             let rem = receipts; const stageStatus = {};
             PAYMENT_STAGES.forEach(st => {
-                let exp = 0; if (st.k === '客變') { exp = charges; } else {
+                let exp = 0; if (st.k === '客變') exp = charges; else {
                     const kMatchH = Object.keys(house).find(x=>x.includes(st.k) && (st.k==='成交'?!x.includes('總價'):true));
                     const kMatchL = Object.keys(land).find(x=>x.includes(st.k) && (st.k==='成交'?!x.includes('總價'):true));
                     const hA = kMatchH ? (parseFloat(String(house[kMatchH]).replace(/,/g,''))||0) : 0; 
@@ -792,7 +792,7 @@
                                   const rawVal = row[col]; const isMeta = ['手機', '日期', '日', '編號', '樓層', '號碼', '郵遞區號', '通訊地址', '備註'].some(ex => col.includes(ex));
                                   const displayVal = isMeta ? renderDateIfApplicable(col, rawVal) : formatNum(rawVal);
                                   const stageKey = getStageKeyForColumn(col); let isUnpaidStage = false;
-                                  if (stageKey && allUnitsPaymentStatus[unitKey]) { const status = allUnitsPaymentStatus[unitKey][stageKey]; if (status && status.exp > 0 && status.unpaid > 0) { isUnpaidStage = true; } }
+                                  if (stageKey && allUnitsPaymentStatus[unitKey]) { const status = allUnitsPaymentStatus[unitKey][stageKey]; if (status && status.exp > 0 && status.unpaid > 0) isUnpaidStage = true; }
                                   return (
                                     <td key={i} rowSpan={isSticky?span:1} className={`px-2 py-2 border-r ${colClass} ${getAlignClass(col, row[col])} ${isSticky ? 'sticky z-20 bg-white align-middle' : ''} ${col==='買方'?'font-bold text-[#8C9B90]':''} ${isUnpaidStage ? 'bg-red-50 text-red-600 font-medium' : ''} whitespace-pre-wrap`} style={isSticky?{left:leftPos}:{}}>
                                       {displayVal}
@@ -803,7 +803,6 @@
                             </tr>
                           );
                       })}
-                      <tr className="h-10"><td colSpan={currentColumns.length + 1} className="border-none bg-transparent"></td></tr>
                     </tbody>
                     {!activeTab.includes('客戶') && !activeTab.match(/換約|讓渡/) && (
                       <tfoot className="sticky bottom-0 z-40 bg-[#F1F3F1] font-bold text-[10px] sticky-bottom-shadow">
@@ -884,7 +883,7 @@
                         const displayStages = [ { k: '客變', l: '客變費用' }, { k: '成交', l: '合約總價' }, ...PAYMENT_STAGES.filter(st => st.k !== '客變') ];
                         return displayStages.map(st => {
                           let exp=0,hA=0,lA=0;
-                          if (st.k === '客變') { exp=charges; } else { 
+                          if (st.k === '客變') exp=charges; else { 
                             const kMatchH = Object.keys(house).find(x=>x.includes(st.k) && (st.k==='成交'?!x.includes('總價'):true));
                             const kMatchL = Object.keys(selectedUnit.財務款項.land || {}).find(x=>x.includes(st.k) && (st.k==='成交'?!x.includes('總價'):true));
                             hA = kMatchH ? (parseFloat(String(house[kMatchH]).replace(/,/g,''))||0) : 0; 
@@ -892,7 +891,7 @@
                             exp=hA+lA; 
                           }
                           if (exp<=0 && st.k!=='成交') return null;
-                          if (st.k === '使照') { rem = Math.max(0, rem - prepay); }
+                          if (st.k === '使照') rem = Math.max(0, rem - prepay);
                           let paid=0; if (st.k!=='成交') { if(rem>=exp) { paid=exp; rem-=exp; } else { paid=rem; rem=0; } }
                           return (
                             <tr key={st.k} className={`${st.k==='成交'?'bg-gray-50':st.k==='客變'?'bg-purple-50':paid>=exp?'bg-green-50/70':paid>0?'bg-orange-50/70':'hover:bg-gray-50/30'} rounded-lg transition-all`}>
@@ -938,7 +937,7 @@
                             const rK = r._id; const cD = firebaseInvoices[rK] || {};
                             const handleDelete = async ()=>{
                                 if(!confirm("確定要刪除這筆匯款紀錄嗎？"))return;
-                                if(r._isImported) { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom', 'additions'), { deletedImportedRemittances: arrayUnion(r._id) }, { merge: true }); } 
+                                if(r._isImported) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom', 'additions'), { deletedImportedRemittances: arrayUnion(r._id) }, { merge: true });
                                 else {
                                     const inArchived = archivedRemittances.some(x => x.id === r.id);
                                     if (inArchived) { const uA = archivedRemittances.filter(x => x.id !== r.id); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'custom', 'archived'), { remittances: uA }, { merge: true }); } 
@@ -972,23 +971,20 @@
                                     );
                                 }
                             };
-                            return ( <React.Fragment key={i}> {renderTr(amt, false)} {renderTr(splitPrepay, true)} </React.Fragment> );
+                            return ( <React.Fragment key={i}> {renderTr(splitPrepay, true)} {renderTr(amt, false)} </React.Fragment> );
                         });
                       })()}
                       {isAdmin && (
                         <tr className="bg-blue-50/40 rounded-xl">
-                            <td className="p-2 rounded-l-md"><input type="date" className="border border-white/60 rounded text-xs w-full p-1.5 text-center bg-white/60 focus:bg-white" value={remitInput.date} onChange={e=>setRemitInput({...remitInput, date: e.target.value})}/></td>
+                            <td className="p-2 rounded-l-md"><input type="text" placeholder="115/05/04" className="border border-white/60 rounded text-xs w-full p-1.5 text-center bg-white/60 focus:bg-white" value={remitInput.date} onChange={e=>setRemitInput({...remitInput, date: e.target.value})}/></td>
                             <td className="p-2"><input type="number" placeholder="金額" className="border border-white/60 rounded text-xs w-full p-1.5 text-right bg-white/60 focus:bg-white" value={remitInput.amt} onChange={e=>setRemitInput({...remitInput, amt: e.target.value})}/></td>
                             <td colSpan="2" className="p-2 text-right rounded-r-md"><button onClick={async () => {
                                 if(remitInput.amt){
                                     const rec = { unitKey:`${selectedUnit.基本資料.樓層}_${selectedUnit.基本資料.編號}`, 匯款日期:convertToMinguo(remitInput.date), 匯款金額:Number(remitInput.amt), _isCustom:true, id:Date.now().toString() };
                                     const newR = [...(customData.remittances || []), rec];
                                     await setDoc(doc(db,'artifacts',appId,'public', 'data','custom','additions'), { remittances:newR }, { merge:true });
-                                    
-                                    // 【精準修復】：新增後立即排序，防止視窗未關閉前順序錯亂
                                     const updatedList = [...selectedUnit.匯款紀錄, {...rec, _id: rec.id, _isCustom: true}];
                                     updatedList.sort((a, b) => getRecordDateWeight(a) - getRecordDateWeight(b));
-                                    
                                     setSelectedUnit({...selectedUnit, 匯款紀錄: updatedList});
                                     setRemitInput({ date: '', amt: '' });
                                 }
@@ -1017,6 +1013,22 @@
                         </tr>
                         );
                       })}
+                      {isAdmin && (
+                        <tr className="bg-purple-50/60 rounded-xl">
+                            <td className="p-2"><input type="text" placeholder="115/05/04" className="border rounded text-xs w-full p-1.5 text-center bg-white/60 focus:bg-white" value={cbInput.date} onChange={e=>setCbInput({...cbInput, date: e.target.value})}/></td>
+                            <td className="p-2"><input placeholder="項目內容" className="border rounded text-xs w-full p-1.5 text-center bg-white/60 focus:bg-white" value={cbInput.note} onChange={e=>setCbInput({...cbInput, note: e.target.value})}/></td>
+                            <td className="p-2"><input type="number" placeholder="費用" className="border rounded text-xs w-full p-1.5 text-right bg-white/60 focus:bg-white" value={cbInput.amt} onChange={e=>setCbInput({...cbInput, amt: e.target.value})}/></td>
+                            <td colSpan="2" className="p-2 text-right"><button onClick={async () => {
+                                if(cbInput.amt){
+                                    const rec = { unitKey:`${selectedUnit.基本資料.樓層}_${selectedUnit.基本資料.編號}`, 日期:convertToMinguo(cbInput.date), 備註:cbInput.note, 客變金額:Number(cbInput.amt), id:Date.now().toString() };
+                                    const newC = [...(customData.customChanges || []), rec];
+                                    await setDoc(doc(db,'artifacts',appId,'public', 'data','custom','additions'), { customChanges:newC }, { merge:true });
+                                    setSelectedUnit({...selectedUnit, 客變紀錄: [...selectedUnit.客變紀錄, rec]});
+                                    setCbInput({ date: '', note: '', amt: '' });
+                                }
+                            }} className="bg-purple-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm hover:bg-purple-700 transition-all active:scale-95">新增</button></td>
+                        </tr>
+                      )}
                     </tbody></table>
                   </div>
                 </div>
@@ -1030,10 +1042,7 @@
                 <div className="overflow-y-auto scrollbar-hide flex-1">
                     <div className="flex gap-2 mb-6"><input id="new_auth_name" type="text" placeholder="人員名稱" className="border w-1/3 p-2.5 rounded-xl text-sm" /><input id="new_auth_email" type="email" placeholder="Email" className="border flex-1 p-2.5 rounded-xl text-sm" /><button onClick={async () => {
                         const n = document.getElementById('new_auth_name').value.trim(), e = document.getElementById('new_auth_email').value.trim().toLowerCase();
-                        if(e && e.includes('@')) {
-                          const newList = [...(customData.allowedViewers || []), { name: n, email: e }];
-                          await setDoc(doc(db,'artifacts',appId,'public', 'data','custom','additions'), {allowedViewers: newList}, {merge:true});
-                        }
+                        if(e && e.includes('@')) { const newList = [...(customData.allowedViewers || []), { name: n, email: e }]; await setDoc(doc(db,'artifacts',appId,'public', 'data','custom','additions'), {allowedViewers: newList}, {merge:true}); }
                       }} className="bg-[#8C9B90] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md">加入</button>
                     </div>
                 </div>
