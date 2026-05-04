@@ -673,7 +673,6 @@
                                         title="複製清單文字"
                                         className="shrink-0 bg-wood-500 text-white w-[40px] h-[40px] flex items-center justify-center rounded-2xl shadow-sm active:opacity-80 transition-opacity"
                                     >
-                                        <path d="M7 16H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"/><polyline points="9 11 12 14 22 4"/><rect width="13" height="13" x="9" y="9" rx="2" ry="2"/>
                                         <Copy size={18} />
                                     </button>
                                 </div>
@@ -853,7 +852,7 @@
                                         </>
                                     )}
                                 </div>
-                                <div className="flex row md:flex-col gap-2 md:gap-1.5 justify-end shrink-0 md:w-8 font-normal">
+                                <div className="flex row md:grid md:grid-cols-2 gap-2 md:gap-1.5 justify-end content-start shrink-0 md:w-[70px] font-normal">
                                     <button onClick={() => { setEditingId(book.id); setEditForm({...book}); }} className="h-9 w-9 md:h-8 md:w-8 flex items-center justify-center text-stone-300 hover:text-wood-500 bg-stone-50 rounded-xl" title="編輯基本資料"><Edit3 size={16}/></button>
                                     {book.status === 'reading' ? (
                                         <>
