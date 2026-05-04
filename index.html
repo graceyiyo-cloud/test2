@@ -275,7 +275,7 @@
         return () => { unsubInv(); unsubCustom(); unsubMaster(); unsubArchived(); };
       }, [user]);
 
-      // 動態權限驗證：當資料庫載入完成後，檢查該登入者是否在授權名單中
+      // 動態權權限驗證：當資料庫載入完成後，檢查該登入者是否在授權名單中
       useEffect(() => {
           if (user && cloudStatus === "synced" && user.email !== ADMIN_EMAIL) {
               const allowed = customData?.allowedViewers || [];
@@ -487,6 +487,27 @@
         const allRems = [...(customData.remittances || []), ...archivedRemittances];
         const rems = allRems.filter(r => r.unitKey === uK).map(r => ({ ...r, _id: r.id, _isCustom: true }));
         info.匯款紀錄 = [...info.匯款紀錄, ...rems];
+
+        // 【精準修復】：對匯款紀錄進行日期排序（相容 Excel 序號與民國年字串）
+        info.匯款紀錄.sort((a, b) => {
+          const dateKeyA = Object.keys(a).find(k => k.includes('日期')) || '日期';
+          const dateKeyB = Object.keys(b).find(k => k.includes('日期')) || '日期';
+          const valA = a[dateKeyA];
+          const valB = b[dateKeyB];
+          
+          const parseDateToWeight = (v) => {
+            if (v === undefined || v === null || v === '') return 0;
+            // 如果是 Excel 的日期數字
+            if (!isNaN(v) && Number(v) > 20000) return Number(v);
+            // 如果是民國年字串 (如 115/05/04)
+            const parts = String(v).split('/');
+            if (parts.length === 3) {
+              return parseInt(parts[0]) * 10000 + parseInt(parts[1]) * 100 + parseInt(parts[2]);
+            }
+            return 0;
+          };
+          return parseDateToWeight(valA) - parseDateToWeight(valB);
+        });
         
         info.客變紀錄 = (customData.customChanges || []).filter(r => r.unitKey === uK);
         return info;
