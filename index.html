@@ -3,1242 +3,1412 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>工程階層結算系統</title>
+    <title>冷氣清洗紀錄</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="冷氣紀錄">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#475569">
+
+    <link rel="apple-touch-icon" href="./icon.png">
+    
+    <link rel="manifest" href='data:application/manifest+json,{"name":"冷氣清洗紀錄","short_name":"冷氣紀錄","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#475569","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        /* 整體字體加大約 10% */
+        html { font-size: 110%; }
+        body { 
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif; 
+            background-color: #f8f5ef !important;
+        }
+        .hidden { display: none; }
+        /* 恢復已完成狀態的視覺對比度與左側灰藍色線條 */
+        .completed-row { 
+            background-color: #f1f5f9 !important; 
+            border-left: 5px solid #64748b !important; 
+            opacity: 0.95; 
+        }
+        
+        .note-display { white-space: pre-wrap; word-break: break-all; display: block; line-height: 1.3; }
+
+        @keyframes highlight-fade {
+            0% { background-color: #fef08a; transform: scale(1.02); }
+            100% { background-color: white; transform: scale(1); }
+        }
+        .highlight-target { animation: highlight-fade 2s ease-out; z-index: 10; }
+
+        /* 全裝置統一使用卡片式佈局 - 針對手機版面進行清晰度優化 */
+        thead { display: none; }
+        tr { 
+            display: block; margin-bottom: 0.5rem; 
+            border-radius: 12px; background: white;
+            padding: 1rem; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #cbd5e1;
+            transition: all 0.3s ease;
+        }
+        /* 增加儲存格的上下空間，並加深基礎文字顏色 */
+        td { 
+            display: block; width: 100%; 
+            padding: 0.15rem 0 !important; 
+            border: none !important; text-align: left; color: #334155; 
+        }
+        
+        /* 客戶名稱加大加粗，增加對比 */
+        td[data-label="客戶"] { 
+            font-weight: 800; font-size: 1.2rem; color: #0f172a; 
+            padding-bottom: 0.1rem !important; 
+        }
+        /* 金額帳目增加明顯分隔線與粗體，並增加與上方文字的距離 */
+        td[data-label="金額帳目"] { 
+            padding-top: 0.75rem !important; 
+            margin-top: 0.75rem; 
+            border-top: 2px dashed #cbd5e1 !important; color: #1e293b; font-size: 0.9rem; font-weight: 700;
+        }
+        td.action-cell {
+            border-top: 1px solid #e2e8f0 !important; 
+            margin-top: 0.5rem; 
+            padding-top: 0.5rem !important; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;
+        }
+
+        /* 預約時間增加底線做為頭部資訊區隔 */
+        .time-display { 
+            font-size: 0.85rem; color: #475569; font-weight: 600; 
+            border-bottom: 1px solid #f1f5f9; 
+            padding-bottom: 0.25rem !important; 
+            margin-bottom: 0.1rem; 
+        }
+
+        @media (min-width: 1024px) {
+            .desktop-half-width { max-width: 50% !important; margin-left: auto; margin-right: auto; }
+        }
+
+        /* 小幫手統計浮窗樣式 */
+        #assistantSummaryModal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 100; width: 90%; max-width: 350px;
+        }
+
+        /* Lucide 圖示統一微調 */
+        .lucide { width: 14px; height: 14px; stroke-width: 2; display: inline-block; vertical-align: -2px; }
+        .btn-icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; }
+
+
+        /* ===== 版面順化調整：清爽文青、間距統一、卡片層次更柔和 ===== */
         :root {
-            --bg: #F0EFE9;
-            --card: #FFFFFF;
-            --primary: #6D7850;
-            --accent: #8D6E50;
-            --text: #2D2D2D;
-            --border: #C0BEB3;
-            --danger: #c0392b;
-            --success: #1b5e20;
-            --info: #3d868a;
-            --dark: #1a252f;
+            --paper: #fbfaf7;
+            --paper-2: #f6f1e8;
+            --ink: #334155;
+            --muted: #8b8f83;
+            --line: #e7dfd1;
+            --brand: #64748b;
+            --brand-dark: #475569;
+            --green: #4f8f78;
+            --green-soft: #edf7f2;
+            --rose-soft: #fff1f2;
+            --amber-soft: #fff7ed;
+            --indigo-soft: #f1f3ff;
+            --shadow-soft: 0 10px 30px rgba(71, 85, 105, 0.08);
+            --shadow-card: 0 8px 22px rgba(71, 85, 105, 0.09);
         }
 
-        body { background-color: var(--bg); color: var(--text); font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        
-        .tabs { display: flex; gap: 5px; margin-bottom: 20px; width: 100%; max-width: 500px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: #D1D0C6; cursor: pointer; border-radius: 8px 8px 0 0; color: #555; font-weight: bold; transition: 0.3s; }
-        .tab-btn.active { background: var(--primary); color: white; }
-
-        .page { display: none; width: 100%; max-width: 500px; animation: fadeIn 0.3s; }
-        #listPage.page.active { display: block; width: 98vw; max-width: none; }
-        .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .card { background: var(--card); width: 100%; padding: 25px; border-radius: 0 0 15px 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); box-sizing: border-box; margin-bottom: 20px; }
-        .list-card { background: var(--card); width: 100%; padding: 25px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); box-sizing: border-box; }
-        
-        h2 { text-align: center; color: var(--primary); font-weight: 700; margin-bottom: 20px; letter-spacing: 1px; }
-        .row { display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end; }
-        .col { flex: 1; display: flex; flex-direction: column; }
-        
-        label { font-size: 0.85rem; margin-bottom: 5px; color: #666; font-weight: bold; }
-        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; outline: none; background: #FFFFFF; width: 100%; box-sizing: border-box; color: var(--text); }
-        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(109, 120, 80, 0.2); }
-        
-        #netAmount { font-weight: bold; color: #6b4d32; background-color: #FFF2E6; border: 1px solid var(--accent); }
-        .config-box { background: #F4F4F1; padding: 15px; border-radius: 10px; margin: 15px 0; border: 1px solid var(--border); }
-        .payment-box { border-top: 2px solid var(--primary); padding-top: 15px; margin-top: 20px; }
-        
-        .input-with-unit { position: relative; display: flex; align-items: center; }
-        .unit-label { margin-left: 5px; font-size: 0.85rem; color: #444; white-space: nowrap; width: 20px; font-weight: bold; }
-
-        .display-area { background: #FFFFFF; border: 1px solid var(--border); padding: 20px; border-radius: 10px; margin-top: 20px; min-height: 50px; }
-        .section-title { font-size: 0.9rem; font-weight: bold; color: var(--primary); margin-bottom: 10px; border-left: 4px solid var(--primary); padding-left: 8px; }
-        
-        .formula { font-size: 0.95rem; margin-bottom: 12px; line-height: 1.8; color: #333; }
-        .formula strong { color: #000; font-weight: 700; }
-        .formula-row { display: flex; align-items: flex-start; }
-        .formula-num { width: 2.2em; flex-shrink: 0; }
-        .indent-row { padding-left: 2.2em; }
-        
-        .subtotal-line { background: #E6E9DD; padding: 2px 8px; border-radius: 4px; color: var(--primary) !important; display: inline-block; margin: 2px 0; }
-        
-        .payment-result { margin-top: 15px; padding-top: 10px; border-top: 2px dashed var(--border); }
-        .date-line { font-family: monospace; font-weight: bold; font-size: 1.2rem; color: var(--accent); margin-bottom: 5px; }
-
-        .btn-save { width: 100%; padding: 14px; margin-top: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.2s; }
-        .btn-save:hover { opacity: 0.9; }
-        .btn-excel { padding: 10px 20px; background: var(--success); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-info { padding: 10px 20px; background: var(--info); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-reset { width: 100%; padding: 10px; margin-top: 10px; color: #666; border: 1px solid var(--border); background: #E8E7E0; cursor: pointer; border-radius: 8px; font-size: 0.8rem; font-weight: bold; }
-        
-        .check-label { display: flex; align-items: center; gap: 5px; cursor: pointer; color: var(--text); font-weight: bold; }
-        .check-label input[type="checkbox"] { width: 18px; height: 18px; margin: 0; }
-        .check-label.disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .toggle-group { display: flex; background: #ECEBE4; border-radius: 8px; padding: 3px; gap: 2px; border: 1px solid var(--border); }
-        .toggle-btn { 
-            flex: 1; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; 
-            font-size: 0.75rem; font-weight: bold; color: #888; background: transparent; 
-            transition: all 0.2s ease; white-space: nowrap;
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(255,255,255,0.9), transparent 34rem),
+                linear-gradient(180deg, #fbfaf7 0%, #f8f5ef 45%, #f3eee5 100%) !important;
+            color: var(--ink);
         }
-        .toggle-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); box-sizing: border-box; }
-        #receiptToggle .toggle-btn.active { color: var(--accent); }
-        #calcBaseToggle .toggle-btn.active { color: #d35400; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; table-layout: auto; }
-        th { background-color: #E8E7E0; color: #333; border: 1px solid var(--border); padding: 10px 8px; font-weight: bold; }
-        td { border: 1px solid var(--border); padding: 8px; text-align: left; overflow: hidden; color: var(--text); }
-        
-        .col-bank { width: 8.5ch; max-width: 8.5ch; }
-        .col-acc { width: 17ch; max-width: 17ch; }
-        .col-desc { width: auto; min-width: 150px; }
+        #mainApp > nav {
+            background: rgba(71, 85, 105, 0.92) !important;
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.16);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+        }
 
-        #recordTable td { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
-        #recordTable td:hover { overflow: visible; white-space: normal; word-break: break-all; position: relative; z-index: 1; background: inherit; }
-        
-        .sortable { cursor: pointer; user-select: none; position: relative; }
-        .sortable:hover { background-color: #D1D0C6; }
-        
-        .editable { cursor: pointer; background-color: #FFFCE0; border-radius: 4px; padding: 2px 5px; display: block; width: calc(100% - 10px); min-height: 1.2em; border: 1px solid #E0D5A0; }
-        .editable:focus { border-color: var(--accent); outline: none; background-color: #fff; box-shadow: 0 0 5px rgba(141, 110, 80, 0.3); }
-        
-        .amount-cell { text-align: right; font-family: 'Courier New', monospace; font-weight: bold; }
-        
-        .action-cell { text-align: center; width: 60px; }
-        .btn-calc { color: var(--info); border: 1.5px solid var(--info); background: white; cursor: pointer; border-radius: 50%; width: 26px; height: 26px; font-size: 0.75rem; font-weight: bold; padding: 0; margin-right: 5px; transition: 0.2s; vertical-align: middle; }
-        .btn-calc:hover { background: var(--info); color: white; }
-        .btn-edit-tool { color: var(--accent); border: 1.5px solid var(--accent); background: white; cursor: pointer; border-radius: 4px; padding: 2px 5px; font-size: 0.7rem; font-weight: bold; margin-right: 5px; transition: 0.2s; vertical-align: middle; }
-        .btn-del { color: var(--danger); border: none; background: none; cursor: pointer; font-weight: bold; font-size: 1.4rem; line-height: 1; vertical-align: middle; }
-        
-        .summary-bar { margin-top: 15px; padding: 15px; background: #E8E7E0; border-radius: 8px; text-align: right; font-size: 1.1rem; color: #000; border: 1px solid var(--border); }
-        .summary-bar strong { color: #d35400; font-size: 1.4rem; text-shadow: 1px 1px 0px #fff; }
+        #mainApp > nav .container {
+            max-width: 920px;
+            gap: 0.75rem;
+        }
 
-        .search-results { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid var(--primary); border-radius: 8px; z-index: 100; max-height: 250px; overflow-y: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.2); display: none; }
-        .search-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #EEE; font-size: 0.9rem; color: #333; }
-        .search-item:hover { background: #F0F2EB; color: var(--primary); }
+        #mainApp > nav h1 {
+            letter-spacing: 0.16em;
+            font-size: 0.98rem;
+        }
 
-        .filter-row { margin-bottom: 25px; display: flex; flex-wrap: wrap; align-items: center; gap: 20px; justify-content: space-between; }
-        .filter-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .button-cluster { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 12px; }
+        #mainApp > nav button {
+            background: rgba(255,255,255,0.11) !important;
+            border-color: rgba(255,255,255,0.18) !important;
+            border-radius: 999px !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+        }
 
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 450px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-        .close-modal { position: absolute; right: 15px; top: 15px; font-size: 1.5rem; cursor: pointer; color: #999; }
-        
-        .draggable-row { transition: background 0.2s; }
-        .draggable-row.dragging { opacity: 0.5; background: #f0f0f0; }
-        .drag-over { border-top: 3px dashed var(--primary) !important; }
+        #mainApp > nav button:hover {
+            background: rgba(255,255,255,0.20) !important;
+            transform: translateY(-1px);
+        }
 
-        .drag-handle { cursor: grab; background-color: #f8f8f8; transition: background 0.2s; }
-        .drag-handle:active { cursor: grabbing; background-color: #eee; }
+        .container.mx-auto {
+            max-width: 960px;
+        }
 
-        .vendor-form { background: #F4F4F1; padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; }
+        #formPage,
+        #listPage > .bg-white,
+        #listPage > .space-y-3 > div,
+        #listPage > .bg-emerald-50\/40,
+        #listPage > .bg-slate-700 {
+            border-radius: 24px !important;
+            box-shadow: var(--shadow-soft) !important;
+            border: 1px solid rgba(231, 223, 209, 0.85) !important;
+        }
+
+        #formPage {
+            background: rgba(255,255,255,0.88) !important;
+            backdrop-filter: blur(8px);
+            border-left: 5px solid #d7c7ae !important;
+        }
+
+        #formPage h2 {
+            padding-bottom: 0.9rem;
+            border-bottom: 1px solid #efe7da;
+            margin-bottom: 1.35rem !important;
+        }
+
+        #recordForm label {
+            color: #7c8377 !important;
+            letter-spacing: 0.08em;
+        }
+
+        #recordForm input,
+        #recordForm textarea,
+        #recordForm select {
+            background-color: #fffdf9 !important;
+            border-color: #e7dfd1 !important;
+            transition: box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
+        }
+
+        #recordForm input:focus,
+        #recordForm textarea:focus,
+        #recordForm select:focus {
+            border-color: #b7a68b !important;
+            box-shadow: 0 0 0 4px rgba(183,166,139,0.14) !important;
+            background-color: #ffffff !important;
+        }
+
+        #acBrandSection,
+        #assistantDetailsContainer,
+        #quickAssistantTags,
+        #quickPassTags {
+            transition: all .2s ease;
+        }
+
+        #recordForm .bg-slate-50,
+        #acBrandSection,
+        #recordForm .bg-rose-50\/30,
+        #recordForm .bg-indigo-50\/30 {
+            border-radius: 18px !important;
+        }
+
+        #recordForm button[type="submit"] {
+            background: linear-gradient(135deg, #527f69, #3f725c) !important;
+            box-shadow: 0 10px 22px rgba(63,114,92,0.18) !important;
+        }
+
+        #recordForm button[type="button"] {
+            border-radius: 16px !important;
+        }
+
+        /* 統計卡片：減少壓迫感，標題與數字更容易掃讀 */
+        #listPage > .bg-slate-700 {
+            background: linear-gradient(135deg, #475569, #334155) !important;
+            border-left: none !important;
+            padding: 1.15rem !important;
+        }
+
+        #listPage > .bg-slate-700::after {
+            content: "";
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            width: 72px;
+            height: 72px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.06);
+            pointer-events: none;
+        }
+
+        #listPage > .space-y-3 > div {
+            background: rgba(255,255,255,0.86) !important;
+            overflow: hidden;
+        }
+
+        #listPage > .space-y-3 > div:nth-child(2) {
+            background: rgba(241, 248, 243, 0.9) !important;
+        }
+
+        #listPage h3 {
+            letter-spacing: 0.14em;
+        }
+
+        #yRev, #yExp, #yNet, #mRev, #mExp, #mNet {
+            line-height: 1.1;
+        }
+
+        #passYearSummaryList > div,
+        #passSummaryList > div {
+            border-radius: 14px !important;
+            box-shadow: 0 4px 12px rgba(71,85,105,0.04);
+        }
+
+        /* 搜尋與篩選區：變成清楚的一組工具列 */
+        #listPage > .bg-white.p-3,
+        #listPage > .bg-white.p-3.md\:p-5 {
+            background: rgba(255,255,255,0.9) !important;
+            backdrop-filter: blur(8px);
+            padding: 1rem !important;
+        }
+
+        #searchKeyword,
+        #monthFilter,
+        #typeFilter,
+        #statusFilter,
+        #paymentFilter {
+            background: #fbfaf7 !important;
+            border: 1px solid #eee4d6 !important;
+            min-height: 44px;
+        }
+
+        #listPage select {
+            font-size: 0.74rem !important;
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        /* 列表卡片：上下資訊分區更順、按鈕不擠 */
+        #recordList {
+            display: block;
+        }
+
+        tr {
+            position: relative;
+            margin-bottom: 0.85rem !important;
+            padding: 0.95rem 1rem 0.85rem !important;
+            border-radius: 22px !important;
+            border: 1px solid rgba(226, 232, 240, 0.92) !important;
+            box-shadow: var(--shadow-card) !important;
+            overflow: hidden;
+        }
+
+        tr::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 4px;
+            background: #d7c7ae;
+            opacity: 0.95;
+        }
+
+        .completed-row::before {
+            background: #94a3b8;
+        }
+
+        td[data-label="預約時間"] {
+            padding-left: 0.25rem !important;
+            padding-bottom: 0.45rem !important;
+            margin-bottom: 0.45rem !important;
+            border-bottom: 1px solid #f0ece4 !important;
+        }
+
+        td[data-label="客戶"] {
+            padding-top: 0.1rem !important;
+            padding-bottom: 0.35rem !important;
+            gap: 0.45rem !important;
+        }
+
+        td[data-label="客戶"] span:first-child {
+            font-size: 1.12rem;
+            letter-spacing: 0.02em;
+        }
+
+        td[data-label="服務明細"] {
+            background: #fbfaf7;
+            border-radius: 14px !important;
+            padding: 0.65rem 0.75rem !important;
+            margin-top: 0.35rem;
+            color: #475569;
+        }
+
+        td[data-label="金額帳目"] {
+            background: linear-gradient(90deg, #f8fafc, #fbfaf7);
+            border-top: none !important;
+            border-radius: 14px !important;
+            padding: 0.72rem 0.78rem !important;
+            margin-top: 0.55rem !important;
+            font-size: 0.92rem !important;
+        }
+
+        td.action-cell {
+            border-top: none !important;
+            margin-top: 0.72rem !important;
+            padding-top: 0 !important;
+            display: grid !important;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 0.45rem !important;
+        }
+
+        td.action-cell button {
+            justify-content: center;
+            border-radius: 999px !important;
+            min-height: 34px;
+            padding: 0.4rem 0.45rem !important;
+            box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+        }
+
+        .note-display {
+            margin-top: 0.35rem !important;
+            color: #7c8377 !important;
+        }
+
+        #unpaidSection {
+            background: rgba(255, 247, 237, 0.75);
+            border-radius: 0 0 22px 22px;
+        }
+
+        #assistantSummaryModal {
+            border-radius: 24px !important;
+            box-shadow: 0 24px 70px rgba(15,23,42,.24) !important;
+        }
+
+        @media (max-width: 640px) {
+            html { font-size: 106%; }
+
+            #mainApp > nav {
+                padding-left: 0.65rem !important;
+                padding-right: 0.65rem !important;
+            }
+
+            #mainApp > nav .container {
+                align-items: flex-start;
+                gap: 0.55rem;
+            }
+
+            #mainApp > nav h1 {
+                font-size: 0.9rem;
+                padding-top: 0.35rem;
+                white-space: nowrap;
+            }
+
+            #mainApp > nav .flex.space-x-2 {
+                gap: 0.35rem !important;
+                overflow-x: auto;
+                padding-bottom: 0.15rem;
+            }
+
+            #mainApp > nav button {
+                padding-left: 0.65rem !important;
+                padding-right: 0.65rem !important;
+            }
+
+            .container.mx-auto {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+                padding-top: 1rem !important;
+            }
+
+            #formPage {
+                padding: 1.1rem !important;
+            }
+
+            #listPage > .bg-slate-700 {
+                align-items: stretch !important;
+            }
+
+            #listPage > .bg-slate-700 > .flex {
+                margin-right: 0.65rem !important;
+                padding-right: 0.65rem !important;
+            }
+
+            #listPage > .bg-white.p-3 .grid.grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+
+            #passYearSummaryList > div,
+            #passSummaryList > div {
+                align-items: flex-start !important;
+                flex-direction: column;
+            }
+
+            #passYearSummaryList > div > div:last-child,
+            #passSummaryList > div > div:last-child {
+                width: 100%;
+                justify-content: space-between;
+                gap: 0.4rem !important;
+                flex-wrap: wrap;
+            }
+
+            td[data-label="預約時間"] {
+                align-items: flex-start !important;
+                gap: 0.35rem;
+                flex-direction: column;
+            }
+
+            td[data-label="客戶"] {
+                flex-wrap: wrap;
+            }
+
+            td.action-cell {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            td.action-cell button span {
+                display: inline;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .desktop-half-width {
+                max-width: 680px !important;
+            }
+        }
+
     </style>
 </head>
-<body>
+<body class="bg-[#faf9f6] min-h-screen text-slate-700">
 
-<div class="tabs">
-    <button class="tab-btn active" onclick="switchPage('calcPage', this)">計算工具</button>
-    <button class="tab-btn" onclick="switchPage('listPage', this)">付款清單</button>
-    <button class="tab-btn" onclick="switchPage('vendorPage', this)">廠商資料</button>
-</div>
-
-<div id="calcPage" class="page active">
-    <div class="card">
-        <h2>工程結算明細</h2>
-        <div class="row">
-            <div class="col">
-                <label>付款公司</label>
-                <select id="companySelect">
-                    <option value="瀞川">瀞川</option>
-                    <option value="聿川">聿川</option>
-                    <option value="長川">長川</option>
-                    <option value="上川">上川</option>
-                </select>
+    <section id="authPage" class="fixed inset-0 z-[100] bg-slate-100 flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-slate-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <i data-lucide="lock" class="text-white w-8 h-8"></i>
             </div>
-            <div class="col" style="position: relative;">
-                <label>搜尋廠商 (預覽包含帳號)</label>
-                <input type="text" id="vendorSearch" placeholder="搜尋廠商關鍵字..." oninput="searchVendor(this.value)">
-                <div id="searchResults" class="search-results"></div>
-                <input type="hidden" id="tempBankCode">
-                <input type="hidden" id="tempAccount">
-                <input type="hidden" id="tempOwner">
-            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">系統登入</h2>
+            <p class="text-slate-400 text-sm mb-8">請使用授權的 Google 帳號進行登入</p>
+            
+            <button onclick="handleLogin()" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3.5 px-4 rounded-xl border border-slate-200 shadow-sm transition-all active:scale-95 mb-4">
+                <img src="https://www.gstatic.com/images/branding/googleg/1x/googleg_standard_color_128dp.png" class="w-5 h-5">
+                Google 帳號登入
+            </button>
+            <p id="authError" class="text-rose-500 text-xs font-bold hidden whitespace-pre-wrap"></p>
         </div>
+    </section>
 
-        <div class="row">
-            <div class="col">
-                <label>工程內容 (明細)</label>
-                <div style="display: flex; gap: 8px; width: 100%;">
-                    <input type="text" id="workNote" placeholder="例如：安西段-玹實-1F頂板紮筋">
-                    <button type="button" class="btn-info" style="padding: 5px 12px; font-size: 0.85rem; width: auto; white-space: nowrap; background: var(--accent);" onclick="copyLastPart(this)">✂️ 複製結尾</button>
+    <div id="mainApp" class="hidden">
+        <nav class="bg-slate-600 text-white py-2 px-4 shadow-md sticky top-0 z-50">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-lg font-bold tracking-widest">冷氣清洗紀錄</h1>
+                <div class="flex space-x-2">
+                    <button onclick="showPage('listPage')" class="flex items-center px-3 py-1.5 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.8rem] font-medium active:scale-95 whitespace-nowrap">
+                        <i data-lucide="list" class="btn-icon"></i>清單
+                    </button>
+                    <button onclick="prepareNewForm()" class="flex items-center px-3 py-1.5 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.8rem] font-medium active:scale-95 whitespace-nowrap">
+                        <i data-lucide="pen-line" class="btn-icon"></i>填寫
+                    </button>
+                    <button onclick="handleLogout()" class="flex items-center px-3 py-1.5 bg-slate-700 hover:bg-rose-600 border border-slate-500 rounded-lg transition-all text-[0.8rem] font-medium active:scale-95 whitespace-nowrap">
+                        <i data-lucide="log-out" class="btn-icon"></i>登出
+                    </button>
                 </div>
             </div>
-        </div>
+        </nav>
 
-        <div class="row">
-            <div class="col">
-                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                    <label style="margin-bottom:0">輸入金額</label>
-                    <div style="display:flex; gap: 8px;">
-                        <div class="toggle-group" id="receiptToggle">
-                            <button class="toggle-btn active" onclick="setDocType('發票')">發票</button>
-                            <button class="toggle-btn" onclick="setDocType('收據')">收據</button>
+        <div class="container mx-auto px-1.5 md:px-4 py-6">
+            
+            <section id="formPage" class="hidden max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
+                <h2 class="text-xl font-bold mb-6 text-slate-800 flex items-center gap-2">
+                    <i data-lucide="clipboard-list" class="w-6 h-6"></i> 新增紀錄
+                </h2>
+                <form id="recordForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">預約日期時間</label>
+                            <input type="datetime-local" id="bookingTime" required class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
                         </div>
-                        <div class="toggle-group" id="taxModeToggle">
-                            <button class="toggle-btn active" onclick="setTaxMode('未稅')">未稅</button>
-                            <button class="toggle-btn" onclick="setTaxMode('含稅')">含稅</button>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">客戶姓名</label>
+                            <input type="text" id="customerName" required class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">連絡電話</label>
+                            <input type="tel" id="phone" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">施工地址</label>
+                            <input type="text" id="address" class="block w-full border-slate-200 rounded-xl p-3 border text-sm outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">冷氣台數</label>
+                            <input type="number" id="acCount" value="0" min="0" onfocus="this.select()" oninput="handleAcCountChange()" class="w-full rounded-lg p-2 border border-slate-200 text-sm font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">洗衣機</label>
+                            <input type="number" id="wmCount" value="0" min="0" onfocus="this.select()" class="w-full rounded-lg p-2 border border-slate-200 text-sm font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">水塔</label>
+                            <input type="number" id="wtCount" value="0" min="0" onfocus="this.select()" class="w-full rounded-lg p-2 border border-slate-200 text-sm font-bold">
+                        </div>
+                    </div>
+
+                    <div id="acBrandSection" class="hidden space-y-2 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-bold text-emerald-600 uppercase tracking-wider"><i data-lucide="snowflake" class="lucide mr-1"></i> 冷氣明細</label>
+                            <button type="button" onclick="addAcDetailRow()" class="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded shadow-sm">+ 增加明細</button>
+                        </div>
+                        <div id="acDetailsContainer" class="space-y-2"></div>
+                    </div>
+
+                    <div class="space-y-2 bg-rose-50/30 p-4 rounded-xl border border-rose-100">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-bold text-rose-600 uppercase tracking-wider"><i data-lucide="users" class="lucide mr-1"></i> 小幫手明細</label>
+                            <button type="button" onclick="addAssistantRow()" class="text-[10px] bg-rose-500 text-white px-2 py-1 rounded shadow-sm">+ 增加小幫手</button>
+                        </div>
+                        <div id="assistantDetailsContainer" class="space-y-2"></div>
+                        <div id="quickAssistantTags" class="flex flex-wrap gap-2 mt-2 pt-2 border-t border-rose-100/50"></div>
+                    </div>
+
+                    <div class="space-y-2 bg-indigo-50/30 p-4 rounded-xl border border-indigo-100">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-bold text-indigo-600 uppercase tracking-wider"><i data-lucide="forward" class="lucide mr-1"></i> PASS 案件設定</label>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="passFrom" list="passNamesList" placeholder="輸入 PASS 來源對象名稱" class="flex-1 rounded-lg p-2 border border-indigo-100 text-sm" oninput="updateQuickPassTags()">
+                        </div>
+                        <div id="quickPassTags" class="flex flex-wrap gap-2 mt-2 pt-2 border-t border-indigo-100/50"></div>
+                    </div>
+
+                    <datalist id="assistantNamesList"></datalist>
+                    <datalist id="passNamesList"></datalist>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+                        <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">總收費</label><input type="number" id="totalAmount" required onfocus="this.select()" oninput="calcFormNet()" class="w-full border-slate-200 rounded-xl p-3 border font-bold"></div>
+                        <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">小幫手總支出</label><input type="number" id="assistantPay" value="0" readonly class="w-full bg-slate-50 border-slate-200 rounded-xl p-3 border font-bold text-rose-500"></div>
+                        <div><label class="block text-xs font-bold text-emerald-600 uppercase mb-1">預估淨利</label><input type="text" id="formNetProfit" value="$0" readonly class="w-full bg-emerald-50 border-emerald-100 rounded-xl p-3 border font-bold text-emerald-700"></div>
+                    </div>
+                    <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">其他備註</label><textarea id="note" rows="3" class="w-full border-slate-200 rounded-xl p-3 border text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none"></textarea></div>
+                    
+                    <div class="flex gap-3">
+                        <button type="button" onclick="showPage('listPage')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-4 rounded-xl transition-all active:scale-[0.98] border border-slate-200/50">返回清單</button>
+                        <button type="submit" class="flex-[2] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-md transition-all active:scale-[0.98]">確認儲存紀錄</button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="listPage" class="desktop-half-width">
+                
+                <div class="bg-slate-700 p-4 rounded-2xl shadow-sm border-l-4 border-slate-400 text-white flex items-center mb-4 relative">
+                    <div class="flex flex-col text-[10px] font-bold uppercase tracking-widest text-slate-400 mr-4 border-r border-slate-600 pr-3 text-center leading-tight">
+                        <span>全</span><span>部</span><span>年</span><span>份</span><span>總</span><span>累</span><span>計</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="grid grid-cols-3 gap-2 text-center border-b border-slate-600 pb-2 mb-2">
+                            <div><p class="text-[10px] text-slate-400">冷氣</p><p class="text-xl font-bold" id="allAc">0</p></div>
+                            <div><p class="text-[10px] text-slate-400">洗衣機</p><p class="text-xl font-bold" id="allWm">0</p></div>
+                            <div><p class="text-[10px] text-slate-400">水塔</p><p class="text-xl font-bold" id="allWt">0</p></div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-center items-end">
+                            <div><p class="text-[10px] text-slate-400 mb-1">總收入</p><p class="text-sm font-bold leading-tight" id="allRev">$0</p></div>
+                            <div class="relative group">
+                                <p class="text-[10px] text-slate-400 mb-1">小幫手</p>
+                                <button onclick="showAllAssistantDetails()" class="text-sm font-bold text-rose-300 underline decoration-rose-300/40 leading-tight p-0 inline-block bg-transparent border-none" id="allExp">$0</button>
+                            </div>
+                            <div><p class="text-[10px] text-emerald-300 mb-1">淨實收</p><p class="text-sm font-bold text-emerald-300 leading-tight" id="allNet">$0</p></div>
                         </div>
                     </div>
                 </div>
-                <input type="number" id="inputAmount" placeholder="請輸入金額" oninput="calculate()">
-            </div>
-        </div>
 
-        <div class="row">
-            <div class="col">
-                <label>未稅金額 (可手動修改)</label>
-                <input type="number" id="rawAmount" style="font-weight: bold;" oninput="calculate(false, false, true)">
-            </div>
-            <div class="col">
-                <label>稅額 (可手動修改)</label>
-                <input type="number" id="taxAmount" style="font-weight: bold;" oninput="calculate(false, false, false, true)">
-            </div>
-        </div>
-
-        <div class="config-box">
-            <div class="row">
-                <div class="col">
-                    <label class="check-label"><input type="checkbox" id="cleanCheck" checked onchange="calculate()"> 清潔保險 (%)</label>
-                    <input type="number" id="cleanRate" value="0.5" step="0.1" oninput="calculate()">
+                <div id="assistantSummaryOverlay" onclick="toggleAssistantModal()" class="hidden fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[90]"></div>
+                <div id="assistantSummaryModal" class="hidden bg-white rounded-2xl shadow-2xl p-5 border border-slate-200">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i data-lucide="handshake" class="w-4 h-4"></i> <span id="assistantModalTitle">小幫手薪資總計 (全期)</span>
+                        </h4>
+                        <button onclick="toggleAssistantModal()" class="text-slate-400 text-xl hover:text-slate-600">&times;</button>
+                    </div>
+                    <div id="assistantSummaryList" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1"></div>
+                    <div class="mt-4 pt-3 border-t text-[10px] text-slate-400 text-center">
+                        點擊背景或叉叉可關閉
+                    </div>
                 </div>
-                <div class="col">
-                    <label>清潔保險費金額 (可手動修改)</label>
-                    <input type="number" id="cleanFeeAmount" oninput="calculate(false, true)">
+
+                <div class="space-y-3 mb-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-slate-400">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-slate-400 text-[10px] font-bold uppercase tracking-widest" id="yearTitle">年度統計</h3>
+                                <div class="text-[10px] text-slate-400">年度數量: <span class="text-slate-700 font-bold" id="yCounts">冷0 / 洗0 / 水0</span></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 mt-2 text-center">
+                                <div><p class="text-[10px] text-slate-400 mb-1">年度總營收</p><p class="text-lg font-bold text-slate-800" id="yRev">$0</p></div>
+                                <div><p class="text-[10px] text-slate-400 mb-1">年度支出</p><button onclick="showYearAssistantDetails()" class="text-lg font-bold text-rose-400 underline decoration-rose-400/40 leading-tight p-0 inline-block bg-transparent border-none" id="yExp">$0</button></div>
+                                <div><p class="text-[10px] text-emerald-300 font-bold mb-1">年度淨利</p><p class="text-lg font-bold text-emerald-700" id="yNet">$0</p></div>
+                            </div>
+
+                            <div id="passYearSummarySection" class="mt-3 pt-3 border-t border-indigo-100 bg-indigo-50/20 -mx-5 px-3 hidden">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h3 class="text-indigo-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
+                                        <i data-lucide="forward" class="w-3 h-3"></i> PASS 來源統計 (年度)
+                                    </h3>
+                                    <span class="text-[10px] text-indigo-400 font-bold" id="passYearTotal">總額 $0</span>
+                                </div>
+                                <div id="passYearSummaryList" class="grid grid-cols-1 gap-2 pb-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-emerald-50/40 p-5 rounded-2xl shadow-sm border-l-4 border-emerald-500">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-emerald-600 text-[10px] font-bold uppercase tracking-widest" id="monthTitle">本月統計</h3>
+                                <div class="text-[10px] text-emerald-600/70">月度數量: <span class="text-emerald-800 font-bold" id="mCounts">冷0 / 洗0 / 水0</span></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 mt-2 text-center">
+                                <div><p class="text-[10px] text-emerald-600/70 mb-1">本月總營收</p><p class="text-lg font-bold text-emerald-900" id="mRev">$0</p></div>
+                                <div><p class="text-[10px] text-emerald-600/70 mb-1">本月支出</p><button onclick="showMonthAssistantDetails()" class="text-lg font-bold text-rose-500 underline decoration-rose-500/40 leading-tight p-0 inline-block bg-transparent border-none" id="mExp">$0</button></div>
+                                <div><p class="text-[10px] text-emerald-600 font-bold mb-1">本月淨利</p><p class="text-lg font-bold text-emerald-700" id="mNet">$0</p></div>
+                            </div>
+                            
+                            <div id="passSummarySection" class="mt-3 pt-3 border-t border-emerald-100 bg-white/40 -mx-5 px-3 hidden">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h3 class="text-emerald-700 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
+                                        <i data-lucide="forward" class="w-3 h-3"></i> PASS 來源統計 (月度)
+                                    </h3>
+                                    <span class="text-[10px] text-emerald-600 font-bold" id="passMonthTotal">總額 $0</span>
+                                </div>
+                                <div id="passSummaryList" class="grid grid-cols-1 gap-2 pb-2"></div>
+                            </div>
+                        </div>
+
+                        <div id="unpaidSection" class="border-t border-amber-200 mt-4 pt-4 -mx-5 px-5 pb-2 hidden">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-amber-700 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
+                                    <i data-lucide="alert-circle" class="w-3 h-3"></i> 本月待收款明細 (點擊姓名跳轉)
+                                </h3>
+                                <button onclick="quickFilterUnpaid()" class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md hover:bg-amber-200 transition-colors font-bold">查看全部待收</button>
+                            </div>
+                            <div id="unpaidList" class="space-y-1.5 text-amber-900"></div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <label class="check-label"><input type="checkbox" id="retentionCheck" checked onchange="calculate()"> 保留款 (%)</label>
-                    <input type="number" id="retentionRate" value="10" step="1" oninput="calculate()">
+
+                <div class="bg-white p-3 md:p-5 rounded-2xl shadow-sm border border-slate-100 mb-6 space-y-4">
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <div class="flex-[3] relative">
+                            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
+                                <i data-lucide="search" class="w-4 h-4"></i>
+                            </div>
+                            <input type="text" id="searchKeyword" oninput="filterRecords()" placeholder="搜尋姓名、地址、機型、PASS..." class="w-full bg-slate-50 border-none rounded-xl p-3 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-100">
+                        </div>
+                        <div class="flex-[3] flex items-center gap-1">
+                            <button onclick="changeMonth(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl transition-all leading-none"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                            <input type="month" id="monthFilter" onchange="filterRecords()" class="flex-1 bg-slate-50 border-none rounded-xl p-2 text-sm outline-none text-center font-medium h-[42px]">
+                            <button onclick="changeMonth(1)" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl transition-all leading-none"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                            <button onclick="clearMonthFilter()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl transition-all leading-none" title="清除年月篩選"><i data-lucide="calendar-x" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <select id="typeFilter" onchange="filterRecords()" class="bg-slate-50 border-none rounded-xl p-2 text-[10px] outline-none"><option value="all">全部品項</option><option value="ac">冷氣</option><option value="wm">洗衣機</option><option value="wt">水塔</option></select>
+                        <select id="statusFilter" onchange="filterRecords()" class="bg-slate-50 border-none rounded-xl p-2 text-[10px] outline-none"><option value="all">施工進度</option><option value="completed">已完成</option><option value="pending">待處理</option></select>
+                        <select id="paymentFilter" onchange="filterRecords()" class="bg-slate-50 border-none rounded-xl p-2 text-[10px] outline-none"><option value="all">帳務狀態</option><option value="paid">已收款</option><option value="unpaid">待收款</option></select>
+                    </div>
                 </div>
-                <div class="col">
-                    <label>保留款金額 (可手動修改)</label>
-                    <input type="number" id="retentionAmount" oninput="calculate(true)">
-                </div>
-            </div>
-            <div class="row" style="margin-top: 5px;">
-                <div class="col">
-                    <label class="check-label" id="taxInclusiveRetentionLabel" style="color: var(--accent);">
-                        <input type="checkbox" id="isTaxInclusiveRetention" onchange="calculate()"> 
-                        發票金額含保留款 (分列應付與發票)
-                    </label>
-                </div>
-            </div>
-        </div>
 
-        <div class="row">
-            <div class="col">
-                <label>加扣款事由</label>
-                <input type="text" id="adjustmentNote" placeholder="例如：代購材料扣款" oninput="calculate()">
-            </div>
-            <div class="col">
-                <label>加扣款金額 (含稅)</label>
-                <input type="number" id="adjustmentAmount" placeholder="0" oninput="calculate()">
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col">
-                <label>最終淨額 (可手動修改)</label>
-                <input type="number" id="netAmount" oninput="updateFormulaOnly()">
-            </div>
-        </div>
-
-        <div class="payment-box">
-            <div class="row">
-                <div class="col">
-                    <label>付款基準日 (格式: 1150212)</label>
-                    <input type="text" id="baseDate" placeholder="例如: 1150212" oninput="renderDetail()">
-                </div>
-            </div>
-            <label>付款比例 / 期數 (月)</label>
-            <div class="row">
-                <div class="col"><div class="input-with-unit"><input type="number" id="p1Pct" placeholder="比例" oninput="renderDetail()"><span class="unit-label">%</span></div></div>
-                <div class="col"><div class="input-with-unit"><input type="number" id="p1Mon" placeholder="期數" oninput="renderDetail()"><span class="unit-label">月</span></div></div>
-            </div>
-            <div class="row">
-                <div class="col"><div class="input-with-unit"><input type="number" id="p2Pct" placeholder="比例" oninput="renderDetail()"><span class="unit-label">%</span></div></div>
-                <div class="col"><div class="input-with-unit"><input type="number" id="p2Mon" placeholder="期數" oninput="renderDetail()"><span class="unit-label">月</span></div></div>
-            </div>
-        </div>
-
-        <div class="display-area">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <div class="section-title" style="margin-bottom: 0;">階層計算列示</div>
-                <label class="check-label" style="font-size: 0.8rem; color: var(--accent);">
-                    <input type="checkbox" id="forceTaxInclusiveView" onchange="updateFormulaOnly()"> 以含稅額顯示過程
-                </label>
-            </div>
-            <div id="processFormula" class="formula">請輸入資料...</div>
-            <button class="btn-info" style="width: 100%; margin-top: 10px; background: var(--success);" onclick="copyFormulaText(this)">📋 複製明細文字</button>
-            <div class="payment-result" id="paymentDetail"></div>
-        </div>
-
-        <button class="btn-save" onclick="saveData()">儲存此筆排程</button>
-        <button class="btn-reset" onclick="location.reload()">重新整理</button>
-    </div>
-</div>
-
-<div id="listPage" class="page">
-    <div class="list-card">
-        <div class="section-title">付款清單明細</div>
-        <div class="filter-row">
-            <div class="filter-group">
-                <label style="margin:0">月份：</label>
-                <select id="filterMonth" style="width: auto; padding: 5px; font-weight: bold;" onchange="renderTable()"></select>
-                <label style="margin:0; margin-left:10px;">公司：</label>
-                <select id="filterCompany" style="width: auto; padding: 5px; font-weight: bold;" onchange="renderTable()">
-                    <option value="全部">全部顯示</option>
-                    <option value="瀞川">瀞川</option>
-                    <option value="聿川">聿川</option>
-                    <option value="長川">長川</option>
-                    <option value="上川">上川</option>
-                </select>
-                <label style="margin:0; margin-left:10px;">日期篩選：</label>
-                <input type="text" id="filterDate" placeholder="輸入日期(如11502)" style="width: 130px; padding: 5px; font-weight: bold;" oninput="renderTable()">
-            </div>
-            <div class="button-cluster">
-                <button class="btn-info" id="btnCopyClaim" style="background: #34495e;" onclick="copyToClipboard('claim', this)">📋 複製請款明細 (貼Excel)</button>
-                <button class="btn-info" id="btnCopyBank" style="background: #a67c52;" onclick="copyToClipboard('bank', this)">📋 複製匯款資料 (貼Excel)</button>
-                <button class="btn-info" style="background: #16a085;" onclick="autoFillRecordsByOwner()">按戶名補齊資料</button>
-                <button class="btn-save" style="background: #a93226; width: auto; padding: 10px 20px; margin: 0;" onclick="clearData()">清空所有排程</button>
-            </div>
-        </div>
-        <table id="recordTable">
-            <thead>
-                <tr>
-                    <th style="width: 30px; text-align: center;"><input type="checkbox" id="selectAll" checked onclick="toggleSelectAll(this)"></th>
-                    <th style="width: 30px; text-align: center;">算</th>
-                    <th style="width: 35px;">No.</th>
-                    <th style="width: 8.5ch;">日期</th>
-                    <th class="sortable col-desc" onclick="toggleSort('desc')">明細內容</th>
-                    <th style="width: 90px;">金額</th>
-                    <th class="col-bank">解款行</th>
-                    <th class="col-acc">帳號</th>
-                    <th style="width: 20em;">戶名</th>
-                    <th style="width: 3.2em;">公司</th>
-                    <th class="action-cell">功能</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-        <div class="summary-bar" id="listSummary">
-            篩選總金額：<span id="filteredTotal">$0</span> | 勾選總金額：<strong id="checkedTotal">$0</strong>
+                <div class="overflow-x-auto"><table class="min-w-full text-sm"><tbody id="recordList" class="divide-y divide-slate-100"></tbody></table></div>
+            </section>
         </div>
     </div>
-</div>
 
-<div id="vendorPage" class="page" style="max-width: 850px;">
-    <div class="list-card">
-        <div class="section-title">廠商匯款資料管理</div>
-        <div class="vendor-form">
-            <div class="section-title" style="border-left: 4px solid var(--accent); color: var(--accent);">手動新增廠商</div>
-            <div class="row">
-                <div class="col"><label>廠商名稱</label><input type="text" id="newVName" placeholder="公司名"></div>
-                <div class="col"><label>解款行</label><input type="text" id="newVBank" placeholder="代號+名稱"></div>
-            </div>
-            <div class="row">
-                <div class="col"><label>收款帳號</label><input type="text" id="newVAcc" placeholder="銀行帳號"></div>
-                <div class="col"><label>收款戶名</label><input type="text" id="newVOwner" placeholder="戶名"></div>
-            </div>
-            <button class="btn-save" style="margin-top: 5px; margin-bottom: 25px; background: var(--accent);" onclick="manualAddVendor()">新增廠商資料</button>
-        </div>
-        <div class="filter-row" style="margin-top: 20px;">
-            <div class="filter-group">
-                <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="importVendorCSV(this)">
-                <button class="btn-excel" onclick="document.getElementById('csvFileInput').click()">批次匯入 CSV</button>
-                <button class="btn-info" style="background: var(--info);" onclick="exportVendorExcel()">匯出廠商清單</button>
-                <button class="btn-info" style="background: var(--dark);" onclick="exportFullBackup()">備份全系統資料 (.json)</button>
-                <input type="file" id="backupFileInput" accept=".json" style="display:none" onchange="importFullBackup(this)">
-                <button class="btn-save" style="background: var(--accent); width: auto; padding: 10px 20px; margin: 0;" onclick="document.getElementById('backupFileInput').click()">還原系統資料</button>
-                <button class="btn-save" style="background: #eee; color: var(--danger); width: auto; padding: 10px 20px; margin: 0; border: 1px solid var(--danger);" onclick="clearVendors()">清空廠商庫</button>
-            </div>
-        </div>
-        <table id="vendorTable">
-            <thead>
-                <tr>
-                    <th style="width: 25%;">廠商名稱</th>
-                    <th style="width: 20%;">解款行</th>
-                    <th style="width: 20%;">帳號</th>
-                    <th style="width: 20%;">戶名</th>
-                    <th class="action-cell">功能</th>
-                </tr>
-            </thead>
-            <tbody id="vendorTableBody"></tbody>
-        </table>
-    </div>
-</div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-<div id="infoModal" class="modal" onclick="document.getElementById('infoModal').style.display='none'">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <span class="close-modal" onclick="document.getElementById('infoModal').style.display='none'">&times;</span>
-        <div class="section-title">計算過程紀錄</div>
-        <div id="modalBody" class="formula"></div>
-    </div>
-</div>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDTyt_nIV1h_MFRhQoT9PHFMXhus1jQVL4",
+            projectId: "ac-records-b8c40",
+            authDomain: "ac-records-b8c40.firebaseapp.com",
+            storageBucket: "ac-records-b8c40.firebasestorage.app",
+            messagingSenderId: "471993362594",
+            appId: "1:471993362594:web:1be7e72af1021760c64ffb"
+        };
 
-<script>
-    const fmt = new Intl.NumberFormat('zh-TW');
-    let db = JSON.parse(localStorage.getItem('paymentRecords')) || [];
-    let vendors = JSON.parse(localStorage.getItem('vendorList')) || [];
-    let currentSortOrder = 'asc';
-    let checkedIds = new Set();
-    
-    let currentDocType = '發票';
-    let currentTaxMode = '未稅';
-    let currentCalcBase = '未稅'; // 修改：固定為未稅基準
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        
+        const recordsCol = collection(db, "cleaningRecords");
+        let allRecords = [];
+        let editingId = null;
+        let knownAssistantNames = []; 
+        let knownPassNames = [];
+        let snapshotUnsubscribe = null;
 
-    let lastCalcState = { 
-        raw: 0, tax: 0, total: 0, cRate: 0, cleanFee: 0, subtotal: 0, rRate: 0, retention: 0, 
-        adj: 0, adjNote: "", isTaxInclusiveRetention: false, calcBase: '未稅', 
-        cleanCheck: true, retentionCheck: true,
-        isManualClean: false, isManualRetention: false, isManualNet: false 
-    };
+        // 篩選快取，供支出浮窗使用
+        let currentYearRecords = [];
+        let currentMonthRecords = [];
 
-    function setDocType(type) {
-        currentDocType = type;
-        const btns = document.querySelectorAll('#receiptToggle .toggle-btn');
-        btns.forEach(b => b.classList.toggle('active', b.innerText === type));
-        const taxGroup = document.getElementById('taxModeToggle');
-        if (type === '收據') {
-            taxGroup.style.opacity = '0.2';
-            taxGroup.style.pointerEvents = 'none';
-            setTaxMode('未稅');
-        } else {
-            taxGroup.style.opacity = '1';
-            taxGroup.style.pointerEvents = 'auto';
-        }
-        calculate();
-    }
+        // 授權清單
+        const allowedEmails = ['eroraror@gmail.com', 'graceyiyo@gmail.com'];
 
-    function setTaxMode(mode) {
-        currentTaxMode = mode;
-        const btns = document.querySelectorAll('#taxModeToggle .toggle-btn');
-        btns.forEach(b => b.classList.toggle('active', b.innerText === mode));
-        calculate();
-    }
+        // 初始化圖示
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
 
-    // 備註：setCalcBase 已不再透過 UI 呼叫，僅保留邏輯一致性
-    function setCalcBase(base) {
-        currentCalcBase = '未稅';
-        calculate();
-    }
+        // 登入狀態監聽
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                if (allowedEmails.includes(user.email.toLowerCase())) {
+                    document.getElementById('authPage').classList.add('hidden');
+                    document.getElementById('mainApp').classList.remove('hidden');
+                    document.getElementById('authError').classList.add('hidden');
+                    startDataSubscription();
+                } else {
+                    document.getElementById('authError').innerText = "⚠️ 您沒有存取權限，請換個帳號試試。";
+                    document.getElementById('authError').classList.remove('hidden');
+                    signOut(auth);
+                }
+            } else {
+                document.getElementById('authPage').classList.remove('hidden');
+                document.getElementById('mainApp').classList.add('hidden');
+                if (snapshotUnsubscribe) {
+                    snapshotUnsubscribe();
+                    snapshotUnsubscribe = null;
+                }
+            }
+            lucide.createIcons();
+        });
 
-    function searchVendor(val) {
-        const resultsDiv = document.getElementById('searchResults');
-        if (!val) { resultsDiv.style.display = 'none'; return; }
-        const filtered = vendors.filter(v => v.name.includes(val) || v.owner.includes(val) || (v.account && v.account.includes(val)));
-        if (filtered.length > 0) {
-            resultsDiv.innerHTML = filtered.map(v => `
-                <div class="search-item" onclick="selectVendor('${v.name}', '${v.bankCode}', '${v.account}', '${v.owner}')">
-                    <div><strong>${v.name}</strong> (${v.owner})</div>
-                    <div style="font-size:0.8rem; color:#666">行庫：${v.bankCode || ''} | 帳號：${v.account || ''}</div>
-                </div>
-            `).join('');
-            resultsDiv.style.display = 'block';
-        } else {
-            resultsDiv.style.display = 'none';
-        }
-    }
-
-    function selectVendor(name, bank, acc, owner) {
-        document.getElementById('vendorSearch').value = name;
-        document.getElementById('tempBankCode').value = bank || "";
-        document.getElementById('tempAccount').value = acc || "";
-        document.getElementById('tempOwner').value = owner || "";
-        document.getElementById('searchResults').style.display = 'none';
-
-        const lastRecord = [...db].reverse().find(r => r.owner === owner);
-        if (lastRecord && lastRecord.settings) {
-            const s = lastRecord.settings;
-            if (s.docType) setDocType(s.docType);
-            if (s.taxMode) setTaxMode(s.taxMode);
-            // 修改：強制忽略廠商設定中的含稅計算基準
-            currentCalcBase = '未稅'; 
-            document.getElementById('cleanCheck').checked = s.cleanCheck;
-            document.getElementById('cleanRate').value = s.cleanRate;
-            document.getElementById('retentionCheck').checked = s.retentionCheck;
-            document.getElementById('retentionRate').value = s.retentionRate;
-            if(s.isTaxInclusiveRetention !== undefined) document.getElementById('isTaxInclusiveRetention').checked = s.isTaxInclusiveRetention;
-            document.getElementById('p1Pct').value = s.p1Pct;
-            document.getElementById('p1Mon').value = s.p1Mon;
-            document.getElementById('p2Pct').value = s.p2Pct;
-            document.getElementById('p2Mon').value = s.p2Mon;
-            calculate(); 
-        }
-    }
-
-    function copyLastPart(btn) {
-        const note = document.getElementById('workNote').value.trim();
-        if (!note) return;
-        const parts = note.split('-');
-        let copyText = parts[parts.length - 1].trim();
-        const adjAmt = parseFloat(document.getElementById('adjustmentAmount').value) || 0;
-        const adjNote = document.getElementById('adjustmentNote').value.trim();
-        if (adjAmt !== 0 && adjNote) {
-            const sign = adjAmt > 0 ? "+" : ""; 
-            copyText += `${sign}${adjNote}${adjAmt}元`;
-        }
-        const textArea = document.createElement("textarea");
-        textArea.value = copyText;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            const originalText = btn.innerText;
-            btn.innerText = "✅ 已複製";
-            setTimeout(() => { btn.innerText = originalText; }, 1200);
-        } catch (err) {}
-        document.body.removeChild(textArea);
-    }
-
-    function exportFullBackup() {
-        const backupData = { paymentRecords: db, vendorList: vendors, backupDate: new Date().toISOString() };
-        const blob = new Blob([JSON.stringify(backupData)], { type: 'application/json' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `工程系統全備份_${new Date().toLocaleDateString().replace(/\//g,'-')}.json`;
-        link.click();
-    }
-
-    function importFullBackup(input) {
-        const file = input.files[0];
-        if (!file) return;
-        if (!confirm("還原系統將會蓋掉目前電腦中的所有資料，確定要繼續嗎？")) { input.value = ""; return; }
-        const reader = new FileReader();
-        reader.onload = function(e) {
+        window.handleLogin = async () => {
+            const errorEl = document.getElementById('authError');
+            errorEl.classList.add('hidden');
             try {
-                const imported = JSON.parse(e.target.result);
-                if (imported.paymentRecords && imported.vendorList) {
-                    db = imported.paymentRecords;
-                    vendors = imported.vendorList;
-                    localStorage.setItem('paymentRecords', JSON.stringify(db));
-                    localStorage.setItem('vendorList', JSON.stringify(vendors));
-                    alert("系統還原成功！");
-                    location.reload();
-                } else { alert("備份檔案格式不正確。"); }
-            } catch (err) { alert("讀取檔案失敗：" + err); }
-        };
-        reader.readAsText(file);
-    }
-
-    function autoFillRecordsByOwner() {
-        let count = 0;
-        db.forEach(item => {
-            if ((!item.bank || !item.acc) && item.owner) {
-                const match = vendors.find(v => v.owner === item.owner.trim());
-                if (match) {
-                    item.bank = match.bankCode;
-                    item.acc = match.account;
-                    count++;
-                }
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Login failed", error);
+                errorEl.innerText = `⚠️ 登入失敗！\n錯誤代碼: ${error.code}\n請檢查 Firebase Console 是否啟動 Google 登入並加入授權網域。`;
+                errorEl.classList.remove('hidden');
             }
-        });
-        if (count > 0) {
-            localStorage.setItem('paymentRecords', JSON.stringify(db));
-            renderTable();
-            alert(`成功補齊 ${count} 筆匯款資料！`);
-        } else { alert("未找到相符戶名的廠商資料。"); }
-    }
+        };
 
-    function manualAddVendor() {
-        const name = document.getElementById('newVName').value.trim();
-        const bank = document.getElementById('newVBank').value.trim();
-        const acc = document.getElementById('newVAcc').value.trim();
-        const owner = document.getElementById('newVOwner').value.trim();
-        if(!name || !acc) { alert("廠商名稱與帳號為必填！"); return; }
-        vendors.push({ id: Date.now() + Math.random(), name, bankCode: bank, account: acc, owner });
-        localStorage.setItem('vendorList', JSON.stringify(vendors));
-        renderVendorTable();
-        ['newVName', 'newVBank', 'newVAcc', 'newVOwner'].forEach(id => document.getElementById(id).value = "");
-        alert("廠商新增成功！");
-    }
+        window.handleLogout = () => {
+            if (confirm('確定要登出嗎？')) {
+                signOut(auth);
+            }
+        };
 
-    function importVendorCSV(input) {
-        const file = input.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const text = e.target.result;
-            const rows = text.split('\n').filter(r => r.trim() !== "");
-            rows.slice(1).forEach(row => {
-                const cols = row.split(',').map(s => s.trim().replace(/^="|"$/g, '').replace(/^'/, ''));
-                if (cols.length >= 4) {
-                    vendors.push({ id: Date.now() + Math.random(), name: cols[0], bankCode: cols[1], account: cols[2], owner: cols[3] });
-                }
+        function startDataSubscription() {
+            if (snapshotUnsubscribe) return;
+            snapshotUnsubscribe = onSnapshot(recordsCol, (snap) => {
+                allRecords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                updateDatalists();
+                filterRecords();
             });
-            localStorage.setItem('vendorList', JSON.stringify(vendors));
-            renderVendorTable();
-            alert("匯入成功！");
-            input.value = "";
-        };
-        reader.readAsText(file, 'UTF-8');
-    }
-
-    function exportVendorExcel() {
-        if(vendors.length === 0) return alert("目前無廠商資料可匯出");
-        let csvContent = "\ufeff廠商名稱,解款行,帳號,戶名\n";
-        vendors.forEach(v => {
-            csvContent += `"${v.name}","${v.bankCode || ''}","${v.account || ''}","${v.owner || ''}"\n`;
-        });
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `廠商資料庫_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`;
-        link.click();
-    }
-
-    function renderVendorTable() {
-        const tbody = document.getElementById('vendorTableBody');
-        tbody.innerHTML = vendors.map(v => `
-            <tr>
-                <td><span class="editable" onblur="updateVendorField('${v.id}', 'name', this.innerText)" contenteditable="true">${v.name}</span></td>
-                <td><span class="editable" onblur="updateVendorField('${v.id}', 'bankCode', this.innerText)" contenteditable="true">${v.bankCode || ''}</span></td>
-                <td><span class="editable" onblur="updateVendorField('${v.id}', 'account', this.innerText)" contenteditable="true">${v.account || ''}</span></td>
-                <td><span class="editable" onblur="updateVendorField('${v.id}', 'owner', this.innerText)" contenteditable="true">${v.owner || ''}</span></td>
-                <td class="action-cell">
-                    <button class="btn-del" onclick="deleteVendor('${v.id}')">×</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function updateVendorField(id, field, value) {
-        const idx = vendors.findIndex(v => v.id == id);
-        if(idx !== -1) { vendors[idx][field] = value.trim(); localStorage.setItem('vendorList', JSON.stringify(vendors)); }
-    }
-
-    function deleteVendor(id) {
-        if(confirm("確定刪除此廠商？")) { vendors = vendors.filter(v => v.id != id); localStorage.setItem('vendorList', JSON.stringify(vendors)); renderVendorTable(); }
-    }
-
-    function clearVendors() {
-        if(confirm("確定清空所有廠商資料？")) { vendors = []; localStorage.removeItem('vendorList'); renderVendorTable(); }
-    }
-
-    function switchPage(pageId, btn) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-        btn.classList.add('active');
-        if(pageId === 'listPage') { initMonthFilter(); renderTable(); }
-        if(pageId === 'vendorPage') { renderVendorTable(); }
-    }
-
-    function calculate(isManualRetention = false, isManualClean = false, isManualRaw = false, isManualTax = false) {
-        const inputVal = parseFloat(document.getElementById('inputAmount').value) || 0;
-        const rawInput = document.getElementById('rawAmount');
-        const taxInput = document.getElementById('taxAmount');
-        const retentionInput = document.getElementById('retentionAmount');
-        const cleanFeeInput = document.getElementById('cleanFeeAmount');
-        const adj = parseFloat(document.getElementById('adjustmentAmount').value) || 0;
-        const adjNote = document.getElementById('adjustmentNote').value || "加扣款";
-        
-        const retentionCheck = document.getElementById('retentionCheck');
-        const isTaxInclusiveRetention = document.getElementById('isTaxInclusiveRetention');
-        const taxInclusiveLabel = document.getElementById('taxInclusiveRetentionLabel');
-        
-        if (!retentionCheck.checked) {
-            isTaxInclusiveRetention.checked = false;
-            isTaxInclusiveRetention.disabled = true;
-            taxInclusiveLabel.classList.add('disabled');
-        } else {
-            isTaxInclusiveRetention.disabled = false;
-            taxInclusiveLabel.classList.remove('disabled');
         }
-        
-        const isTaxInclusiveRetentionChecked = isTaxInclusiveRetention.checked;
-        
-        let raw = 0;
-        let tax = 0;
 
-        if (isManualRaw || isManualTax) {
-            raw = parseFloat(rawInput.value) || 0;
-            tax = parseFloat(taxInput.value) || 0;
-        } else {
-            if (currentDocType === '發票') {
-                if (currentTaxMode === '未稅') {
-                    raw = inputVal;
-                    tax = Math.round(raw * 0.05);
-                } else {
-                    raw = Math.round(inputVal / 1.05);
-                    tax = inputVal - raw;
-                }
-            } else {
-                raw = inputVal;
-                tax = 0;
-            }
-            rawInput.value = raw || "";
-            taxInput.value = tax || "";
-        }
-        
-        const total = raw + tax;
-        const hasClean = document.getElementById('cleanCheck').checked;
-        const cRate = parseFloat(document.getElementById('cleanRate').value) || 0;
-        // 修改：硬編碼鎖定為使用未稅基準
-        const baseForDeduction = raw;
+        document.getElementById('monthFilter').value = new Date().toISOString().substring(0, 7);
 
-        let cleanFee = 0;
-        if (hasClean) {
-            cleanFee = isManualClean ? (parseFloat(cleanFeeInput.value) || 0) : Math.round(baseForDeduction * (cRate / 100));
-        }
-        if(!isManualClean) cleanFeeInput.value = cleanFee || "";
-
-        const subtotal = baseForDeduction - cleanFee;
-        const hasRetention = retentionCheck.checked;
-        const rRate = parseFloat(document.getElementById('retentionRate').value) || 0;
-        let retention = hasRetention ? (isManualRetention ? (parseFloat(retentionInput.value) || 0) : Math.round(subtotal * (rRate / 100))) : 0;
-        
-        if(!isManualRetention) retentionInput.value = retention || "";
-        
-        let net = 0;
-        let appliedTaxForCalculation = tax; 
-
-        // 修改：邏輯固定為未稅基準
-        const amountBeforeTax = subtotal - retention;
-        appliedTaxForCalculation = (currentDocType === '發票' && !isManualTax) ? Math.round(amountBeforeTax * 0.05) : tax;
-        net = amountBeforeTax + appliedTaxForCalculation + adj;
-        
-        lastCalcState = { 
-            raw, 
-            tax: appliedTaxForCalculation, 
-            total, 
-            cRate, 
-            cleanFee, 
-            subtotal, 
-            rRate, 
-            retention, 
-            adj, 
-            adjNote, 
-            isTaxInclusiveRetention: isTaxInclusiveRetentionChecked, 
-            calcBase: '未稅', 
-            cleanCheck: hasClean, 
-            retentionCheck: hasRetention,
-            isManualClean: isManualClean,
-            isManualRetention: isManualRetention,
-            isManualNet: false
-        };
-        
-        document.getElementById('netAmount').value = net;
-        renderFormula(net);
-        renderDetail();
-    }
-
-    function updateFormulaOnly() {
-        const manualNet = parseFloat(document.getElementById('netAmount').value) || 0;
-        lastCalcState.isManualNet = true;
-        lastCalcState.net = manualNet;
-        renderFormula(manualNet);
-        renderDetail();
-    }
-
-    function renderFormula(currentNet) {
-        let html = "";
-        const state = lastCalcState;
-        const isRetentionChecked = state.isTaxInclusiveRetention;
-        
-        const forceTaxView = document.getElementById('forceTaxInclusiveView').checked;
-        const logicBase = forceTaxView ? '含稅' : '未稅';
-
-        let currentStep = 1;
-        const getCircleNum = () => {
-            const circles = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨'];
-            return circles[currentStep++ - 1] || `${currentStep++}`;
+        window.showPage = (id) => {
+            document.getElementById('formPage').classList.toggle('hidden', id !== 'formPage');
+            document.getElementById('listPage').classList.toggle('hidden', id !== 'listPage');
+            lucide.createIcons(); 
         };
 
-        const displayRaw = state.raw;
-        if (logicBase === '含稅') {
-            html += `<div class="formula-row"><span class="formula-num">${getCircleNum()}</span><span>總金額：${fmt.format(displayRaw)}+稅${fmt.format(state.total - displayRaw)}=<strong>${fmt.format(state.total)}</strong></span></div>`;
-        } else {
-            html += `<div class="formula-row"><span class="formula-num">${getCircleNum()}</span><span>未稅金額：<strong>${fmt.format(displayRaw)}</strong></span></div>`;
-        }
-
-        const baseVal = (logicBase === '含稅') ? state.total : displayRaw;
-
-        let visualSubtotal = baseVal;
-        if (state.cleanCheck) {
-            const displayCleanFee = state.cleanFee;
-            // 修改：優化手動調整的顯示格式
-            let cleanSource = "";
-            if (state.isManualClean) {
-                cleanSource = `<strong>-${fmt.format(displayCleanFee)}</strong><small style="font-size: 0.85em; color: #666;">(手動調整)</small>`;
-                html += `<div class="formula-row"><span class="formula-num">${getCircleNum()}</span><span>清潔費：${cleanSource}</span></div>`;
-            } else {
-                cleanSource = `${fmt.format(baseVal)} × ${state.cRate}% = <strong>-${fmt.format(displayCleanFee)}</strong>`;
-                html += `<div class="formula-row"><span class="formula-num">${getCircleNum()}</span><span>清潔費：${cleanSource}</span></div>`;
-            }
-            visualSubtotal = baseVal - displayCleanFee;
-            html += `<div class="indent-row"><span class="subtotal-line">小計：${fmt.format(baseVal)} - ${fmt.format(displayCleanFee)} = <strong>${fmt.format(visualSubtotal)}</strong></span></div>`;
-        }
-
-        if (state.retentionCheck) {
-            const displayRetention = state.retention;
-            // 修改：優化手動調整的顯示格式
-            if (state.isManualRetention) {
-                html += `<div class="formula-row"><span class="formula-num">${getCircleNum()}</span><span>保留款：<strong>-${fmt.format(displayRetention)}</strong><small style="font-size: 0.85em; color: #666;">(手動調整)</small></span></div>`;
-            } else {
-                html += `<div class="formula-row"><span class="formula-num">${getCircleNum()}</span><span>保留款：${fmt.format(visualSubtotal)} × ${state.rRate}% = <strong>-${fmt.format(displayRetention)}</strong></span></div>`;
-            }
-
-            if (logicBase === '未稅') {
-                const subNet = visualSubtotal - displayRetention;
-                html += `<div class="indent-row"><span class="subtotal-line">淨額：${fmt.format(visualSubtotal)} - ${fmt.format(displayRetention)} = <strong>${fmt.format(subNet)}</strong></span></div>`;
-            }
-        }
-
-        let adjDisplayNum = 0;
-        if (state.adj !== 0) {
-            adjDisplayNum = state.adj;
-            const adjSign = adjDisplayNum > 0 ? "+" : "-";
-            html += `<div class="formula-row"><span class="formula-num">${getCircleNum()}</span><span>加扣款(${state.adjNote})：<strong>${adjSign}${fmt.format(Math.abs(adjDisplayNum))}</strong> <small>(已含稅)</small></span></div>`;
-        }
-
-        html += `<div style="margin: 8px 0; border-top: 1px solid #CCC; width: 80%;"></div>`;
-
-        if (isRetentionChecked) {
-            let finalInvoiceDisplay = 0;
-            if (logicBase === '未稅') {
-                const mainTax = (currentDocType === '發票') ? Math.round(visualSubtotal * 0.05) : 0;
-                finalInvoiceDisplay = visualSubtotal + mainTax + adjDisplayNum;
-            } else {
-                finalInvoiceDisplay = visualSubtotal + adjDisplayNum;
-            }
-            html += `<div class="formula-row"><span class="formula-num">●</span><span>本次發票金額：${fmt.format(finalInvoiceDisplay)} (含保留款)</span></div>`;
-        }
-
-        let payableProcess = "";
-        let finalSumForDisplay = 0;
-        let hasOp = false;
-        
-        if (state.isManualNet) {
-            finalSumForDisplay = currentNet;
-            payableProcess = "手動修改最終金額";
-            hasOp = true;
-        } else {
-            if (logicBase === '含稅') {
-                payableProcess = `${fmt.format(visualSubtotal)}`;
-                finalSumForDisplay = visualSubtotal;
-                
-                const displayRetention = state.retention;
-                if (state.retentionCheck && displayRetention !== 0) { 
-                    payableProcess += `-${fmt.format(displayRetention)}`; 
-                    finalSumForDisplay -= displayRetention;
-                    hasOp = true;
-                }
-                if (adjDisplayNum !== 0) { 
-                    payableProcess += `${adjDisplayNum > 0 ? '+' : '-'}${fmt.format(Math.abs(adjDisplayNum))}`; 
-                    finalSumForDisplay += adjDisplayNum;
-                    hasOp = true;
-                }
-            } else {
-                const displayRetention = state.retention;
-                if (state.retentionCheck && displayRetention !== 0) {
-                    payableProcess = `(${fmt.format(visualSubtotal)}-${fmt.format(displayRetention)})`;
-                    hasOp = true;
-                } else {
-                    payableProcess = `${fmt.format(visualSubtotal)}`;
-                }
-                
-                finalSumForDisplay = visualSubtotal - displayRetention;
-                const visualTax = (currentDocType === '發票') ? Math.round((visualSubtotal - displayRetention) * 0.05) : 0;
-                
-                if (visualTax > 0) { 
-                    payableProcess += `+稅${fmt.format(visualTax)}`; 
-                    finalSumForDisplay += visualTax;
-                    hasOp = true;
-                }
-                if (adjDisplayNum !== 0) { 
-                    payableProcess += `${adjDisplayNum > 0 ? '+' : '-'}${fmt.format(Math.abs(adjDisplayNum))}`; 
-                    finalSumForDisplay += adjDisplayNum;
-                    hasOp = true;
-                }
-            }
-        }
-
-        const finalPayableText = hasOp ? `${payableProcess}=${fmt.format(finalSumForDisplay)}` : fmt.format(finalSumForDisplay);
-        html += `<div class="formula-row"><span class="formula-num">●</span><span style="color: var(--primary); font-weight: bold;">本次應付金額：${finalPayableText}</span></div>`;
-        
-        document.getElementById('processFormula').innerHTML = html;
-        
-        if (!state.isManualNet) {
-            document.getElementById('netAmount').value = finalSumForDisplay;
-        }
-    }
-
-    function copyFormulaText(btn) {
-        const formulaDiv = document.getElementById('processFormula');
-        const rows = formulaDiv.querySelectorAll('.formula-row, .indent-row');
-        let lines = [];
-        
-        rows.forEach(row => {
-            if (row.classList.contains('formula-row')) {
-                const num = row.querySelector('.formula-num').innerText.trim();
-                const text = row.querySelector('span:not(.formula-num)').innerText.trim();
-                lines.push(`${num} ${text}`);
-            } else if (row.classList.contains('indent-row')) {
-                lines.push(`   ${row.innerText.trim()}`);
-            }
-        });
-        
-        const textArea = document.createElement("textarea");
-        textArea.value = lines.join('\n');
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            const originalText = btn.innerText;
-            btn.innerText = "✅ 已成功複製明細";
-            btn.style.background = "#1b5e20";
-            setTimeout(() => { 
-                btn.innerText = originalText; 
-                btn.style.background = "var(--success)";
-            }, 1500);
-        } catch (err) {}
-        document.body.removeChild(textArea);
-    }
-
-    function getCalculatedDate(addMonths, useSlash = true) {
-        const rawBase = document.getElementById('baseDate').value;
-        if (!/^\d{7}$/.test(rawBase)) return "格式錯誤";
-        let year = parseInt(rawBase.substring(0, 3)) + 1911;
-        let month = parseInt(rawBase.substring(3, 5)) - 1;
-        let day = parseInt(rawBase.substring(5, 7));
-        let d = new Date(year, month, day);
-        if (addMonths > 0) {
-            d.setMonth(d.getMonth() + addMonths);
-            d.setDate(15);
-        }
-        const resY = d.getFullYear() - 1911;
-        const resM = (d.getMonth() + 1).toString().padStart(2, '0');
-        const resD = d.getDate().toString().padStart(2, '0');
-        return useSlash ? `${resY}/${resM}/${resD}` : `${resY}${resM}${resD}`;
-    }
-
-    function renderDetail() {
-        const net = parseFloat(document.getElementById('netAmount').value) || 0;
-        const p1Pct = parseFloat(document.getElementById('p1Pct').value) || 0;
-        const pDetail = document.getElementById('paymentDetail');
-        if(net <= 0 || isNaN(p1Pct)) { pDetail.innerHTML = ""; return; }
-        const pay1 = Math.round(net * (p1Pct / 100));
-        const date1 = getCalculatedDate(parseInt(document.getElementById('p1Mon').value || 0), true);
-        let html = `<div class="section-title">付款排程 (預覽)</div><div class="date-line">${date1} &nbsp; $${fmt.format(pay1)}</div>`;
-        if (p1Pct < 100) {
-            const pay2 = net - pay1;
-            const date2 = getCalculatedDate(parseInt(document.getElementById('p2Mon').value || 0), true);
-            html += `<div class="date-line">${date2} &nbsp; $${fmt.format(pay2)}</div>`;
-        }
-        pDetail.innerHTML = html;
-    }
-
-    function saveData() {
-        const net = parseFloat(document.getElementById('netAmount').value) || 0;
-        if (net <= 0 || !document.getElementById('p1Pct').value) { alert("請輸入金額與比例"); return; }
-        const timestamp = Date.now();
-        const saveMonthLabel = `${new Date().getFullYear()}.${(new Date().getMonth()+1).toString().padStart(2, '0')}`;
-        const p1Pct = parseFloat(document.getElementById('p1Pct').value);
-        const pay1 = Math.round(net * (p1Pct / 100));
-        const workNoteElement = document.getElementById('workNote');
-        const workNote = workNoteElement.value || "工程";
-        const hasRetention = document.getElementById('retentionCheck').checked;
-        const rRate = document.getElementById('retentionRate').value;
-        const adjAmt = parseFloat(document.getElementById('adjustmentAmount').value) || 0;
-        const adjNoteText = document.getElementById('adjustmentNote').value.trim();
-        const currentBaseDate = document.getElementById('baseDate').value; 
-        
-        const firstDashIdx = workNote.indexOf('-');
-        const keptPrefix = firstDashIdx !== -1 ? workNote.substring(0, firstDashIdx + 1) : "";
-
-        let baseDesc = workNote;
-        if (hasRetention) baseDesc += `-保留${rRate}%`;
-        if (adjAmt !== 0 && adjNoteText) {
-            const sign = adjAmt > 0 ? "+" : "";
-            baseDesc += `${sign}${adjNoteText}${adjAmt}元`;
-        }
-
-        const isInstallment = p1Pct < 100;
-        const settings = {
-            docType: currentDocType,
-            taxMode: currentTaxMode,
-            calcBase: '未稅', 
-            cleanCheck: document.getElementById('cleanCheck').checked,
-            cleanRate: document.getElementById('cleanRate').value,
-            retentionCheck: document.getElementById('retentionCheck').checked,
-            retentionRate: document.getElementById('retentionRate').value,
-            isTaxInclusiveRetention: document.getElementById('isTaxInclusiveRetention').checked,
-            p1Pct: document.getElementById('p1Pct').value,
-            p1Mon: document.getElementById('p1Mon').value,
-            p2Pct: document.getElementById('p2Pct').value,
-            p2Mon: document.getElementById('p2Mon').value,
-            baseDate: currentBaseDate 
+        window.prepareNewForm = () => {
+            editingId = null;
+            document.getElementById('recordForm').reset();
+            document.getElementById('acDetailsContainer').innerHTML = '';
+            document.getElementById('assistantDetailsContainer').innerHTML = '';
+            document.getElementById('passFrom').value = '';
+            document.getElementById('formNetProfit').value = '$0';
+            toggleAcBrand();
+            updateQuickAssistantTags();
+            updateQuickPassTags();
+            showPage('formPage');
         };
-        const recordBase = { 
-            company: document.getElementById('companySelect').value, 
-            bank: document.getElementById('tempBankCode').value || "", 
-            acc: document.getElementById('tempAccount').value || "", 
-            owner: document.getElementById('tempOwner').value || "", 
-            formula: document.getElementById('processFormula').innerHTML, 
-            saveMonth: saveMonthLabel,
-            settings: settings 
+
+        window.handleAcCountChange = () => {
+            const count = parseInt(document.getElementById('acCount').value) || 0;
+            toggleAcBrand();
+            const container = document.getElementById('acDetailsContainer');
+            if (count > 0 && container.children.length === 0) addAcDetailRow(count);
         };
-        const date1_save = getCalculatedDate(parseInt(document.getElementById('p1Mon').value || 0), false);
-        const item1 = { ...recordBase, id: timestamp + "_1", date: date1_save, desc: isInstallment ? `${baseDesc}(2-1)` : baseDesc, amount: pay1 };
-        db.push(item1);
-        checkedIds.add(item1.id);
-        if (isInstallment) { 
-            const date2_save = getCalculatedDate(parseInt(document.getElementById('p2Mon').value || 0), false);
-            const item2 = { ...recordBase, id: timestamp + "_2", date: date2_save, desc: `${baseDesc}(2-2)`, amount: net - pay1 };
-            db.push(item2); 
-            checkedIds.add(item2.id);
-        }
-        localStorage.setItem('paymentRecords', JSON.stringify(db));
-        clearInputFields(currentBaseDate, currentDocType, currentTaxMode, keptPrefix);
-    }
 
-    function clearInputFields(keptBaseDate, keptDocType, keptTaxMode, keptPrefix) {
-        ['vendorSearch', 'workNote', 'inputAmount', 'rawAmount', 'taxAmount', 'cleanFeeAmount', 'retentionAmount', 'adjustmentNote', 'adjustmentAmount', 'netAmount', 'p1Pct', 'p1Mon', 'p2Pct', 'p2Mon', 'tempBankCode', 'tempAccount', 'tempOwner'].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) {
-                if (id === 'workNote') el.value = keptPrefix || "";
-                else el.value = "";
+        window.toggleAcBrand = () => {
+            document.getElementById('acBrandSection').classList.toggle('hidden', document.getElementById('acCount').value <= 0);
+            lucide.createIcons();
+        };
+
+        window.addAcDetailRow = (val = "") => {
+            const container = document.getElementById('acDetailsContainer');
+            const totalTarget = parseInt(document.getElementById('acCount').value) || 0;
+            if (val === "" && totalTarget > 0) {
+                let currentFilled = 0;
+                document.querySelectorAll('.ac-qty-input').forEach(input => currentFilled += (parseInt(input.value) || 0));
+                val = Math.max(0, totalTarget - currentFilled);
             }
-        });
-        document.getElementById('isTaxInclusiveRetention').checked = false;
-        document.getElementById('forceTaxInclusiveView').checked = false;
-        document.getElementById('processFormula').innerHTML = "請輸入資料...";
-        document.getElementById('paymentDetail').innerHTML = "";
-
-        if (keptBaseDate) document.getElementById('baseDate').value = keptBaseDate;
-        else initBaseDate();
-
-        if (keptDocType) setDocType(keptDocType);
-        if (keptTaxMode) setTaxMode(keptTaxMode);
-    }
-
-    function toggleSort(field) {
-        currentSortOrder = (currentSortOrder === 'asc') ? 'desc' : 'asc';
-        db.sort((a, b) => {
-            let valA = a[field] || "";
-            let valB = b[field] || "";
-            return currentSortOrder === 'asc' ? valA.localeCompare(valB, 'zh-TW') : valB.localeCompare(valA, 'zh-TW');
-        });
-        renderTable();
-    }
-
-    function toggleItem(id, isChecked) {
-        if (isChecked) checkedIds.add(id);
-        else checkedIds.delete(id);
-        updateSummary();
-    }
-
-    function toggleSelectAll(el) {
-        const checkboxes = document.querySelectorAll('.item-check');
-        checkboxes.forEach(cb => {
-            cb.checked = el.checked;
-            toggleItem(cb.dataset.id, el.checked);
-        });
-    }
-
-    function updateSummary() {
-        const filterComp = document.getElementById('filterCompany').value;
-        const filterMonthVal = document.getElementById('filterMonth').value;
-        const filterDateVal = document.getElementById('filterDate').value.trim();
-        const filtered = db.filter(item => {
-            const matchComp = (filterComp === "全部" || item.company === filterComp);
-            const matchMon = (filterMonthVal === "全部" || item.saveMonth === filterMonthVal);
-            const matchDate = (!filterDateVal || item.date.includes(filterDateVal));
-            return matchComp && matchMon && matchDate;
-        });
-        let filteredSum = 0;
-        let checkedSum = 0;
-        filtered.forEach(i => {
-            filteredSum += i.amount;
-            if (checkedIds.has(i.id)) checkedSum += i.amount;
-        });
-        document.getElementById('filteredTotal').innerText = '$' + fmt.format(filteredSum);
-        document.getElementById('checkedTotal').innerText = '$' + fmt.format(checkedSum);
-    }
-
-    function renderTable() {
-        const filterComp = document.getElementById('filterCompany').value;
-        const filterMonthVal = document.getElementById('filterMonth').value;
-        const filterDateVal = document.getElementById('filterDate').value.trim();
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = "";
-        let counter = 1;
-        const filtered = db.filter(item => {
-            const matchComp = (filterComp === "全部" || item.company === filterComp);
-            const matchMon = (filterMonthVal === "全部" || item.saveMonth === filterMonthVal);
-            const matchDate = (!filterDateVal || item.date.includes(filterDateVal));
-            return matchComp && matchMon && matchDate;
-        });
-
-        filtered.forEach(item => {
-            if (!checkedIds.has(item.id) && document.getElementById('selectAll').checked) checkedIds.add(item.id);
-            const tr = document.createElement('tr');
-            tr.className = "draggable-row";
-            tr.dataset.id = item.id;
-            tr.innerHTML = `
-                <td style="text-align:center;"><input type="checkbox" class="item-check" data-id="${item.id}" ${checkedIds.has(item.id) ? 'checked' : ''} onchange="toggleItem('${item.id}', this.checked)"></td>
-                <td style="text-align:center;"><button class="btn-calc" onclick="showFormula('${item.id}')" title="查看計算過程" style="margin-right:0">算</button></td>
-                <td style="text-align:center; color:#555; font-weight:bold;" class="drag-handle" onmousedown="enableDrag(this)" onmouseup="disableDrag(this)">${counter++}</td>
-                <td><span class="editable" onblur="updateField('${item.id}', 'date', this.innerText)" contenteditable="true">${item.date}</span></td>
-                <td class="col-desc"><span class="editable" onblur="updateField('${item.id}', 'desc', this.innerText)" contenteditable="true">${item.desc}</span></td>
-                <td class="amount-cell"><span class="editable" onblur="updateAmountField('${item.id}', this)" contenteditable="true">${fmt.format(item.amount)}</span></td>
-                <td class="col-bank"><span class="editable" onblur="updateField('${item.id}', 'bank', this.innerText)" contenteditable="true">${item.bank || ''}</span></td>
-                <td class="col-acc"><span class="editable" onblur="updateField('${item.id}', 'acc', this.innerText)" contenteditable="true">${item.acc || ''}</span></td>
-                <td><span class="editable" onblur="updateField('${item.id}', 'owner', this.innerText)" contenteditable="true">${item.owner || ''}</span></td>
-                <td><span class="editable" onblur="updateField('${item.id}', 'company', this.innerText)" contenteditable="true">${item.company || ''}</span></td>
-                <td class="action-cell">
-                    <button class="btn-del" onclick="deleteRecord('${item.id}')">×</button>
-                </td>
+            const div = document.createElement('div');
+            div.className = "grid grid-cols-12 gap-2 items-center ac-detail-row mb-2";
+            div.innerHTML = `
+                <div class="col-span-5"><input type="text" placeholder="廠牌" class="ac-brand-input w-full rounded-lg p-2 border border-emerald-100 text-sm"></div>
+                <div class="col-span-3"><input type="number" value="${val}" onfocus="this.select()" oninput="calcTotalFromDetails()" class="ac-qty-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold"></div>
+                <div class="col-span-3"><input type="number" placeholder="單價" onfocus="this.select()" oninput="calcTotalFromDetails()" class="ac-price-input w-full rounded-lg p-2 border border-emerald-100 text-sm"></div>
+                <div class="col-span-1 text-center"><button type="button" onclick="this.parentElement.parentElement.remove(); calcTotalFromDetails();" class="text-rose-400 font-bold text-lg">&times;</button></div>
             `;
-            tr.ondragstart = (e) => { e.dataTransfer.setData('text/plain', item.id); e.target.classList.add('dragging'); };
-            tr.ondragend = (e) => { e.target.classList.remove('dragging'); tr.draggable = false; removeDragOverStyles(); };
-            tr.ondragover = (e) => { e.preventDefault(); tr.classList.add('drag-over'); };
-            tr.ondragleave = (e) => { tr.classList.remove('drag-over'); };
-            tr.ondrop = (e) => { e.preventDefault(); handleDrop(e.dataTransfer.getData('text/plain'), item.id); };
-            tbody.appendChild(tr);
-        });
-        updateSummary();
-    }
+            container.appendChild(div);
+        };
 
-    function enableDrag(el) { el.parentElement.draggable = true; }
-    function disableDrag(el) { el.parentElement.draggable = false; }
-    function removeDragOverStyles() { document.querySelectorAll('.draggable-row').forEach(row => row.classList.remove('drag-over')); }
-    function handleDrop(draggedId, targetId) {
-        if (draggedId === targetId) return;
-        const dragIdx = db.findIndex(i => i.id === draggedId);
-        const targetIdx = db.findIndex(i => i.id === targetId);
-        const [draggedItem] = db.splice(dragIdx, 1);
-        db.splice(targetIdx, 0, draggedItem);
-        localStorage.setItem('paymentRecords', JSON.stringify(db));
-        renderTable();
-    }
-    function showFormula(id) {
-        const record = db.find(i => i.id === id);
-        if(record) { document.getElementById('modalBody').innerHTML = record.formula; document.getElementById('infoModal').style.display = 'flex'; }
-    }
-    function updateField(id, field, value) {
-        const idx = db.findIndex(i => i.id === id);
-        if(idx !== -1) { db[idx][field] = value.trim(); localStorage.setItem('paymentRecords', JSON.stringify(db)); }
-    }
-    function updateAmountField(id, el) {
-        const idx = db.findIndex(i => i.id === id);
-        if(idx !== -1) {
-            let val = parseInt(el.innerText.replace(/,/g, '')) || 0;
-            db[idx].amount = val; localStorage.setItem('paymentRecords', JSON.stringify(db));
-            el.innerText = fmt.format(val);
-            updateSummary();
+        window.calcTotalFromDetails = () => {
+            let total = 0;
+            document.querySelectorAll('.ac-detail-row').forEach(row => {
+                const qty = parseInt(row.querySelector('.ac-qty-input').value) || 0;
+                const price = parseInt(row.querySelector('.ac-price-input').value) || 0;
+                total += (qty * price);
+            });
+            if (total > 0) {
+                document.getElementById('totalAmount').value = total;
+                calcFormNet();
+            }
+        };
+
+        window.addAssistantRow = (name = "", amount = "") => {
+            const container = document.getElementById('assistantDetailsContainer');
+            const div = document.createElement('div');
+            div.className = "grid grid-cols-12 gap-2 items-center assistant-detail-row mb-2";
+            div.innerHTML = `
+                <div class="col-span-6"><input type="text" value="${name}" list="assistantNamesList" placeholder="名字" class="as-name-input w-full rounded-lg p-2 border border-rose-100 text-sm" oninput="updateQuickAssistantTags()"></div>
+                <div class="col-span-5"><input type="number" value="${amount}" onfocus="this.select()" oninput="calcAssistantTotal()" class="as-amount-input w-full rounded-lg p-2 border border-rose-100 text-sm font-bold text-rose-600"></div>
+                <div class="col-span-1 text-center"><button type="button" onclick="this.parentElement.parentElement.remove(); calcAssistantTotal(); updateQuickAssistantTags();" class="text-rose-400 font-bold text-lg">&times;</button></div>
+            `;
+            container.appendChild(div);
+            updateQuickAssistantTags();
+            calcAssistantTotal();
+        };
+
+        window.calcAssistantTotal = () => {
+            let total = 0;
+            document.querySelectorAll('.as-amount-input').forEach(input => total += (parseInt(input.value) || 0));
+            document.getElementById('assistantPay').value = total;
+            calcFormNet();
+        };
+
+        window.calcFormNet = () => {
+            const rev = parseInt(document.getElementById('totalAmount').value) || 0;
+            const exp = parseInt(document.getElementById('assistantPay').value) || 0;
+            document.getElementById('formNetProfit').value = `$${(rev - exp).toLocaleString()}`;
+        };
+
+        window.updateQuickAssistantTags = () => {
+            const container = document.getElementById('quickAssistantTags');
+            const currentNamesInForm = Array.from(document.querySelectorAll('.as-name-input')).map(input => input.value.trim());
+            const availableNames = knownAssistantNames.filter(name => !currentNamesInForm.includes(name));
+            if (availableNames.length === 0) {
+                container.innerHTML = '<span class="text-[10px] text-rose-300">無更多常用名字</span>';
+                return;
+            }
+            container.innerHTML = availableNames.map(name => `
+                <button type="button" onclick="addAssistantRow('${name}')" class="px-2 py-1 bg-white border border-rose-200 text-rose-600 rounded text-[10px] hover:bg-rose-50 transition-colors font-medium">+ ${name}</button>
+            `).join('');
+        };
+
+        window.updateQuickPassTags = () => {
+            const container = document.getElementById('quickPassTags');
+            const currentName = document.getElementById('passFrom').value.trim();
+            const availableNames = knownPassNames.filter(name => name !== currentName);
+            if (availableNames.length === 0) {
+                container.innerHTML = '<span class="text-[10px] text-indigo-300">尚無常用對象</span>';
+                return;
+            }
+            container.innerHTML = availableNames.map(name => `
+                <button type="button" onclick="document.getElementById('passFrom').value='${name}'; updateQuickPassTags();" class="px-2 py-1 bg-white border border-indigo-200 text-indigo-600 rounded text-[10px] hover:bg-indigo-50 transition-colors font-medium">${name}</button>
+            `).join('');
+        };
+
+        window.toggleDone = async (id, currentStatus) => {
+            await updateDoc(doc(db, "cleaningRecords", id), { status: currentStatus === 'completed' ? 'pending' : 'completed' });
+        };
+
+        window.togglePayment = async (id, currentPayment) => {
+            await updateDoc(doc(db, "cleaningRecords", id), { payment: currentPayment === 'paid' ? 'unpaid' : 'paid' });
+        };
+
+        document.getElementById('recordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const totalAc = parseInt(document.getElementById('acCount').value) || 0;
+            let acDetailTotal = 0; let acDetailsArray = [];
+            document.querySelectorAll('.ac-detail-row').forEach(row => {
+                const brand = row.querySelector('.ac-brand-input').value.trim();
+                const qty = parseInt(row.querySelector('.ac-qty-input').value) || 0;
+                const price = row.querySelector('.ac-price-input').value;
+                acDetailTotal += qty;
+                if (brand || qty > 0) acDetailsArray.push(`${brand || '機型未填'}-${qty}台${price ? `*${price}元` : ''}`);
+            });
+            if (totalAc > 0 && acDetailTotal !== totalAc) { alert(`⚠️ 明細台數不符！`); return; }
+
+            let assistantArray = [];
+            document.querySelectorAll('.assistant-detail-row').forEach(row => {
+                const n = row.querySelector('.as-name-input').value.trim();
+                const a = row.querySelector('.as-amount-input').value;
+                if (n && a) assistantArray.push(`${n}:${a}`);
+            });
+
+            const record = {
+                bookingTime: document.getElementById('bookingTime').value,
+                customerName: document.getElementById('customerName').value,
+                phone: document.getElementById('phone').value || "",
+                address: document.getElementById('address').value || "",
+                acCount: totalAc, acBrand: acDetailsArray.join('+'),
+                assistantDetail: assistantArray.join(','),
+                passFrom: document.getElementById('passFrom').value.trim(),
+                wmCount: parseInt(document.getElementById('wmCount').value) || 0,
+                wtCount: parseInt(document.getElementById('wtCount').value) || 0,
+                totalAmount: parseInt(document.getElementById('totalAmount').value) || 0,
+                assistantPay: parseInt(document.getElementById('assistantPay').value) || 0,
+                note: document.getElementById('note').value || ''
+            };
+
+            try {
+                if (editingId) {
+                    const original = allRecords.find(r => r.id === editingId);
+                    record.status = original.status; record.payment = original.payment;
+                    await updateDoc(doc(db, "cleaningRecords", editingId), record);
+                    editingId = null;
+                } else {
+                    record.status = 'pending'; record.payment = 'unpaid';
+                    await addDoc(recordsCol, record);
+                }
+                prepareNewForm();
+                showPage('listPage');
+            } catch (err) { alert('儲存失敗'); }
+        });
+
+        function updateDatalists() {
+            const asNames = new Set();
+            const psNames = new Set();
+            allRecords.forEach(r => { 
+                if (r.assistantDetail) {
+                    r.assistantDetail.split(',').forEach(s => {
+                        const name = s.split(':')[0];
+                        if (name) asNames.add(name);
+                    });
+                } 
+                if (r.passFrom) psNames.add(r.passFrom);
+            });
+            knownAssistantNames = Array.from(asNames).sort();
+            knownPassNames = Array.from(psNames).sort();
+            document.getElementById('assistantNamesList').innerHTML = knownAssistantNames.map(n => `<option value="${n}">`).join('');
+            document.getElementById('passNamesList').innerHTML = knownPassNames.map(n => `<option value="${n}">`).join('');
+            updateQuickAssistantTags();
+            updateQuickPassTags();
         }
-    }
-    function deleteRecord(id) { if(confirm("確定刪除？")) { db = db.filter(i => i.id !== id); checkedIds.delete(id); localStorage.setItem('paymentRecords', JSON.stringify(db)); renderTable(); } }
-    function clearData() { if(confirm("【警告】確定要清空所有的付款排程資料嗎？此操作不可還原。")) { db = []; checkedIds.clear(); localStorage.removeItem('paymentRecords'); renderTable(); } }
-    
-    function copyToClipboard(type, btn) {
-        const filterComp = document.getElementById('filterCompany').value;
-        const filterMonthVal = document.getElementById('filterMonth').value;
-        const filterDateVal = document.getElementById('filterDate').value.trim();
-        const filtered = db.filter(item => {
-            const matchComp = (filterComp === "全部" || item.company === filterComp);
-            const matchMon = (filterMonthVal === "全部" || item.saveMonth === filterMonthVal);
-            const matchDate = (!filterDateVal || item.date.includes(filterDateVal));
-            return matchComp && matchMon && matchDate && checkedIds.has(item.id);
-        });
-        if (filtered.length === 0) return;
-        
-        const grouped = [];
-        const processedIds = new Set();
 
-        for (let i = 0; i < filtered.length; i++) {
-            const item = filtered[i];
-            if (processedIds.has(item.id)) continue;
+        window.toggleAssistantModal = (title = "小幫手薪資總計 (全期)", records = allRecords) => {
+            const modal = document.getElementById('assistantSummaryModal');
+            const overlay = document.getElementById('assistantSummaryOverlay');
+            const titleEl = document.getElementById('assistantModalTitle');
+            const isHidden = modal.classList.contains('hidden');
+            if (isHidden) {
+                titleEl.innerText = title;
+                renderAssistantSummary(records);
+                modal.classList.remove('hidden');
+                overlay.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+                overlay.classList.add('hidden');
+            }
+            lucide.createIcons();
+        };
 
-            const isYaDing = (item.owner && item.owner.includes("亞鼎營造")) || (item.desc && item.desc.includes("-亞鼎-"));
-            let mergedItem = { ...item };
+        // 三個快速開啟浮窗的入口
+        window.showAllAssistantDetails = () => {
+            toggleAssistantModal("小幫手薪資總計 (全期)", allRecords);
+        };
+        window.showYearAssistantDetails = () => {
+            const title = document.getElementById('yearTitle').innerText;
+            toggleAssistantModal(`${title} 小幫手薪資`, currentYearRecords);
+        };
+        window.showMonthAssistantDetails = () => {
+            const title = document.getElementById('monthTitle').innerText;
+            toggleAssistantModal(`${title} 小幫手薪資`, currentMonthRecords);
+        };
+
+        function renderAssistantSummary(records) {
+            const summary = {};
+            let unclassified = 0;
+            records.forEach(r => {
+                const totalPay = parseInt(r.assistantPay) || 0;
+                if (totalPay <= 0) return;
+                if (r.assistantDetail) {
+                    const details = r.assistantDetail.split(',');
+                    details.forEach(detail => {
+                        const [name, amount] = detail.split(':');
+                        const amt = parseInt(amount) || 0;
+                        if (name) { summary[name] = (summary[name] || 0) + amt; } 
+                        else { unclassified += amt; }
+                    });
+                } else { unclassified += totalPay; }
+            });
+            const container = document.getElementById('assistantSummaryList');
+            let html = "";
+            const sortedNames = Object.keys(summary).sort((a, b) => summary[b] - summary[a]);
+            sortedNames.forEach(name => {
+                html += `
+                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span class="font-bold text-slate-700 flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-slate-400"></i>${name}</span>
+                    <span class="font-black text-rose-500">$${summary[name].toLocaleString()}</span>
+                </div>`;
+            });
+            if (unclassified > 0) {
+                html += `
+                <div class="flex justify-between items-center bg-amber-50 p-3 rounded-xl border border-amber-100">
+                    <span class="font-bold text-amber-700 flex items-center gap-2"><i data-lucide="help-circle" class="w-4 h-4 text-amber-400"></i>未分類 / 舊紀錄</span>
+                    <span class="font-black text-amber-600">$${unclassified.toLocaleString()}</span>
+                </div>`;
+            }
+            if (html === "") html = "<p class='text-center text-slate-400 py-4'>該期間尚無小幫手支出紀錄</p>";
+            container.innerHTML = html;
+        }
+
+        window.copyText = (text, btn) => {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="check" class="text-emerald-500 w-[10px] h-[10px]"></i>';
+                lucide.createIcons();
+                setTimeout(() => { btn.innerHTML = originalHTML; lucide.createIcons(); }, 1500);
+            });
+        };
+
+        window.clearMonthFilter = () => {
+            document.getElementById('monthFilter').value = "";
+            filterRecords();
+        };
+
+        window.filterRecords = () => {
+            const kw = document.getElementById('searchKeyword').value.toLowerCase();
+            const mon = document.getElementById('monthFilter').value;
+            const type = document.getElementById('typeFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const payment = document.getElementById('paymentFilter').value;
+
+            // 統計數據變數 (僅受時間過濾影響，不受關鍵字影響)
+            let mRev = 0, mExp = 0, mAc = 0, mWm = 0, mWt = 0;
+            let yRev = 0, yExp = 0, yAc = 0, yWm = 0, yWt = 0;
+            let aAc = 0, aWm = 0, aWt = 0, aRev = 0, aExp = 0;
+            let mUnpaidDetails = []; 
+            let mPassSummary = {}; 
+            let yPassSummary = {}; 
             
-            if (isYaDing) {
-                const projectSite = item.desc.split('-')[0];
-                let mergeCandidates = [item];
+            // 重置篩選快取
+            currentYearRecords = [];
+            currentMonthRecords = [];
 
-                for (let j = i + 1; j < filtered.length; j++) {
-                    const nextItem = filtered[j];
-                    if (processedIds.has(nextItem.id)) continue;
-                    
-                    const nextIsYaDing = (nextItem.owner && nextItem.owner.includes("亞鼎營造")) || (nextItem.desc && nextItem.desc.includes("-亞鼎-"));
-                    const nextProjectSite = nextItem.desc.split('-')[0];
-                    
-                    if (nextIsYaDing && nextItem.date === item.date && nextProjectSite === projectSite && nextItem.company === item.company) {
-                        mergeCandidates.push(nextItem);
+            const filterYear = mon ? mon.split('-')[0] : new Date().getFullYear().toString();
+            const filterMonthName = mon ? mon.split('-')[1] : "全部";
+            document.getElementById('yearTitle').innerText = `${filterYear} 年度統計`;
+            document.getElementById('monthTitle').innerText = mon ? `${filterMonthName} 月份統計` : "全期統計";
+
+            allRecords.forEach(r => {
+                // 全部累積計算
+                aAc += (r.acCount || 0); aWm += (r.wmCount || 0); aWt += (r.wtCount || 0);
+                aRev += (r.totalAmount || 0); aExp += (r.assistantPay || 0);
+
+                const iY = r.bookingTime.split('-')[0];
+                const iM = r.bookingTime.substring(0, 7);
+                const iQty = (r.acCount || 0) + (r.wmCount || 0) + (r.wtCount || 0);
+
+                // 年度統計計算 (不受列表篩選影響)
+                if (iY === filterYear) { 
+                    currentYearRecords.push(r);
+                    yRev += r.totalAmount; yExp += r.assistantPay; yAc += (r.acCount || 0); yWm += (r.wmCount || 0); yWt += (r.wtCount || 0); 
+                    if (r.passFrom) {
+                        yPassSummary[r.passFrom] = (yPassSummary[r.passFrom] || { qty: 0, rev: 0, exp: 0 });
+                        yPassSummary[r.passFrom].qty += iQty;
+                        yPassSummary[r.passFrom].rev += r.totalAmount;
+                        yPassSummary[r.passFrom].exp += r.assistantPay;
                     }
                 }
 
-                if (mergeCandidates.length > 1) {
-                    let mergedDesc = mergeCandidates.map(c => `${c.desc}=${fmt.format(c.amount)}`).join('+');
-                    let totalAmount = mergeCandidates.reduce((sum, c) => sum + c.amount, 0);
-                    
-                    mergedItem.desc = mergedDesc;
-                    mergedItem.amount = totalAmount;
-                    
-                    mergeCandidates.forEach(c => processedIds.add(c.id));
-                } else {
-                    processedIds.add(item.id);
+                // 月度統計計算 (不受列表篩選影響)
+                if (!mon || iM === mon) { 
+                    currentMonthRecords.push(r);
+                    mRev += r.totalAmount; mExp += r.assistantPay; mAc += (r.acCount || 0); mWm += (r.wmCount || 0); mWt += (r.wtCount || 0);
+                    if (r.payment === 'unpaid') mUnpaidDetails.push({ id: r.id, name: r.customerName, amount: r.totalAmount });
+                    if (r.passFrom) {
+                        mPassSummary[r.passFrom] = (mPassSummary[r.passFrom] || { qty: 0, rev: 0, exp: 0 });
+                        mPassSummary[r.passFrom].qty += iQty;
+                        mPassSummary[r.passFrom].rev += r.totalAmount;
+                        mPassSummary[r.passFrom].exp += r.assistantPay;
+                    }
                 }
-            } else {
-                processedIds.add(item.id);
+            });
+
+            // 列表資料過濾 (受所有篩選器影響)
+            const baseFiltered = allRecords.filter(i => {
+                const iM = i.bookingTime.substring(0, 7);
+                const searchStr = `${i.customerName} ${i.address} ${i.acBrand} ${i.assistantDetail || ''} ${i.passFrom || ''} ${i.note}`.toLowerCase();
+                
+                const matchSearch = searchStr.includes(kw);
+                const matchMonth = (!mon || iM === mon);
+                const matchType = (type === 'all' || (type === 'ac' && i.acCount > 0) || (type === 'wm' && i.wmCount > 0) || (type === 'wt' && i.wtCount > 0));
+                const matchStatus = (status === 'all' || i.status === status);
+                const matchPayment = (payment === 'all' || i.payment === payment);
+
+                return matchSearch && matchMonth && matchType && matchStatus && matchPayment;
+            });
+
+            // 渲染年度 PASS 統計
+            const passYearSortedKeys = Object.keys(yPassSummary).sort((a,b) => yPassSummary[b].rev - yPassSummary[a].rev);
+            if (passYearSortedKeys.length > 0) {
+                document.getElementById('passYearSummarySection').classList.remove('hidden');
+                let passYearTotalAmt = 0;
+                document.getElementById('passYearSummaryList').innerHTML = passYearSortedKeys.map(k => {
+                    passYearTotalAmt += yPassSummary[k].rev;
+                    const net = yPassSummary[k].rev - yPassSummary[k].exp;
+                    return `
+                    <div class="flex items-center justify-between bg-white py-3 px-2.5 rounded-xl border border-indigo-100 gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-indigo-600 font-bold whitespace-nowrap">${k}</span>
+                            <span class="text-[11px] bg-indigo-50 px-1.5 py-0.5 rounded text-indigo-400 font-bold whitespace-nowrap">${yPassSummary[k].qty}台</span>
+                        </div>
+                        <div class="text-[11px] flex items-center gap-3 text-slate-500 whitespace-nowrap">
+                            <span>收:$${yPassSummary[k].rev.toLocaleString()}</span>
+                            <span>支:$${yPassSummary[k].exp.toLocaleString()}</span>
+                            <span class="font-bold text-indigo-700 bg-indigo-50/50 px-2 py-0.5 rounded">淨:$${net.toLocaleString()}</span>
+                        </div>
+                    </div>`;
+                }).join('');
+                document.getElementById('passYearTotal').innerText = `總額 $${passYearTotalAmt.toLocaleString()}`;
+            } else { document.getElementById('passYearSummarySection').classList.add('hidden'); }
+
+            // 渲染月度 PASS 統計
+            const passSortedKeys = Object.keys(mPassSummary).sort((a,b) => mPassSummary[b].rev - mPassSummary[a].rev);
+            if (passSortedKeys.length > 0) {
+                document.getElementById('passSummarySection').classList.remove('hidden');
+                let passTotalAmt = 0;
+                document.getElementById('passSummaryList').innerHTML = passSortedKeys.map(k => {
+                    passTotalAmt += mPassSummary[k].rev;
+                    const net = mPassSummary[k].rev - mPassSummary[k].exp;
+                    return `
+                    <div class="flex items-center justify-between bg-white py-3 px-2.5 rounded-xl border border-emerald-100 gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-emerald-700 font-bold whitespace-nowrap">${k}</span>
+                            <span class="text-[11px] bg-emerald-50 px-1.5 py-0.5 rounded text-emerald-500 font-bold whitespace-nowrap">${mPassSummary[k].qty}台</span>
+                        </div>
+                        <div class="text-[11px] flex items-center gap-3 text-emerald-800/70 whitespace-nowrap">
+                            <span>收:$${mPassSummary[k].rev.toLocaleString()}</span>
+                            <span>支:$${mPassSummary[k].exp.toLocaleString()}</span>
+                            <span class="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">淨:$${net.toLocaleString()}</span>
+                        </div>
+                    </div>`;
+                }).join('');
+                document.getElementById('passMonthTotal').innerText = `總額 $${passTotalAmt.toLocaleString()}`;
+            } else { document.getElementById('passSummarySection').classList.add('hidden'); }
+
+            if (mUnpaidDetails.length > 0) {
+                document.getElementById('unpaidSection').classList.remove('hidden');
+                document.getElementById('unpaidList').innerHTML = mUnpaidDetails.map(item => `<div class="flex justify-between py-1.5 items-center"><button onclick="scrollToRecord('${item.id}')" class="text-left hover:underline decoration-amber-400 font-bold text-[14px]">• ${item.name}</button><span class="font-bold text-[15px]">$${item.amount.toLocaleString()}</span></div>`).join('');
+            } else { document.getElementById('unpaidSection').classList.add('hidden'); }
+
+            document.getElementById('allAc').innerText = aAc; document.getElementById('allWm').innerText = aWm; document.getElementById('allWt').innerText = aWt;
+            document.getElementById('allRev').innerText = `$${aRev.toLocaleString()}`; document.getElementById('allExp').innerText = `$${aExp.toLocaleString()}`; document.getElementById('allNet').innerText = `$${(aRev - aExp).toLocaleString()}`;
+            document.getElementById('mRev').innerText = `$${mRev.toLocaleString()}`; document.getElementById('mExp').innerText = `$${mExp.toLocaleString()}`; document.getElementById('mNet').innerText = `$${(mRev - mExp).toLocaleString()}`;
+            document.getElementById('mCounts').innerText = `冷${mAc} / 洗${mWm} / 水${mWt}`;
+            document.getElementById('yRev').innerText = `$${yRev.toLocaleString()}`; document.getElementById('yExp').innerText = `$${yExp.toLocaleString()}`; document.getElementById('yNet').innerText = `$${(yRev - yExp).toLocaleString()}`;
+            document.getElementById('yCounts').innerText = `冷${yAc} / 洗${yWm} / 水${yWt}`;
+
+            renderRecords(baseFiltered.sort((a, b) => b.bookingTime.localeCompare(a.bookingTime)));
+            lucide.createIcons();
+        };
+
+        function renderRecords(data) {
+            const list = document.getElementById('recordList');
+            list.innerHTML = data.map(i => {
+                let services = [];
+                const acTitle = `冷氣${i.acCount}台`;
+                if(i.acCount > 0) services.push(i.acBrand ? `${acTitle}：${i.acBrand}` : acTitle);
+                if(i.wmCount > 0) services.push(`洗衣機${i.wmCount}台`);
+                if(i.wtCount > 0) services.push(`水塔${i.wtCount}口`);
+
+                let asDisplay = "";
+                if (i.assistantDetail) {
+                    const parts = i.assistantDetail.split(',').map(s => { const [n, a] = s.split(':'); return `${n}${a}元`; });
+                    asDisplay = `小幫手：${parts.join('+')}`;
+                }
+
+                let isComp = i.status === 'completed';
+                let isPaid = i.payment === 'paid';
+
+                return `
+                <tr id="rec-${i.id}" class="${isComp ? 'completed-row' : ''}">
+                    <td data-label="預約時間" class="px-6 py-4 time-display flex justify-between items-center">
+                        <span>${i.bookingTime.replace('T',' ')}</span>
+                        ${i.passFrom ? `<span class="text-indigo-500 font-bold flex items-center gap-1"><i data-lucide="forward" class="w-3 h-3"></i>PASS: ${i.passFrom}</span>` : '<span></span>'}
+                    </td>
+                    <td data-label="客戶" class="px-6 py-4 flex items-center gap-2">
+                        <span class="font-bold text-slate-900">${i.customerName}</span>
+                        ${i.phone ? `<span class="text-[12px] text-slate-400 font-normal flex items-center gap-0.5"><i data-lucide="phone" class="w-3 h-3"></i>${i.phone}</span>` : ''}
+                    </td>
+                    <td class="px-6 py-1 text-slate-500 text-xs flex items-center gap-1.5">
+                        ${i.address ? `
+                            <span class="flex items-center gap-0.5"><i data-lucide="map-pin" class="w-3 h-3"></i>${i.address}</span>
+                            <button onclick="copyText('${i.address}', this)" class="bg-slate-100 p-1 rounded-md hover:bg-slate-200 transition-colors">
+                                <i data-lucide="copy" class="w-2.5 h-2.5"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                    <td data-label="服務明細" class="px-6 py-2 text-slate-600">
+                        <div class="leading-tight">${services.join('、')}</div>
+                        ${i.note ? `<div class="text-[11px] text-slate-400 note-display mt-0.5">備註: ${i.note}</div>` : ''}
+                        ${asDisplay ? `<div class="text-[11px] text-rose-500 font-medium mt-0.5">${asDisplay}</div>` : ''}
+                    </td>
+                    <td data-label="金額帳目" class="px-6 py-4 text-slate-600 font-medium">
+                        收 ${i.totalAmount.toLocaleString()} - 支 ${i.assistantPay.toLocaleString()} = <span class="text-emerald-700 font-bold">淨 ${(i.totalAmount - i.assistantPay).toLocaleString()}</span>
+                    </td>
+                    <td class="px-6 py-4 action-cell">
+                        <button onclick="toggleDone('${i.id}', '${i.status}')" class="flex items-center gap-1 ${isComp ? 'text-slate-400 bg-slate-50 border-slate-200' : 'text-emerald-700 bg-emerald-50 border-emerald-100'} px-2 py-1.5 rounded-lg border text-[10px] font-bold">
+                            <i data-lucide="${isComp ? 'check-circle' : 'circle'}" class="w-3 h-3"></i>
+                            <span>${isComp ? '已完成' : '未完成'}</span>
+                        </button>
+                        <button onclick="togglePayment('${i.id}', '${i.payment}')" class="flex items-center gap-1 ${isPaid ? 'text-slate-400 bg-slate-50 border-slate-200' : 'text-amber-700 bg-amber-50 border-amber-100'} px-2 py-1.5 rounded-lg border text-[10px] font-bold">
+                            <i data-lucide="${isPaid ? 'banknote' : 'clock'}" class="w-3 h-3"></i>
+                            <span>${isPaid ? '已收款' : '待收款'}</span>
+                        </button>
+                        <button onclick="downloadRec('${i.id}')" class="flex items-center gap-1 text-indigo-600 bg-indigo-50 px-2 py-1.5 rounded-lg border border-indigo-100 text-[10px] font-bold" title="截圖">
+                            <i data-lucide="image" class="w-3 h-3"></i>
+                        </button>
+                        <button onclick="editRec('${i.id}')" class="flex items-center gap-1 text-slate-600 bg-slate-100 px-2 py-1.5 rounded-lg border text-[10px] font-bold" title="修改">
+                            <i data-lucide="edit-2" class="w-3 h-3"></i>
+                        </button>
+                        <button onclick="deleteRec('${i.id}')" class="flex items-center gap-1 text-rose-400 bg-rose-50 px-2 py-1.5 rounded-lg border text-[10px] font-bold" title="刪除">
+                            <i data-lucide="trash-2" class="w-3 h-3"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        window.scrollToRecord = (id) => {
+            const e = document.getElementById(`rec-${id}`);
+            if (e) { e.scrollIntoView({ behavior: 'smooth', block: 'center' }); e.classList.add('highlight-target'); setTimeout(() => e.classList.remove('highlight-target'), 2000); }
+        };
+
+        window.editRec = (id) => {
+            const r = allRecords.find(x => x.id === id);
+            if(!r) return;
+            editingId = id;
+            document.getElementById('bookingTime').value = r.bookingTime;
+            document.getElementById('customerName').value = r.customerName;
+            document.getElementById('phone').value = r.phone || "";
+            document.getElementById('address').value = r.address || "";
+            document.getElementById('acCount').value = r.acCount;
+            document.getElementById('wmCount').value = r.wmCount;
+            document.getElementById('wtCount').value = r.wtCount;
+            document.getElementById('totalAmount').value = r.totalAmount;
+            document.getElementById('assistantPay').value = r.assistantPay;
+            document.getElementById('note').value = r.note;
+            document.getElementById('passFrom').value = r.passFrom || "";
+            
+            const acContainer = document.getElementById('acDetailsContainer');
+            acContainer.innerHTML = '';
+            if (r.acBrand) {
+                r.acBrand.split('+').forEach(part => {
+                    const m = part.match(/(.*)-(.*)台(?:\*(.*)元)?/);
+                    if (m) {
+                        const div = document.createElement('div');
+                        div.className = "grid grid-cols-12 gap-2 items-center ac-detail-row mb-2";
+                        div.innerHTML = `<div class="col-span-5"><input type="text" value="${m[1]}" class="ac-brand-input w-full rounded-lg p-2 border border-emerald-100 text-sm"></div><div class="col-span-3"><input type="number" value="${m[2]}" onfocus="this.select()" oninput="calcTotalFromDetails()" class="ac-qty-input w-full rounded-lg p-2 border border-emerald-100 text-sm font-bold"></div><div class="col-span-3"><input type="number" value="${m[3]||''}" onfocus="this.select()" oninput="calcTotalFromDetails()" class="ac-price-input w-full rounded-lg p-2 border border-emerald-100 text-sm"></div><div class="col-span-1 text-center"><button type="button" onclick="this.parentElement.parentElement.remove(); calcTotalFromDetails();" class="text-rose-400 font-bold text-lg">&times;</button></div>`;
+                        acContainer.appendChild(div);
+                    }
+                });
+            }
+            const asContainer = document.getElementById('assistantDetailsContainer');
+            asContainer.innerHTML = '';
+            if (r.assistantDetail) {
+                r.assistantDetail.split(',').forEach(s => { const [name, amt] = s.split(':'); addAssistantRow(name, amt); });
+            }
+            toggleAcBrand();
+            updateQuickAssistantTags();
+            updateQuickPassTags();
+            calcFormNet();
+            showPage('formPage');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.changeMonth = (o) => { const i = document.getElementById('monthFilter'); if (!i.value) i.value = new Date().toISOString().substring(0, 7); let [y, m] = i.value.split('-').map(Number); let d = new Date(y, m - 1); d.setMonth(d.getMonth() + o); i.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; filterRecords(); };
+        window.quickFilterUnpaid = () => { document.getElementById('paymentFilter').value = 'unpaid'; filterRecords(); };
+        window.deleteRec = async (id) => { if(confirm('確定要刪除嗎？')) await deleteDoc(doc(db, "cleaningRecords", id)); };
+
+        // 截圖自動下載優化功能
+        window.downloadRec = (id) => {
+            const el = document.getElementById(`rec-${id}`);
+            const actionCell = el.querySelector('.action-cell');
+            const contentTds = el.querySelectorAll('td:not(.action-cell)');
+            const customerTd = el.querySelector('td[data-label="客戶"]'); // 鎖定客戶名稱欄位
+            
+            // 使用渲染後的 SVG 類名 (.lucide-phone, .lucide-map-pin) 才能確實抓到圖示
+            const iconsToHide = el.querySelectorAll('.lucide-phone, .lucide-map-pin, button[onclick^="copyText"]');
+            
+            // 1. 隱藏按鈕區、圖示，處理底色與邊框
+            actionCell.style.display = 'none';
+            iconsToHide.forEach(icon => icon.style.display = 'none');
+            el.style.setProperty('background-color', '#ffffff', 'important');
+            el.style.setProperty('border-left', 'none', 'important'); // 截圖時隱藏左側線條
+            
+            // 將內容文字向上偏移改為 -10px
+            contentTds.forEach(td => {
+                td.style.setProperty('position', 'relative', 'important');
+                td.style.setProperty('top', '-10px', 'important');
+            });
+
+            // 特別針對客戶名稱賦予向上拉近的負間距，這會自然將底下所有元素一併往上帶
+            if (customerTd) {
+                customerTd.style.setProperty('margin-top', '-10px', 'important');
             }
             
-            grouped.push(mergedItem);
-        }
-
-        let text = "";
-        if (type === 'claim') {
-            text = grouped.map(i => `${i.date}\t${i.desc}\t${i.amount}`).join('\n');
-        } else if (type === 'bank') {
-            text = grouped.map(i => `${i.date}\t${i.bank}\t${i.acc}\t${i.owner}\t${i.amount}`).join('\n');
-        }
-        
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            const originalText = btn.innerText;
-            btn.innerText = "✅ 已成功複製";
-            const oldBg = btn.style.background;
-            btn.style.background = "#1b5e20"; 
-            setTimeout(() => { btn.innerText = originalText; btn.style.background = oldBg; }, 2000);
-        } catch (err) {}
-        document.body.removeChild(textArea);
-    }
-
-    function initMonthFilter() {
-        const months = new Set();
-        db.forEach(item => { if(item.saveMonth) months.add(item.saveMonth); });
-        const now = new Date();
-        const currentLabel = `${now.getFullYear()}.${(now.getMonth()+1).toString().padStart(2, '0')}`;
-        months.add(currentLabel);
-        const sorted = Array.from(months).sort().reverse();
-        document.getElementById('filterMonth').innerHTML = `<option value="全部">全部月份</option>` + sorted.map(m => `<option value="${m}">${m}</option>`).join('');
-        document.getElementById('filterMonth').value = currentLabel;
-    }
-    function initBaseDate() {
-        const now = new Date();
-        const y = now.getFullYear() - 1911;
-        const m = (now.getMonth() + 1).toString().padStart(2, '0');
-        const d = now.getDate().toString().padStart(2, '0');
-        document.getElementById('baseDate').value = `${y}${m}${d}`;
-    }
-    document.addEventListener('click', e => { if (!e.target.closest('.col')) document.getElementById('searchResults').style.display = 'none'; });
-    window.onload = () => { db.forEach(i => checkedIds.add(i.id)); initMonthFilter(); initBaseDate(); calculate(); };
-</script>
-
+            // 2. 執行截圖
+            html2canvas(el, {
+                scale: 2, // 提高畫質
+                backgroundColor: "#ffffff", // 確保 canvas 外框也是白色
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                // 3. 還原所有修改的樣式
+                actionCell.style.display = 'flex';
+                iconsToHide.forEach(icon => icon.style.removeProperty('display'));
+                el.style.removeProperty('background-color');
+                el.style.removeProperty('border-left');
+                contentTds.forEach(td => {
+                    td.style.removeProperty('position');
+                    td.style.removeProperty('top');
+                });
+                if (customerTd) {
+                    customerTd.style.removeProperty('margin-top');
+                }
+                
+                // 4. 將畫布轉換為 Blob 以進行靜默下載
+                canvas.toBlob((blob) => {
+                    const name = el.querySelector('[data-label="客戶"] span').innerText;
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `清洗紀錄_${name}_${id.substring(0,4)}.png`;
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                }, 'image/png');
+            });
+        };
+    </script>
 </body>
 </html>
