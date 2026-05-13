@@ -1042,8 +1042,71 @@
                     customerTd.style.removeProperty('margin-top');
                 }
                 
-                // 4. 將畫布轉換為 Blob 以進行靜默下載
-                canvas.toBlob((blob) => {
+                // 4. 為輸出的圖片加上看得見但柔和的外框後再下載
+                const framedCanvas = document.createElement('canvas');
+                const ctx = framedCanvas.getContext('2d');
+                const padding = 28;
+                const radius = 22;
+                framedCanvas.width = canvas.width + padding * 2;
+                framedCanvas.height = canvas.height + padding * 2;
+
+                const drawRoundedRect = (context, x, y, w, h, r) => {
+                    context.beginPath();
+                    context.moveTo(x + r, y);
+                    context.lineTo(x + w - r, y);
+                    context.quadraticCurveTo(x + w, y, x + w, y + r);
+                    context.lineTo(x + w, y + h - r);
+                    context.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                    context.lineTo(x + r, y + h);
+                    context.quadraticCurveTo(x, y + h, x, y + h - r);
+                    context.lineTo(x, y + r);
+                    context.quadraticCurveTo(x, y, x + r, y);
+                    context.closePath();
+                };
+
+                ctx.clearRect(0, 0, framedCanvas.width, framedCanvas.height);
+
+                // 先畫一層很淡的外圍底，讓邊框更容易被看見
+                ctx.save();
+                drawRoundedRect(ctx, 6, 6, framedCanvas.width - 12, framedCanvas.height - 12, radius + 8);
+                ctx.fillStyle = '#f8fafc';
+                ctx.fill();
+                ctx.restore();
+
+                // 卡片底色 + 柔和陰影
+                ctx.save();
+                ctx.shadowColor = 'rgba(15, 23, 42, 0.10)';
+                ctx.shadowBlur = 18;
+                ctx.shadowOffsetY = 6;
+                drawRoundedRect(ctx, padding, padding, canvas.width, canvas.height, radius);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.restore();
+
+                // 將截圖內容裁切成圓角卡片
+                ctx.save();
+                drawRoundedRect(ctx, padding, padding, canvas.width, canvas.height, radius);
+                ctx.clip();
+                ctx.drawImage(canvas, padding, padding);
+                ctx.restore();
+
+                // 外框再明顯一點，但仍維持柔和
+                ctx.save();
+                drawRoundedRect(ctx, padding + 1.5, padding + 1.5, canvas.width - 3, canvas.height - 3, radius - 1);
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.restore();
+
+                // 最外層再補一圈很淡的框，增加卡片感
+                ctx.save();
+                drawRoundedRect(ctx, padding - 8, padding - 8, canvas.width + 16, canvas.height + 16, radius + 6);
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+
+                framedCanvas.toBlob((blob) => {
                     const name = el.querySelector('[data-label="客戶"] span').innerText;
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
