@@ -434,7 +434,7 @@
             background: transparent !important;
             border: 0 !important;
             border-radius: 0 !important;
-            /* 增加 padding-bottom 使垂直直線超越數字 */
+            /* 修改：微調 padding-bottom 以優化間距與直線長度 */
             padding: 0 0.35rem 0.4rem !important; 
             box-shadow: none !important;
             text-align: left !important;
@@ -500,8 +500,9 @@
         }
         /* 金額帳目增加明顯分隔線與粗體，並增加與上方文字的距離 */
         td[data-label="金額帳目"] { 
-            padding-top: 0.4rem !important; 
-            margin-top: 0.4rem; 
+            /* 修改：增加 padding 與 margin 使文字遠離虛線 */
+            padding-top: 0.7rem !important; 
+            margin-top: 0.7rem; 
             border-top: 2px dashed #cbd5e1 !important; color: #1e293b; font-size: 0.9rem; font-weight: 700;
         }
         td.action-cell {
@@ -1511,20 +1512,19 @@
                 td.style.setProperty('top', '-8px', 'important');
             });
 
-            // 特別針對數值區塊額外拉升 (向上移 10px)
+            // 特別針對數值區塊額外拉升 (修正：調整偏移量為 -13px 以解決文字離虛線太近的問題)
             if (metricGrid) {
-                metricGrid.style.setProperty('margin-top', '-18px', 'important');
+                metricGrid.style.setProperty('margin-top', '-13px', 'important');
             }
 
             if (customerTd) {
                 customerTd.style.setProperty('margin-top', '-10px', 'important');
             }
             
-            // 將垂直直線往下移動，並增加起點透明度補償 (避免插出去虛線)
-            // 將原本 3px 起點下調至 13px，確保虛線下方才開始繪製
+            // 將垂直直線往下移動，並增加起點透明度補償 (修正：調整為 15px 以對應數據區塊偏移)
             metricBoxesWithLines.forEach(box => {
                 box.style.setProperty('border-right', 'none', 'important');
-                box.style.setProperty('background-image', 'linear-gradient(to bottom, transparent 13px, #e2e8f0 13px)', 'important');
+                box.style.setProperty('background-image', 'linear-gradient(to bottom, transparent 15px, #e2e8f0 15px)', 'important');
                 box.style.setProperty('background-size', '1px 100%', 'important');
                 box.style.setProperty('background-repeat', 'no-repeat', 'important');
                 box.style.setProperty('background-position', 'right', 'important');
