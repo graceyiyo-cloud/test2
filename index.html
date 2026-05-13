@@ -9,11 +9,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="冷氣紀錄">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#5f7d67">
+    <meta name="theme-color" content="#475569">
 
     <link rel="apple-touch-icon" href="./icon.png">
     
-    <link rel="manifest" href='data:application/manifest+json,{"name":"冷氣清洗紀錄","short_name":"冷氣紀錄","start_url":".","display":"standalone","background_color":"#fbf7ef","theme_color":"#5f7d67","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"冷氣清洗紀錄","short_name":"冷氣紀錄","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#475569","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -26,11 +26,24 @@
             background-color: #ffffff !important;
         }
         .hidden { display: none; }
-        /* 恢復已完成狀態的視覺對比度與左側灰藍色線條 */
+        /* 已完成狀態：改成頂部柔和標示，不再使用左側直線 */
         .completed-row { 
             background-color: #f1f5f9 !important; 
-            border-left: 5px solid #64748b !important; 
+            border-left: none !important;
+            border-top: 5px solid #94a3b8 !important;
             opacity: 0.95; 
+            position: relative;
+            overflow: hidden;
+        }
+        .completed-row::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #94a3b8, #cbd5e1, #e2e8f0);
+            pointer-events: none;
         }
         
         .note-display { white-space: pre-wrap; word-break: break-all; display: block; line-height: 1.3; }
@@ -95,364 +108,6 @@
         /* Lucide 圖示統一微調 */
         .lucide { width: 14px; height: 14px; stroke-width: 2; display: inline-block; vertical-align: -2px; }
         .btn-icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; }
-
-
-        /* ===== 文青風配色版面覆蓋：只調整視覺，不更動功能 ===== */
-        :root {
-            --paper: #fbf7ef;
-            --paper-2: #f3eadc;
-            --card: rgba(255, 252, 246, 0.96);
-            --ink: #4f463c;
-            --muted: #8b7e70;
-            --line: #e5d8c8;
-            --tea: #7f9b87;
-            --tea-dark: #58745f;
-            --latte: #c7a987;
-            --rose-soft: #d9a6a1;
-            --sage-soft: #dfe9dc;
-            --mist: #edf1e8;
-            --shadow: 0 10px 26px rgba(103, 84, 62, 0.10);
-        }
-
-        html { background: var(--paper) !important; }
-        body {
-            color: var(--ink) !important;
-            background:
-                radial-gradient(circle at top left, rgba(223, 233, 220, 0.85), transparent 34%),
-                radial-gradient(circle at bottom right, rgba(234, 211, 190, 0.72), transparent 36%),
-                linear-gradient(180deg, #fbf7ef 0%, #f7efe3 100%) !important;
-        }
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            opacity: .25;
-            background-image: linear-gradient(rgba(127, 155, 135, .14) 1px, transparent 1px), linear-gradient(90deg, rgba(127, 155, 135, .10) 1px, transparent 1px);
-            background-size: 28px 28px;
-            z-index: -1;
-        }
-
-        #authPage { background: linear-gradient(135deg, #f7efe3, #e9f0e3) !important; }
-        #authPage > div,
-        #formPage,
-        #assistantSummaryModal,
-        #listPage > div,
-        #listPage .bg-white,
-        #listPage .bg-emerald-50\/40,
-        #listPage .bg-slate-700,
-        tr {
-            background: var(--card) !important;
-            border-color: var(--line) !important;
-            box-shadow: var(--shadow) !important;
-        }
-
-        nav {
-            background: rgba(91, 112, 93, .94) !important;
-            backdrop-filter: blur(14px);
-            border-bottom: 1px solid rgba(255,255,255,.28);
-            box-shadow: 0 8px 24px rgba(74, 83, 68, .16) !important;
-        }
-        nav h1 { color: #fffaf2 !important; letter-spacing: .18em; }
-        nav button {
-            background: rgba(255, 252, 246, .20) !important;
-            border-color: rgba(255, 252, 246, .28) !important;
-            color: #fffaf2 !important;
-            box-shadow: 0 4px 12px rgba(72, 64, 50, .10) !important;
-        }
-        nav button:hover { background: rgba(255, 252, 246, .32) !important; }
-        button[onclick="handleLogin()"] {
-            background: #fffaf3 !important;
-            border-color: var(--line) !important;
-            color: var(--ink) !important;
-            box-shadow: var(--shadow) !important;
-        }
-        button[onclick="handleLogin()"]:hover { background: #f6efe4 !important; }
-        button[onclick="handleLogout()"]:hover { background: rgba(172, 92, 87, .78) !important; }
-
-        h2, h3, h4, label, td[data-label="客戶"], .font-bold, .font-black { color: var(--ink) !important; }
-        p, td, .text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700, .time-display { color: var(--muted) !important; }
-        .text-slate-800, .text-slate-900 { color: var(--ink) !important; }
-
-        input, textarea, select {
-            background: #fffaf3 !important;
-            border-color: var(--line) !important;
-            color: var(--ink) !important;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.7) !important;
-        }
-        input:focus, textarea:focus, select:focus {
-            outline: none !important;
-            border-color: var(--tea) !important;
-            box-shadow: 0 0 0 3px rgba(127, 155, 135, .16) !important;
-        }
-        input::placeholder, textarea::placeholder { color: #b7aa9b !important; }
-
-        .bg-slate-50, .bg-slate-100, .bg-emerald-50\/30, .bg-rose-50\/30, .bg-indigo-50\/30,
-        .bg-indigo-50\/20, .bg-white\/40, .bg-amber-50, .bg-emerald-50, .bg-rose-50, .bg-indigo-50 {
-            background-color: rgba(250, 245, 236, .78) !important;
-        }
-        .border-slate-100, .border-slate-200, .border-emerald-100, .border-rose-100, .border-indigo-100, .border-amber-100,
-        .border-emerald-200, .border-rose-200, .border-indigo-200, .border-amber-200 {
-            border-color: var(--line) !important;
-        }
-
-        tr {
-            border-radius: 18px !important;
-            border-left: 4px solid rgba(127, 155, 135, .42) !important;
-        }
-        tr:hover { transform: translateY(-1px); box-shadow: 0 14px 30px rgba(103, 84, 62, .13) !important; }
-        .completed-row {
-            background: #eee8dc !important;
-            border-left: 5px solid #9ca891 !important;
-            opacity: .96;
-        }
-        td[data-label="金額帳目"] { border-top-color: #d8c8b6 !important; color: var(--ink) !important; }
-        td.action-cell { border-top-color: var(--line) !important; }
-        .time-display { border-bottom-color: #eadfce !important; }
-
-        #listPage > .bg-slate-700 {
-            color: var(--ink) !important;
-            border-left-color: var(--tea) !important;
-            background: linear-gradient(135deg, rgba(255, 252, 246, .96), rgba(232, 239, 225, .94)) !important;
-        }
-        #listPage > .bg-slate-700 * { color: var(--ink) !important; }
-        #listPage > .bg-slate-700 .border-slate-600 { border-color: rgba(127, 155, 135, .24) !important; }
-
-        #formPage { border-radius: 28px !important; }
-        #formPage h2::after,
-        #yearTitle::after,
-        #monthTitle::after {
-            content: "";
-            display: inline-block;
-            width: 38px;
-            height: 2px;
-            margin-left: 10px;
-            vertical-align: middle;
-            background: linear-gradient(90deg, var(--tea), transparent);
-            border-radius: 999px;
-        }
-
-        button[type="submit"],
-        button[onclick="prepareNewForm()"],
-        button[onclick="showPage('listPage')"] {
-            background: linear-gradient(135deg, #78977f, #5f7d67) !important;
-            color: #fffaf2 !important;
-            border-color: rgba(255,255,255,.25) !important;
-        }
-        form button[type="button"]:not([onclick^="add"]):not([onclick*="remove"]) {
-            background: #f1e8da !important;
-            color: #6b5e50 !important;
-            border-color: var(--line) !important;
-        }
-        button[onclick^="addAcDetailRow"], button[onclick^="addAssistantRow"] {
-            background: var(--tea) !important;
-            color: #fffaf2 !important;
-            border-radius: 999px !important;
-        }
-        button, .rounded-xl, .rounded-lg, .rounded-2xl, .rounded-3xl { border-radius: 18px; }
-
-        .text-emerald-300, .text-emerald-500, .text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-900,
-        .text-indigo-400, .text-indigo-500, .text-indigo-600, .text-indigo-700 {
-            color: var(--tea-dark) !important;
-        }
-        .text-rose-300, .text-rose-400, .text-rose-500, .text-rose-600,
-        .text-amber-600, .text-amber-700, .text-amber-900 {
-            color: #a66f68 !important;
-        }
-        .bg-emerald-600, .hover\:bg-emerald-700:hover { background-color: var(--tea-dark) !important; }
-        .border-l-4 { border-left-color: var(--tea) !important; }
-
-        #assistantSummaryOverlay { background: rgba(78, 65, 50, .30) !important; }
-        #assistantSummaryModal { border-radius: 26px !important; }
-
-        @keyframes highlight-fade {
-            0% { background-color: #fff1bf; transform: scale(1.02); }
-            100% { background-color: var(--card); transform: scale(1); }
-        }
-
-
-        /* ===== 清單卡片細節修正：拿掉左側直線，改成上方細緞帶，並修正直角白邊 ===== */
-        #recordList {
-            display: block;
-        }
-        #recordList tr {
-            position: relative !important;
-            overflow: hidden !important;
-            border-left: none !important;
-            border: 1px solid rgba(214, 197, 174, .82) !important;
-            border-radius: 22px !important;
-            background: linear-gradient(145deg, rgba(248, 241, 229, .98), rgba(242, 233, 219, .96)) !important;
-            background-clip: padding-box !important;
-            box-shadow: 0 10px 24px rgba(103, 84, 62, .10) !important;
-        }
-        #recordList tr::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, rgba(127, 155, 135, .72), rgba(199, 169, 135, .55), rgba(217, 166, 161, .35));
-            pointer-events: none;
-        }
-        #recordList tr.completed-row {
-            border-left: none !important;
-            background: linear-gradient(145deg, rgba(239, 232, 220, .98), rgba(232, 225, 211, .96)) !important;
-        }
-        #recordList tr.completed-row::before {
-            background: linear-gradient(90deg, rgba(151, 166, 142, .78), rgba(196, 178, 153, .50));
-        }
-        #recordList td {
-            position: relative;
-            z-index: 1;
-        }
-        #recordList td[data-label="預約時間"] {
-            padding-top: .9rem !important;
-        }
-
-
-        /* ===== 版面細修 2：清除白色直角、調整導航列、區分年度/月度統計 ===== */
-        #mainApp > nav {
-            background: linear-gradient(135deg, rgba(255, 250, 242, .96), rgba(239, 230, 214, .94)) !important;
-            color: var(--ink) !important;
-            border-bottom: 1px solid rgba(214, 197, 174, .75) !important;
-            box-shadow: 0 8px 22px rgba(103, 84, 62, .10) !important;
-        }
-        #mainApp > nav h1 {
-            color: #564b3f !important;
-            font-weight: 800 !important;
-            letter-spacing: .14em !important;
-        }
-        #mainApp > nav button {
-            background: rgba(247, 239, 227, .96) !important;
-            color: #675a4d !important;
-            border: 1px solid rgba(210, 193, 171, .85) !important;
-            box-shadow: 0 5px 14px rgba(103, 84, 62, .08) !important;
-        }
-        #mainApp > nav button:hover {
-            background: rgba(231, 239, 226, .98) !important;
-            color: #4f6d57 !important;
-            transform: translateY(-1px);
-        }
-        #mainApp > nav button[onclick="prepareNewForm()"] {
-            background: linear-gradient(135deg, #7f9b87, #67866f) !important;
-            color: #fffaf2 !important;
-            border-color: rgba(127, 155, 135, .45) !important;
-        }
-        #mainApp > nav button[onclick="handleLogout()"]:hover {
-            background: #b97872 !important;
-            color: #fffaf2 !important;
-        }
-
-        /* 清單容器不要有自己的白底，避免圓角外露成白色直角 */
-        #listPage .overflow-x-auto,
-        #listPage table,
-        #recordList {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-        }
-        #listPage .overflow-x-auto {
-            overflow: visible !important;
-            padding: 0 !important;
-        }
-        #recordList tr {
-            clip-path: inset(0 round 22px) !important;
-            outline: 1px solid rgba(214, 197, 174, .74) !important;
-            outline-offset: -1px !important;
-            border: none !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-        }
-        #recordList tr::before {
-            border-top-left-radius: 22px !important;
-            border-top-right-radius: 22px !important;
-        }
-        #recordList tr::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: 22px;
-            pointer-events: none;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.48);
-        }
-
-        /* 全部累計：改成較沉穩的總覽卡 */
-        #listPage > .bg-slate-700 {
-            background: linear-gradient(135deg, #6f7f6d, #8b7b62) !important;
-            color: #fffaf2 !important;
-            border: none !important;
-            border-radius: 24px !important;
-            overflow: hidden !important;
-        }
-        #listPage > .bg-slate-700 *,
-        #listPage > .bg-slate-700 button {
-            color: #fffaf2 !important;
-        }
-        #listPage > .bg-slate-700 .text-slate-400 {
-            color: rgba(255, 250, 242, .70) !important;
-        }
-        #listPage > .bg-slate-700 .border-slate-600,
-        #listPage > .bg-slate-700 .border-r,
-        #listPage > .bg-slate-700 .border-b {
-            border-color: rgba(255, 250, 242, .24) !important;
-        }
-
-        /* 年度統計：暖奶茶色 */
-        #listPage > .space-y-3 > div:first-child {
-            background: linear-gradient(135deg, rgba(255, 248, 237, .98), rgba(238, 221, 200, .92)) !important;
-            border: 1px solid rgba(207, 181, 150, .58) !important;
-            border-left: none !important;
-            border-radius: 24px !important;
-            overflow: hidden !important;
-            box-shadow: 0 10px 22px rgba(136, 103, 70, .10) !important;
-        }
-        #listPage > .space-y-3 > div:first-child::before {
-            content: "";
-            display: block;
-            height: 5px;
-            margin: -1.25rem -1.25rem 1rem;
-            background: linear-gradient(90deg, #c7a987, #e3cdb2);
-        }
-        #yearTitle,
-        #listPage > .space-y-3 > div:first-child #yRev,
-        #listPage > .space-y-3 > div:first-child #yNet,
-        #listPage > .space-y-3 > div:first-child #yCounts {
-            color: #7a6045 !important;
-        }
-        #listPage > .space-y-3 > div:first-child #yExp {
-            color: #a66f68 !important;
-        }
-
-        /* 月份統計：柔和鼠尾草綠，跟年度明顯區分 */
-        #listPage > .space-y-3 > div:nth-child(2) {
-            background: linear-gradient(135deg, rgba(240, 247, 235, .98), rgba(219, 232, 211, .94)) !important;
-            border: 1px solid rgba(137, 165, 143, .55) !important;
-            border-left: none !important;
-            border-radius: 24px !important;
-            overflow: hidden !important;
-            box-shadow: 0 10px 22px rgba(82, 110, 89, .10) !important;
-        }
-        #listPage > .space-y-3 > div:nth-child(2)::before {
-            content: "";
-            display: block;
-            height: 5px;
-            margin: -1.25rem -1.25rem 1rem;
-            background: linear-gradient(90deg, #7f9b87, #c5d9be);
-        }
-        #monthTitle,
-        #listPage > .space-y-3 > div:nth-child(2) #mRev,
-        #listPage > .space-y-3 > div:nth-child(2) #mNet,
-        #listPage > .space-y-3 > div:nth-child(2) #mCounts {
-            color: #4f7358 !important;
-        }
-        #listPage > .space-y-3 > div:nth-child(2) #mExp {
-            color: #a66f68 !important;
-        }
-
-        #yearTitle::after { background: linear-gradient(90deg, #c7a987, transparent) !important; }
-        #monthTitle::after { background: linear-gradient(90deg, #7f9b87, transparent) !important; }
-
     </style>
 </head>
 <body class="bg-[#faf9f6] min-h-screen text-slate-700">
@@ -1337,7 +992,8 @@
             actionCell.style.display = 'none';
             iconsToHide.forEach(icon => icon.style.display = 'none');
             el.style.setProperty('background-color', '#ffffff', 'important');
-            el.style.setProperty('border-left', 'none', 'important'); // 截圖時隱藏左側線條
+            el.style.setProperty('border-left', 'none', 'important'); // 截圖時不使用左側線條
+            el.style.setProperty('border-top', 'none', 'important'); // 截圖時隱藏頂部狀態標示
             
             // 將內容文字向上偏移改為 -10px
             contentTds.forEach(td => {
@@ -1362,6 +1018,7 @@
                 iconsToHide.forEach(icon => icon.style.removeProperty('display'));
                 el.style.removeProperty('background-color');
                 el.style.removeProperty('border-left');
+                el.style.removeProperty('border-top');
                 contentTds.forEach(td => {
                     td.style.removeProperty('position');
                     td.style.removeProperty('top');
