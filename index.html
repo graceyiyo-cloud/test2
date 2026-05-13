@@ -9,11 +9,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="冷氣紀錄">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#475569">
+    <meta name="theme-color" content="#5f7d67">
 
     <link rel="apple-touch-icon" href="./icon.png">
     
-    <link rel="manifest" href='data:application/manifest+json,{"name":"冷氣清洗紀錄","short_name":"冷氣紀錄","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#475569","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"冷氣清洗紀錄","short_name":"冷氣紀錄","start_url":".","display":"standalone","background_color":"#fbf7ef","theme_color":"#5f7d67","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -23,7 +23,7 @@
         html { font-size: 110%; }
         body { 
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif; 
-            background-color: #f8f5ef !important;
+            background-color: #ffffff !important;
         }
         .hidden { display: none; }
         /* 恢復已完成狀態的視覺對比度與左側灰藍色線條 */
@@ -97,381 +97,177 @@
         .btn-icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; }
 
 
-        /* ===== 版面順化調整：清爽文青、間距統一、卡片層次更柔和 ===== */
+        /* ===== 文青風配色版面覆蓋：只調整視覺，不更動功能 ===== */
         :root {
-            --paper: #fbfaf7;
-            --paper-2: #f6f1e8;
-            --ink: #334155;
-            --muted: #8b8f83;
-            --line: #e7dfd1;
-            --brand: #64748b;
-            --brand-dark: #475569;
-            --green: #4f8f78;
-            --green-soft: #edf7f2;
-            --rose-soft: #fff1f2;
-            --amber-soft: #fff7ed;
-            --indigo-soft: #f1f3ff;
-            --shadow-soft: 0 10px 30px rgba(71, 85, 105, 0.08);
-            --shadow-card: 0 8px 22px rgba(71, 85, 105, 0.09);
+            --paper: #fbf7ef;
+            --paper-2: #f3eadc;
+            --card: rgba(255, 252, 246, 0.96);
+            --ink: #4f463c;
+            --muted: #8b7e70;
+            --line: #e5d8c8;
+            --tea: #7f9b87;
+            --tea-dark: #58745f;
+            --latte: #c7a987;
+            --rose-soft: #d9a6a1;
+            --sage-soft: #dfe9dc;
+            --mist: #edf1e8;
+            --shadow: 0 10px 26px rgba(103, 84, 62, 0.10);
         }
 
+        html { background: var(--paper) !important; }
         body {
+            color: var(--ink) !important;
             background:
-                radial-gradient(circle at top left, rgba(255,255,255,0.9), transparent 34rem),
-                linear-gradient(180deg, #fbfaf7 0%, #f8f5ef 45%, #f3eee5 100%) !important;
-            color: var(--ink);
+                radial-gradient(circle at top left, rgba(223, 233, 220, 0.85), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(234, 211, 190, 0.72), transparent 36%),
+                linear-gradient(180deg, #fbf7ef 0%, #f7efe3 100%) !important;
         }
-
-        #mainApp > nav {
-            background: rgba(71, 85, 105, 0.92) !important;
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255,255,255,0.16);
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
-        }
-
-        #mainApp > nav .container {
-            max-width: 920px;
-            gap: 0.75rem;
-        }
-
-        #mainApp > nav h1 {
-            letter-spacing: 0.16em;
-            font-size: 0.98rem;
-        }
-
-        #mainApp > nav button {
-            background: rgba(255,255,255,0.11) !important;
-            border-color: rgba(255,255,255,0.18) !important;
-            border-radius: 999px !important;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-        }
-
-        #mainApp > nav button:hover {
-            background: rgba(255,255,255,0.20) !important;
-            transform: translateY(-1px);
-        }
-
-        .container.mx-auto {
-            max-width: 960px;
-        }
-
-        #formPage,
-        #listPage > .bg-white,
-        #listPage > .space-y-3 > div,
-        #listPage > .bg-emerald-50\/40,
-        #listPage > .bg-slate-700 {
-            border-radius: 24px !important;
-            box-shadow: var(--shadow-soft) !important;
-            border: 1px solid rgba(231, 223, 209, 0.85) !important;
-        }
-
-        #formPage {
-            background: rgba(255,255,255,0.88) !important;
-            backdrop-filter: blur(8px);
-            border-left: 5px solid #d7c7ae !important;
-        }
-
-        #formPage h2 {
-            padding-bottom: 0.9rem;
-            border-bottom: 1px solid #efe7da;
-            margin-bottom: 1.35rem !important;
-        }
-
-        #recordForm label {
-            color: #7c8377 !important;
-            letter-spacing: 0.08em;
-        }
-
-        #recordForm input,
-        #recordForm textarea,
-        #recordForm select {
-            background-color: #fffdf9 !important;
-            border-color: #e7dfd1 !important;
-            transition: box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
-        }
-
-        #recordForm input:focus,
-        #recordForm textarea:focus,
-        #recordForm select:focus {
-            border-color: #b7a68b !important;
-            box-shadow: 0 0 0 4px rgba(183,166,139,0.14) !important;
-            background-color: #ffffff !important;
-        }
-
-        #acBrandSection,
-        #assistantDetailsContainer,
-        #quickAssistantTags,
-        #quickPassTags {
-            transition: all .2s ease;
-        }
-
-        #recordForm .bg-slate-50,
-        #acBrandSection,
-        #recordForm .bg-rose-50\/30,
-        #recordForm .bg-indigo-50\/30 {
-            border-radius: 18px !important;
-        }
-
-        #recordForm button[type="submit"] {
-            background: linear-gradient(135deg, #527f69, #3f725c) !important;
-            box-shadow: 0 10px 22px rgba(63,114,92,0.18) !important;
-        }
-
-        #recordForm button[type="button"] {
-            border-radius: 16px !important;
-        }
-
-        /* 統計卡片：減少壓迫感，標題與數字更容易掃讀 */
-        #listPage > .bg-slate-700 {
-            background: linear-gradient(135deg, #475569, #334155) !important;
-            border-left: none !important;
-            padding: 1.15rem !important;
-        }
-
-        #listPage > .bg-slate-700::after {
+        body::before {
             content: "";
-            position: absolute;
-            right: 1rem;
-            top: 1rem;
-            width: 72px;
-            height: 72px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.06);
+            position: fixed;
+            inset: 0;
             pointer-events: none;
+            opacity: .25;
+            background-image: linear-gradient(rgba(127, 155, 135, .14) 1px, transparent 1px), linear-gradient(90deg, rgba(127, 155, 135, .10) 1px, transparent 1px);
+            background-size: 28px 28px;
+            z-index: -1;
         }
 
-        #listPage > .space-y-3 > div {
-            background: rgba(255,255,255,0.86) !important;
-            overflow: hidden;
+        #authPage { background: linear-gradient(135deg, #f7efe3, #e9f0e3) !important; }
+        #authPage > div,
+        #formPage,
+        #assistantSummaryModal,
+        #listPage > div,
+        #listPage .bg-white,
+        #listPage .bg-emerald-50\/40,
+        #listPage .bg-slate-700,
+        tr {
+            background: var(--card) !important;
+            border-color: var(--line) !important;
+            box-shadow: var(--shadow) !important;
         }
 
-        #listPage > .space-y-3 > div:nth-child(2) {
-            background: rgba(241, 248, 243, 0.9) !important;
+        nav {
+            background: rgba(91, 112, 93, .94) !important;
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255,255,255,.28);
+            box-shadow: 0 8px 24px rgba(74, 83, 68, .16) !important;
         }
-
-        #listPage h3 {
-            letter-spacing: 0.14em;
+        nav h1 { color: #fffaf2 !important; letter-spacing: .18em; }
+        nav button {
+            background: rgba(255, 252, 246, .20) !important;
+            border-color: rgba(255, 252, 246, .28) !important;
+            color: #fffaf2 !important;
+            box-shadow: 0 4px 12px rgba(72, 64, 50, .10) !important;
         }
-
-        #yRev, #yExp, #yNet, #mRev, #mExp, #mNet {
-            line-height: 1.1;
+        nav button:hover { background: rgba(255, 252, 246, .32) !important; }
+        button[onclick="handleLogin()"] {
+            background: #fffaf3 !important;
+            border-color: var(--line) !important;
+            color: var(--ink) !important;
+            box-shadow: var(--shadow) !important;
         }
+        button[onclick="handleLogin()"]:hover { background: #f6efe4 !important; }
+        button[onclick="handleLogout()"]:hover { background: rgba(172, 92, 87, .78) !important; }
 
-        #passYearSummaryList > div,
-        #passSummaryList > div {
-            border-radius: 14px !important;
-            box-shadow: 0 4px 12px rgba(71,85,105,0.04);
+        h2, h3, h4, label, td[data-label="客戶"], .font-bold, .font-black { color: var(--ink) !important; }
+        p, td, .text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700, .time-display { color: var(--muted) !important; }
+        .text-slate-800, .text-slate-900 { color: var(--ink) !important; }
+
+        input, textarea, select {
+            background: #fffaf3 !important;
+            border-color: var(--line) !important;
+            color: var(--ink) !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.7) !important;
         }
-
-        /* 搜尋與篩選區：變成清楚的一組工具列 */
-        #listPage > .bg-white.p-3,
-        #listPage > .bg-white.p-3.md\:p-5 {
-            background: rgba(255,255,255,0.9) !important;
-            backdrop-filter: blur(8px);
-            padding: 1rem !important;
+        input:focus, textarea:focus, select:focus {
+            outline: none !important;
+            border-color: var(--tea) !important;
+            box-shadow: 0 0 0 3px rgba(127, 155, 135, .16) !important;
         }
+        input::placeholder, textarea::placeholder { color: #b7aa9b !important; }
 
-        #searchKeyword,
-        #monthFilter,
-        #typeFilter,
-        #statusFilter,
-        #paymentFilter {
-            background: #fbfaf7 !important;
-            border: 1px solid #eee4d6 !important;
-            min-height: 44px;
+        .bg-slate-50, .bg-slate-100, .bg-emerald-50\/30, .bg-rose-50\/30, .bg-indigo-50\/30,
+        .bg-indigo-50\/20, .bg-white\/40, .bg-amber-50, .bg-emerald-50, .bg-rose-50, .bg-indigo-50 {
+            background-color: rgba(250, 245, 236, .78) !important;
         }
-
-        #listPage select {
-            font-size: 0.74rem !important;
-            font-weight: 700;
-            color: #64748b;
-        }
-
-        /* 列表卡片：上下資訊分區更順、按鈕不擠 */
-        #recordList {
-            display: block;
+        .border-slate-100, .border-slate-200, .border-emerald-100, .border-rose-100, .border-indigo-100, .border-amber-100,
+        .border-emerald-200, .border-rose-200, .border-indigo-200, .border-amber-200 {
+            border-color: var(--line) !important;
         }
 
         tr {
-            position: relative;
-            margin-bottom: 0.85rem !important;
-            padding: 0.95rem 1rem 0.85rem !important;
-            border-radius: 22px !important;
-            border: 1px solid rgba(226, 232, 240, 0.92) !important;
-            box-shadow: var(--shadow-card) !important;
-            overflow: hidden;
+            border-radius: 18px !important;
+            border-left: 4px solid rgba(127, 155, 135, .42) !important;
         }
+        tr:hover { transform: translateY(-1px); box-shadow: 0 14px 30px rgba(103, 84, 62, .13) !important; }
+        .completed-row {
+            background: #eee8dc !important;
+            border-left: 5px solid #9ca891 !important;
+            opacity: .96;
+        }
+        td[data-label="金額帳目"] { border-top-color: #d8c8b6 !important; color: var(--ink) !important; }
+        td.action-cell { border-top-color: var(--line) !important; }
+        .time-display { border-bottom-color: #eadfce !important; }
 
-        tr::before {
+        #listPage > .bg-slate-700 {
+            color: var(--ink) !important;
+            border-left-color: var(--tea) !important;
+            background: linear-gradient(135deg, rgba(255, 252, 246, .96), rgba(232, 239, 225, .94)) !important;
+        }
+        #listPage > .bg-slate-700 * { color: var(--ink) !important; }
+        #listPage > .bg-slate-700 .border-slate-600 { border-color: rgba(127, 155, 135, .24) !important; }
+
+        #formPage { border-radius: 28px !important; }
+        #formPage h2::after,
+        #yearTitle::after,
+        #monthTitle::after {
             content: "";
-            position: absolute;
-            inset: 0 auto 0 0;
-            width: 4px;
-            background: #d7c7ae;
-            opacity: 0.95;
+            display: inline-block;
+            width: 38px;
+            height: 2px;
+            margin-left: 10px;
+            vertical-align: middle;
+            background: linear-gradient(90deg, var(--tea), transparent);
+            border-radius: 999px;
         }
 
-        .completed-row::before {
-            background: #94a3b8;
+        button[type="submit"],
+        button[onclick="prepareNewForm()"],
+        button[onclick="showPage('listPage')"] {
+            background: linear-gradient(135deg, #78977f, #5f7d67) !important;
+            color: #fffaf2 !important;
+            border-color: rgba(255,255,255,.25) !important;
         }
-
-        td[data-label="預約時間"] {
-            padding-left: 0.25rem !important;
-            padding-bottom: 0.45rem !important;
-            margin-bottom: 0.45rem !important;
-            border-bottom: 1px solid #f0ece4 !important;
+        form button[type="button"]:not([onclick^="add"]):not([onclick*="remove"]) {
+            background: #f1e8da !important;
+            color: #6b5e50 !important;
+            border-color: var(--line) !important;
         }
-
-        td[data-label="客戶"] {
-            padding-top: 0.1rem !important;
-            padding-bottom: 0.35rem !important;
-            gap: 0.45rem !important;
-        }
-
-        td[data-label="客戶"] span:first-child {
-            font-size: 1.12rem;
-            letter-spacing: 0.02em;
-        }
-
-        td[data-label="服務明細"] {
-            background: #fbfaf7;
-            border-radius: 14px !important;
-            padding: 0.65rem 0.75rem !important;
-            margin-top: 0.35rem;
-            color: #475569;
-        }
-
-        td[data-label="金額帳目"] {
-            background: linear-gradient(90deg, #f8fafc, #fbfaf7);
-            border-top: none !important;
-            border-radius: 14px !important;
-            padding: 0.72rem 0.78rem !important;
-            margin-top: 0.55rem !important;
-            font-size: 0.92rem !important;
-        }
-
-        td.action-cell {
-            border-top: none !important;
-            margin-top: 0.72rem !important;
-            padding-top: 0 !important;
-            display: grid !important;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 0.45rem !important;
-        }
-
-        td.action-cell button {
-            justify-content: center;
+        button[onclick^="addAcDetailRow"], button[onclick^="addAssistantRow"] {
+            background: var(--tea) !important;
+            color: #fffaf2 !important;
             border-radius: 999px !important;
-            min-height: 34px;
-            padding: 0.4rem 0.45rem !important;
-            box-shadow: 0 2px 8px rgba(15,23,42,0.04);
         }
+        button, .rounded-xl, .rounded-lg, .rounded-2xl, .rounded-3xl { border-radius: 18px; }
 
-        .note-display {
-            margin-top: 0.35rem !important;
-            color: #7c8377 !important;
+        .text-emerald-300, .text-emerald-500, .text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-900,
+        .text-indigo-400, .text-indigo-500, .text-indigo-600, .text-indigo-700 {
+            color: var(--tea-dark) !important;
         }
-
-        #unpaidSection {
-            background: rgba(255, 247, 237, 0.75);
-            border-radius: 0 0 22px 22px;
+        .text-rose-300, .text-rose-400, .text-rose-500, .text-rose-600,
+        .text-amber-600, .text-amber-700, .text-amber-900 {
+            color: #a66f68 !important;
         }
+        .bg-emerald-600, .hover\:bg-emerald-700:hover { background-color: var(--tea-dark) !important; }
+        .border-l-4 { border-left-color: var(--tea) !important; }
 
-        #assistantSummaryModal {
-            border-radius: 24px !important;
-            box-shadow: 0 24px 70px rgba(15,23,42,.24) !important;
-        }
+        #assistantSummaryOverlay { background: rgba(78, 65, 50, .30) !important; }
+        #assistantSummaryModal { border-radius: 26px !important; }
 
-        @media (max-width: 640px) {
-            html { font-size: 106%; }
-
-            #mainApp > nav {
-                padding-left: 0.65rem !important;
-                padding-right: 0.65rem !important;
-            }
-
-            #mainApp > nav .container {
-                align-items: flex-start;
-                gap: 0.55rem;
-            }
-
-            #mainApp > nav h1 {
-                font-size: 0.9rem;
-                padding-top: 0.35rem;
-                white-space: nowrap;
-            }
-
-            #mainApp > nav .flex.space-x-2 {
-                gap: 0.35rem !important;
-                overflow-x: auto;
-                padding-bottom: 0.15rem;
-            }
-
-            #mainApp > nav button {
-                padding-left: 0.65rem !important;
-                padding-right: 0.65rem !important;
-            }
-
-            .container.mx-auto {
-                padding-left: 0.75rem !important;
-                padding-right: 0.75rem !important;
-                padding-top: 1rem !important;
-            }
-
-            #formPage {
-                padding: 1.1rem !important;
-            }
-
-            #listPage > .bg-slate-700 {
-                align-items: stretch !important;
-            }
-
-            #listPage > .bg-slate-700 > .flex {
-                margin-right: 0.65rem !important;
-                padding-right: 0.65rem !important;
-            }
-
-            #listPage > .bg-white.p-3 .grid.grid-cols-3 {
-                grid-template-columns: 1fr;
-            }
-
-            #passYearSummaryList > div,
-            #passSummaryList > div {
-                align-items: flex-start !important;
-                flex-direction: column;
-            }
-
-            #passYearSummaryList > div > div:last-child,
-            #passSummaryList > div > div:last-child {
-                width: 100%;
-                justify-content: space-between;
-                gap: 0.4rem !important;
-                flex-wrap: wrap;
-            }
-
-            td[data-label="預約時間"] {
-                align-items: flex-start !important;
-                gap: 0.35rem;
-                flex-direction: column;
-            }
-
-            td[data-label="客戶"] {
-                flex-wrap: wrap;
-            }
-
-            td.action-cell {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-
-            td.action-cell button span {
-                display: inline;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .desktop-half-width {
-                max-width: 680px !important;
-            }
+        @keyframes highlight-fade {
+            0% { background-color: #fff1bf; transform: scale(1.02); }
+            100% { background-color: var(--card); transform: scale(1); }
         }
 
     </style>
