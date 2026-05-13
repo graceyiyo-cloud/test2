@@ -498,22 +498,32 @@
 
 
 
-        /* 本次微調：存成圖片時，讓每筆紀錄的收入 / 支出 / 淨利文字垂直置中 */
+        /* 本次修正：存成圖片時，讓收入 / 支出 / 淨利文字真正對齊直線中央 */
         tr.capture-align-metrics td[data-label="金額帳目"] {
-            display: flex !important;
-            align-items: center !important;
+            display: block !important;
+            padding-top: 0.22rem !important;
+            padding-bottom: 0.05rem !important;
         }
         tr.capture-align-metrics .record-metric-grid {
             width: 100% !important;
-            align-items: stretch !important;
-        }
-        tr.capture-align-metrics .record-metric-grid .metric-box {
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: center !important;
-            min-height: 2.25rem !important;
+            align-items: center !important;
             padding-top: 0 !important;
             padding-bottom: 0 !important;
+        }
+        tr.capture-align-metrics .record-metric-grid .metric-box {
+            display: grid !important;
+            grid-template-rows: auto auto !important;
+            align-content: center !important;
+            justify-items: start !important;
+            row-gap: 0 !important;
+            min-height: 2.55rem !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            transform: translateY(-0.18rem);
+        }
+        tr.capture-align-metrics .record-metric-grid .metric-box-label,
+        tr.capture-align-metrics .record-metric-grid .metric-box-value {
+            display: block !important;
         }
 
         .note-display { white-space: pre-wrap; word-break: break-all; display: block; line-height: 1.3; }
