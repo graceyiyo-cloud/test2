@@ -496,6 +496,26 @@
             line-height: 1.05 !important;
         }
 
+
+
+        /* 本次微調：存成圖片時，讓每筆紀錄的收入 / 支出 / 淨利文字垂直置中 */
+        tr.capture-align-metrics td[data-label="金額帳目"] {
+            display: flex !important;
+            align-items: center !important;
+        }
+        tr.capture-align-metrics .record-metric-grid {
+            width: 100% !important;
+            align-items: stretch !important;
+        }
+        tr.capture-align-metrics .record-metric-grid .metric-box {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            min-height: 2.25rem !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+
         .note-display { white-space: pre-wrap; word-break: break-all; display: block; line-height: 1.3; }
 
         @keyframes highlight-fade {
@@ -1513,6 +1533,7 @@
             const actionCell = el.querySelector('.action-cell');
             const contentTds = el.querySelectorAll('td:not(.action-cell)');
             const customerTd = el.querySelector('td[data-label="客戶"]'); // 鎖定客戶名稱欄位
+            el.classList.add('capture-align-metrics'); // 截圖時修正金額列文字垂直置中
             
             // 使用渲染後的 SVG 類名 (.lucide-phone, .lucide-map-pin) 才能確實抓到圖示
             const iconsToHide = el.querySelectorAll('.lucide-phone, .lucide-map-pin, button[onclick^="copyText"]');
@@ -1546,6 +1567,7 @@
                 iconsToHide.forEach(icon => icon.style.removeProperty('display'));
                 el.style.removeProperty('background-color');
                 el.style.removeProperty('border-top');
+                el.classList.remove('capture-align-metrics');
                 contentTds.forEach(td => {
                     td.style.removeProperty('position');
                     td.style.removeProperty('top');
