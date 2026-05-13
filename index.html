@@ -13,7 +13,7 @@
 
     <link rel="apple-touch-icon" href="./icon.png">
     
-    <link rel="manifest" href='data:application/manifest+json,{"name":"冷氣清洗紀錄","short_name":"冷氣紀錄","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#475569","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"冷氣清洗紀錄","short_name":"冷紀錄","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#475569","icons":[{"src":"./icon.png","sizes":"512x512","type":"image/png"}]}'>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -1484,44 +1484,58 @@
             const el = document.getElementById(`rec-${id}`);
             const actionCell = el.querySelector('.action-cell');
             const contentTds = el.querySelectorAll('td:not(.action-cell)');
-            const customerTd = el.querySelector('td[data-label="客戶"]'); // 鎖定客戶名稱欄位
+            const customerTd = el.querySelector('td[data-label="客戶"]');
+            const metricGrid = el.querySelector('.record-metric-grid'); // 鎖定數據區域
             
-            // 使用渲染後的 SVG 類名 (.lucide-phone, .lucide-map-pin) 才能確實抓到圖示
+            // 使用渲染後的 SVG 類名才能確實抓到圖示
             const iconsToHide = el.querySelectorAll('.lucide-phone, .lucide-map-pin, button[onclick^="copyText"]');
             
             // 1. 隱藏按鈕區、圖示，處理底色與邊框
             actionCell.style.display = 'none';
             iconsToHide.forEach(icon => icon.style.display = 'none');
-            el.style.setProperty('background-color', '#ffffff', 'important');
-            el.style.setProperty('border-top', 'none', 'important'); // 截圖時不顯示上方狀態線
             
-            // 本次修改：將內容文字向上偏移改為 -18px (基於原 -10px 再往上 8px)
+            // 鎖定寬度防止負位移導致版面變寬
+            const originalWidth = el.style.width;
+            el.style.width = getComputedStyle(el).width;
+            
+            el.style.setProperty('background-color', '#ffffff', 'important');
+            el.style.setProperty('border-top', 'none', 'important'); 
+            
+            // 修改：內容文字整體微調，避免撐寬
             contentTds.forEach(td => {
                 td.style.setProperty('position', 'relative', 'important');
-                td.style.setProperty('top', '-18px', 'important');
+                td.style.setProperty('top', '-8px', 'important');
             });
 
-            // 特別針對客戶名稱賦予向上拉近的負間距，這會自然將底下所有元素一併往上帶
+            // 修改：特別針對數值區塊額外拉升，補足 8px 需求
+            if (metricGrid) {
+                metricGrid.style.setProperty('margin-top', '-8px', 'important');
+            }
+
             if (customerTd) {
                 customerTd.style.setProperty('margin-top', '-10px', 'important');
             }
             
             // 2. 執行截圖
             html2canvas(el, {
-                scale: 2, // 提高畫質
-                backgroundColor: "#ffffff", // 確保 canvas 外框也是白色
+                scale: 2, 
+                backgroundColor: "#ffffff", 
                 useCORS: true,
                 logging: false
             }).then(canvas => {
                 // 3. 還原所有修改的樣式
                 actionCell.style.display = 'flex';
                 iconsToHide.forEach(icon => icon.style.removeProperty('display'));
+                el.style.width = originalWidth;
                 el.style.removeProperty('background-color');
                 el.style.removeProperty('border-top');
                 contentTds.forEach(td => {
                     td.style.removeProperty('position');
                     td.style.removeProperty('top');
                 });
+                if (metricGrid) {
+                    metricGrid.style.removeProperty('margin-top');
+                }
                 if (customerTd) {
                     customerTd.style.removeProperty('margin-top');
                 }
@@ -1550,14 +1564,12 @@
 
                 ctx.clearRect(0, 0, framedCanvas.width, framedCanvas.height);
 
-                // 先畫一層很淡的外圍底，讓邊框更容易被看見
                 ctx.save();
                 drawRoundedRect(ctx, 6, 6, framedCanvas.width - 12, framedCanvas.height - 12, radius + 8);
                 ctx.fillStyle = '#f8fafc';
                 ctx.fill();
                 ctx.restore();
 
-                // 卡片底色 + 柔和陰影
                 ctx.save();
                 ctx.shadowColor = 'rgba(15, 23, 42, 0.10)';
                 ctx.shadowBlur = 18;
@@ -1567,14 +1579,12 @@
                 ctx.fill();
                 ctx.restore();
 
-                // 將截圖內容裁切成圓角卡片
                 ctx.save();
                 drawRoundedRect(ctx, padding, padding, canvas.width, canvas.height, radius);
                 ctx.clip();
                 ctx.drawImage(canvas, padding, padding);
                 ctx.restore();
 
-                // 外框再明顯一點，但仍維持柔和
                 ctx.save();
                 drawRoundedRect(ctx, padding + 1.5, padding + 1.5, canvas.width - 3, canvas.height - 3, radius - 1);
                 ctx.strokeStyle = '#cbd5e1';
@@ -1582,7 +1592,6 @@
                 ctx.stroke();
                 ctx.restore();
 
-                // 最外層再補一圈很淡的框，增加卡片感
                 ctx.save();
                 drawRoundedRect(ctx, padding - 8, padding - 8, canvas.width + 16, canvas.height + 16, radius + 6);
                 ctx.strokeStyle = '#e2e8f0';
