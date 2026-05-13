@@ -421,12 +421,13 @@
         }
 
         /* 本次微調：下方每筆紀錄的收入 / 支出 / 淨利改成簡潔文字列，不再使用方塊卡片 */
+        /* 修改目標：使高度更窄更緊湊 */
         .record-metric-grid {
             display: grid !important;
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
             gap: 0 !important;
-            margin-top: 0.1rem !important;
-            padding: 0.2rem 0 0 !important;
+            margin-top: 0 !important; /* 原為 0.1rem，移除邊距 */
+            padding: 0 !important; /* 原為 0.2rem 0 0，移除內邊距 */
             border-radius: 0 !important;
             background: transparent !important;
         }
@@ -434,7 +435,7 @@
             background: transparent !important;
             border: 0 !important;
             border-radius: 0 !important;
-            padding: 0.15rem 0.35rem !important;
+            padding: 0 0.35rem !important; /* 垂直 padding 從 0.15rem 降至 0 */
             box-shadow: none !important;
             text-align: left !important;
         }
@@ -443,7 +444,7 @@
         }
         .record-metric-grid .metric-box-label {
             font-size: 0.58rem !important;
-            margin-bottom: 0.08rem !important;
+            margin-bottom: 0 !important; /* 原為 0.08rem，移除邊距使標籤與數值更接近 */
             letter-spacing: 0.03em !important;
             color: #94a3b8 !important;
         }
@@ -498,9 +499,10 @@
             padding-bottom: 0.1rem !important; 
         }
         /* 金額帳目增加明顯分隔線與粗體，並增加與上方文字的距離 */
+        /* 本次微調：縮短 padding 與 margin 使其更高 */
         td[data-label="金額帳目"] { 
-            padding-top: 0.75rem !important; 
-            margin-top: 0.75rem; 
+            padding-top: 0.4rem !important; /* 從 0.75rem 降至 0.4rem */
+            margin-top: 0.4rem; /* 從 0.75rem 降至 0.4rem */
             border-top: 2px dashed #cbd5e1 !important; color: #1e293b; font-size: 0.9rem; font-weight: 700;
         }
         td.action-cell {
