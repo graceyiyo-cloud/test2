@@ -270,6 +270,46 @@
             100% { background-color: var(--card); transform: scale(1); }
         }
 
+
+        /* ===== 清單卡片細節修正：拿掉左側直線，改成上方細緞帶，並修正直角白邊 ===== */
+        #recordList {
+            display: block;
+        }
+        #recordList tr {
+            position: relative !important;
+            overflow: hidden !important;
+            border-left: none !important;
+            border: 1px solid rgba(214, 197, 174, .82) !important;
+            border-radius: 22px !important;
+            background: linear-gradient(145deg, rgba(248, 241, 229, .98), rgba(242, 233, 219, .96)) !important;
+            background-clip: padding-box !important;
+            box-shadow: 0 10px 24px rgba(103, 84, 62, .10) !important;
+        }
+        #recordList tr::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, rgba(127, 155, 135, .72), rgba(199, 169, 135, .55), rgba(217, 166, 161, .35));
+            pointer-events: none;
+        }
+        #recordList tr.completed-row {
+            border-left: none !important;
+            background: linear-gradient(145deg, rgba(239, 232, 220, .98), rgba(232, 225, 211, .96)) !important;
+        }
+        #recordList tr.completed-row::before {
+            background: linear-gradient(90deg, rgba(151, 166, 142, .78), rgba(196, 178, 153, .50));
+        }
+        #recordList td {
+            position: relative;
+            z-index: 1;
+        }
+        #recordList td[data-label="預約時間"] {
+            padding-top: .9rem !important;
+        }
+
     </style>
 </head>
 <body class="bg-[#faf9f6] min-h-screen text-slate-700">
