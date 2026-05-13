@@ -310,6 +310,149 @@
             padding-top: .9rem !important;
         }
 
+
+        /* ===== 版面細修 2：清除白色直角、調整導航列、區分年度/月度統計 ===== */
+        #mainApp > nav {
+            background: linear-gradient(135deg, rgba(255, 250, 242, .96), rgba(239, 230, 214, .94)) !important;
+            color: var(--ink) !important;
+            border-bottom: 1px solid rgba(214, 197, 174, .75) !important;
+            box-shadow: 0 8px 22px rgba(103, 84, 62, .10) !important;
+        }
+        #mainApp > nav h1 {
+            color: #564b3f !important;
+            font-weight: 800 !important;
+            letter-spacing: .14em !important;
+        }
+        #mainApp > nav button {
+            background: rgba(247, 239, 227, .96) !important;
+            color: #675a4d !important;
+            border: 1px solid rgba(210, 193, 171, .85) !important;
+            box-shadow: 0 5px 14px rgba(103, 84, 62, .08) !important;
+        }
+        #mainApp > nav button:hover {
+            background: rgba(231, 239, 226, .98) !important;
+            color: #4f6d57 !important;
+            transform: translateY(-1px);
+        }
+        #mainApp > nav button[onclick="prepareNewForm()"] {
+            background: linear-gradient(135deg, #7f9b87, #67866f) !important;
+            color: #fffaf2 !important;
+            border-color: rgba(127, 155, 135, .45) !important;
+        }
+        #mainApp > nav button[onclick="handleLogout()"]:hover {
+            background: #b97872 !important;
+            color: #fffaf2 !important;
+        }
+
+        /* 清單容器不要有自己的白底，避免圓角外露成白色直角 */
+        #listPage .overflow-x-auto,
+        #listPage table,
+        #recordList {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        #listPage .overflow-x-auto {
+            overflow: visible !important;
+            padding: 0 !important;
+        }
+        #recordList tr {
+            clip-path: inset(0 round 22px) !important;
+            outline: 1px solid rgba(214, 197, 174, .74) !important;
+            outline-offset: -1px !important;
+            border: none !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        #recordList tr::before {
+            border-top-left-radius: 22px !important;
+            border-top-right-radius: 22px !important;
+        }
+        #recordList tr::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 22px;
+            pointer-events: none;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.48);
+        }
+
+        /* 全部累計：改成較沉穩的總覽卡 */
+        #listPage > .bg-slate-700 {
+            background: linear-gradient(135deg, #6f7f6d, #8b7b62) !important;
+            color: #fffaf2 !important;
+            border: none !important;
+            border-radius: 24px !important;
+            overflow: hidden !important;
+        }
+        #listPage > .bg-slate-700 *,
+        #listPage > .bg-slate-700 button {
+            color: #fffaf2 !important;
+        }
+        #listPage > .bg-slate-700 .text-slate-400 {
+            color: rgba(255, 250, 242, .70) !important;
+        }
+        #listPage > .bg-slate-700 .border-slate-600,
+        #listPage > .bg-slate-700 .border-r,
+        #listPage > .bg-slate-700 .border-b {
+            border-color: rgba(255, 250, 242, .24) !important;
+        }
+
+        /* 年度統計：暖奶茶色 */
+        #listPage > .space-y-3 > div:first-child {
+            background: linear-gradient(135deg, rgba(255, 248, 237, .98), rgba(238, 221, 200, .92)) !important;
+            border: 1px solid rgba(207, 181, 150, .58) !important;
+            border-left: none !important;
+            border-radius: 24px !important;
+            overflow: hidden !important;
+            box-shadow: 0 10px 22px rgba(136, 103, 70, .10) !important;
+        }
+        #listPage > .space-y-3 > div:first-child::before {
+            content: "";
+            display: block;
+            height: 5px;
+            margin: -1.25rem -1.25rem 1rem;
+            background: linear-gradient(90deg, #c7a987, #e3cdb2);
+        }
+        #yearTitle,
+        #listPage > .space-y-3 > div:first-child #yRev,
+        #listPage > .space-y-3 > div:first-child #yNet,
+        #listPage > .space-y-3 > div:first-child #yCounts {
+            color: #7a6045 !important;
+        }
+        #listPage > .space-y-3 > div:first-child #yExp {
+            color: #a66f68 !important;
+        }
+
+        /* 月份統計：柔和鼠尾草綠，跟年度明顯區分 */
+        #listPage > .space-y-3 > div:nth-child(2) {
+            background: linear-gradient(135deg, rgba(240, 247, 235, .98), rgba(219, 232, 211, .94)) !important;
+            border: 1px solid rgba(137, 165, 143, .55) !important;
+            border-left: none !important;
+            border-radius: 24px !important;
+            overflow: hidden !important;
+            box-shadow: 0 10px 22px rgba(82, 110, 89, .10) !important;
+        }
+        #listPage > .space-y-3 > div:nth-child(2)::before {
+            content: "";
+            display: block;
+            height: 5px;
+            margin: -1.25rem -1.25rem 1rem;
+            background: linear-gradient(90deg, #7f9b87, #c5d9be);
+        }
+        #monthTitle,
+        #listPage > .space-y-3 > div:nth-child(2) #mRev,
+        #listPage > .space-y-3 > div:nth-child(2) #mNet,
+        #listPage > .space-y-3 > div:nth-child(2) #mCounts {
+            color: #4f7358 !important;
+        }
+        #listPage > .space-y-3 > div:nth-child(2) #mExp {
+            color: #a66f68 !important;
+        }
+
+        #yearTitle::after { background: linear-gradient(90deg, #c7a987, transparent) !important; }
+        #monthTitle::after { background: linear-gradient(90deg, #7f9b87, transparent) !important; }
+
     </style>
 </head>
 <body class="bg-[#faf9f6] min-h-screen text-slate-700">
