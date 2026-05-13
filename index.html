@@ -1489,22 +1489,13 @@
             // 使用渲染後的 SVG 類名 (.lucide-phone, .lucide-map-pin) 才能確實抓到圖示
             const iconsToHide = el.querySelectorAll('.lucide-phone, .lucide-map-pin, button[onclick^="copyText"]');
             
-            // 1. 隱藏按鈕區、圖示，處理底色與邊框
-            actionCell.style.display = 'none';
-            iconsToHide.forEach(icon => icon.style.display = 'none');
+            // 1. 截圖時保留原本網頁的版面高度與定位，只把操作按鈕透明化
+            //    這樣「收入 / 支出 / 淨利」的位置會和網頁畫面一致，不會因為按鈕區 display:none 而重新排版。
+            actionCell.style.setProperty('visibility', 'hidden', 'important');
+            actionCell.style.setProperty('display', 'flex', 'important');
+            iconsToHide.forEach(icon => icon.style.setProperty('visibility', 'hidden', 'important'));
             el.style.setProperty('background-color', '#ffffff', 'important');
             el.style.setProperty('border-top', 'none', 'important'); // 截圖時不顯示上方狀態線
-            
-            // 將內容文字向上偏移改為 -10px
-            contentTds.forEach(td => {
-                td.style.setProperty('position', 'relative', 'important');
-                td.style.setProperty('top', '-10px', 'important');
-            });
-
-            // 特別針對客戶名稱賦予向上拉近的負間距，這會自然將底下所有元素一併往上帶
-            if (customerTd) {
-                customerTd.style.setProperty('margin-top', '-10px', 'important');
-            }
             
             // 2. 執行截圖
             html2canvas(el, {
@@ -1514,17 +1505,11 @@
                 logging: false
             }).then(canvas => {
                 // 3. 還原所有修改的樣式
-                actionCell.style.display = 'flex';
-                iconsToHide.forEach(icon => icon.style.removeProperty('display'));
+                actionCell.style.removeProperty('visibility');
+                actionCell.style.removeProperty('display');
+                iconsToHide.forEach(icon => icon.style.removeProperty('visibility'));
                 el.style.removeProperty('background-color');
                 el.style.removeProperty('border-top');
-                contentTds.forEach(td => {
-                    td.style.removeProperty('position');
-                    td.style.removeProperty('top');
-                });
-                if (customerTd) {
-                    customerTd.style.removeProperty('margin-top');
-                }
                 
                 // 4. 為輸出的圖片加上看得見但柔和的外框後再下載
                 const framedCanvas = document.createElement('canvas');
