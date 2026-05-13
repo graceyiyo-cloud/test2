@@ -54,9 +54,9 @@
             border-top-color: #a7b4c8;
         }
         .stats-card-month {
-            background: linear-gradient(180deg, #f9fdfb 0%, #f2faf6 100%);
-            border-color: #cfe9da;
-            border-top-color: #37b887;
+            background: linear-gradient(180deg, #fbf9ff 0%, #f5f3ff 100%);
+            border-color: #ddd6fe;
+            border-top-color: #8b7bc8;
         }
         .stats-side-label {
             color: inherit;
@@ -165,12 +165,12 @@
         .pass-month-theme .pass-avatar,
         .pass-month-theme .pass-qty,
         .pass-month-theme .pass-metric {
-            background: #ecfdf5;
-            color: #047857;
+            background: #f5f3ff;
+            color: #6d5cae;
         }
-        .pass-month-theme .pass-name { color: #047857; }
-        .pass-month-theme .pass-net .pass-value { color: #047857; }
-        .pass-month-theme .pass-total-pill { background: #d1fae5; color: #047857; }
+        .pass-month-theme .pass-name { color: #6d5cae; }
+        .pass-month-theme .pass-net .pass-value { color: #7c3aed; }
+        .pass-month-theme .pass-total-pill { background: #ede9fe; color: #6d5cae; }
 
         /* 統一收入 / 支出 / 淨利 顯示樣式 */
         .metric-box-grid {
@@ -217,9 +217,9 @@
         .stats-card-year .metric-box-exp { background: #fff1f2; border-color: #fecdd3; color: #e11d48; }
         .stats-card-year .metric-box-net { background: #eefcf5; border-color: #b7ebd1; color: #047857; }
 
-        .stats-card-month .metric-box-rev { background: #f3fbf7; border-color: #cceede; color: #047857; }
+        .stats-card-month .metric-box-rev { background: #f5f3ff; border-color: #ddd6fe; color: #6d5cae; }
         .stats-card-month .metric-box-exp { background: #fff1f2; border-color: #fecdd3; color: #e11d48; }
-        .stats-card-month .metric-box-net { background: #e8fff4; border-color: #a7f3d0; color: #047857; }
+        .stats-card-month .metric-box-net { background: #eef2ff; border-color: #c7d2fe; color: #4f46e5; }
 
         .pass-metric.pass-net {
             background: #ecfdf5 !important;
@@ -243,6 +243,59 @@
         }
         .record-metric-grid .metric-box-value {
             font-size: 0.92rem;
+        }
+
+        /* 手機版：避免全部年份統計金額超出框框 */
+        .stats-card-all > .flex-1,
+        .stats-card-all .metric-box,
+        .stats-card-all .metric-box-grid > div {
+            min-width: 0;
+        }
+        .metric-box-value,
+        .metric-box button,
+        .pass-value {
+            max-width: 100%;
+            overflow-wrap: anywhere;
+        }
+        .stats-card-month #monthTitle,
+        .stats-card-month .flex.justify-between.items-start > div,
+        .stats-card-month #mCounts,
+        #passSummarySection h3 {
+            color: #6d5cae !important;
+        }
+        #passSummarySection {
+            border-top-color: #ddd6fe !important;
+            background: rgba(255, 255, 255, 0.72) !important;
+        }
+
+        @media (max-width: 480px) {
+            .stats-card-all {
+                padding: 0.8rem !important;
+            }
+            .stats-card-all .stats-side-label {
+                margin-right: 0.55rem !important;
+                padding-right: 0.5rem !important;
+                font-size: 0.54rem !important;
+            }
+            .stats-card-all .metric-box-grid {
+                gap: 0.32rem;
+            }
+            .stats-card-all .metric-box {
+                padding: 0.45rem 0.18rem;
+                border-radius: 0.72rem;
+            }
+            .stats-card-all .metric-box-label {
+                font-size: 0.52rem;
+                letter-spacing: 0.02em;
+                margin-bottom: 0.14rem;
+            }
+            .stats-card-all .metric-box-value,
+            .stats-card-all .metric-box button {
+                font-size: clamp(0.68rem, 3vw, 0.88rem);
+                line-height: 1.08;
+                white-space: normal;
+                word-break: break-word;
+            }
         }
 
         .note-display { white-space: pre-wrap; word-break: break-all; display: block; line-height: 1.3; }
