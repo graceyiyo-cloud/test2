@@ -468,64 +468,6 @@
             }
         }
 
-
-
-        /* 本次微調：縮窄每筆紀錄的收入 / 支出 / 淨利區塊高度 */
-        td[data-label="金額帳目"] {
-            padding-top: 0.35rem !important;
-            margin-top: 0.45rem !important;
-            border-top-width: 1px !important;
-            font-size: 0.86rem !important;
-        }
-        .record-metric-grid {
-            margin-top: 0 !important;
-            padding: 0 !important;
-            align-items: center !important;
-        }
-        .record-metric-grid .metric-box {
-            padding: 0.04rem 0.35rem !important;
-            min-height: auto !important;
-        }
-        .record-metric-grid .metric-box-label {
-            font-size: 0.54rem !important;
-            line-height: 1.05 !important;
-            margin-bottom: 0 !important;
-        }
-        .record-metric-grid .metric-box-value {
-            font-size: 0.84rem !important;
-            line-height: 1.05 !important;
-        }
-
-
-
-        /* 本次修正：存成圖片時，讓收入 / 支出 / 淨利文字真正對齊直線中央 */
-        tr.capture-align-metrics td[data-label="金額帳目"] {
-            display: block !important;
-            padding-top: 0.22rem !important;
-            padding-bottom: 0.05rem !important;
-        }
-        tr.capture-align-metrics .record-metric-grid {
-            width: 100% !important;
-            align-items: center !important;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-        }
-        tr.capture-align-metrics .record-metric-grid .metric-box {
-            display: grid !important;
-            grid-template-rows: auto auto !important;
-            align-content: center !important;
-            justify-items: start !important;
-            row-gap: 0 !important;
-            min-height: 2.55rem !important;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-            transform: translateY(calc(-0.18rem - 8px));
-        }
-        tr.capture-align-metrics .record-metric-grid .metric-box-label,
-        tr.capture-align-metrics .record-metric-grid .metric-box-value {
-            display: block !important;
-        }
-
         .note-display { white-space: pre-wrap; word-break: break-all; display: block; line-height: 1.3; }
 
         @keyframes highlight-fade {
@@ -1543,7 +1485,6 @@
             const actionCell = el.querySelector('.action-cell');
             const contentTds = el.querySelectorAll('td:not(.action-cell)');
             const customerTd = el.querySelector('td[data-label="客戶"]'); // 鎖定客戶名稱欄位
-            el.classList.add('capture-align-metrics'); // 截圖時修正金額列文字垂直置中
             
             // 使用渲染後的 SVG 類名 (.lucide-phone, .lucide-map-pin) 才能確實抓到圖示
             const iconsToHide = el.querySelectorAll('.lucide-phone, .lucide-map-pin, button[onclick^="copyText"]');
@@ -1577,7 +1518,6 @@
                 iconsToHide.forEach(icon => icon.style.removeProperty('display'));
                 el.style.removeProperty('background-color');
                 el.style.removeProperty('border-top');
-                el.classList.remove('capture-align-metrics');
                 contentTds.forEach(td => {
                     td.style.removeProperty('position');
                     td.style.removeProperty('top');
