@@ -434,7 +434,7 @@
             background: transparent !important;
             border: 0 !important;
             border-radius: 0 !important;
-            /* 修改：增加 padding-bottom 使垂直直線超越數字 */
+            /* 增加 padding-bottom 使垂直直線超越數字 */
             padding: 0 0.35rem 0.4rem !important; 
             box-shadow: none !important;
             text-align: left !important;
@@ -1511,7 +1511,7 @@
                 td.style.setProperty('top', '-8px', 'important');
             });
 
-            // 特別針對數值區塊額外拉升 (本次微調：將偏移從 -8px 改為 -18px 以向上移 10px)
+            // 特別針對數值區塊額外拉升 (向上移 10px)
             if (metricGrid) {
                 metricGrid.style.setProperty('margin-top', '-18px', 'important');
             }
@@ -1520,10 +1520,11 @@
                 customerTd.style.setProperty('margin-top', '-10px', 'important');
             }
             
-            // 將垂直直線往下移動 3px
+            // 將垂直直線往下移動，並增加起點透明度補償 (避免插出去虛線)
+            // 將原本 3px 起點下調至 13px，確保虛線下方才開始繪製
             metricBoxesWithLines.forEach(box => {
                 box.style.setProperty('border-right', 'none', 'important');
-                box.style.setProperty('background-image', 'linear-gradient(to bottom, transparent 3px, #e2e8f0 3px)', 'important');
+                box.style.setProperty('background-image', 'linear-gradient(to bottom, transparent 13px, #e2e8f0 13px)', 'important');
                 box.style.setProperty('background-size', '1px 100%', 'important');
                 box.style.setProperty('background-repeat', 'no-repeat', 'important');
                 box.style.setProperty('background-position', 'right', 'important');
