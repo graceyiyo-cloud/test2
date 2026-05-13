@@ -1487,6 +1487,9 @@
             const customerTd = el.querySelector('td[data-label="客戶"]');
             const metricGrid = el.querySelector('.record-metric-grid'); // 鎖定數據區域
             
+            // 鎖定垂直直線 (左側邊框的 box) 進行 3px 向下移動處理
+            const metricBoxesWithLines = el.querySelectorAll('.record-metric-grid .metric-box:not(:last-child)');
+
             // 使用渲染後的 SVG 類名才能確實抓到圖示
             const iconsToHide = el.querySelectorAll('.lucide-phone, .lucide-map-pin, button[onclick^="copyText"]');
             
@@ -1501,13 +1504,13 @@
             el.style.setProperty('background-color', '#ffffff', 'important');
             el.style.setProperty('border-top', 'none', 'important'); 
             
-            // 修改：內容文字整體微調，避免撐寬
+            // 內容文字整體微調
             contentTds.forEach(td => {
                 td.style.setProperty('position', 'relative', 'important');
                 td.style.setProperty('top', '-8px', 'important');
             });
 
-            // 修改：特別針對數值區塊額外拉升，補足 8px 需求
+            // 特別針對數值區塊額外拉升
             if (metricGrid) {
                 metricGrid.style.setProperty('margin-top', '-8px', 'important');
             }
@@ -1516,6 +1519,16 @@
                 customerTd.style.setProperty('margin-top', '-10px', 'important');
             }
             
+            // 本次修改：將垂直直線往下移動 3px
+            // 原理：暫時隱藏原生 border，改用背景漸層模擬從 3px 位置開始的邊線
+            metricBoxesWithLines.forEach(box => {
+                box.style.setProperty('border-right', 'none', 'important');
+                box.style.setProperty('background-image', 'linear-gradient(to bottom, transparent 3px, #e2e8f0 3px)', 'important');
+                box.style.setProperty('background-size', '1px 100%', 'important');
+                box.style.setProperty('background-repeat', 'no-repeat', 'important');
+                box.style.setProperty('background-position', 'right', 'important');
+            });
+
             // 2. 執行截圖
             html2canvas(el, {
                 scale: 2, 
@@ -1540,6 +1553,15 @@
                     customerTd.style.removeProperty('margin-top');
                 }
                 
+                // 還原分割線樣式
+                metricBoxesWithLines.forEach(box => {
+                    box.style.removeProperty('border-right');
+                    box.style.removeProperty('background-image');
+                    box.style.removeProperty('background-size');
+                    box.style.removeProperty('background-repeat');
+                    box.style.removeProperty('background-position');
+                });
+
                 // 4. 為輸出的圖片加上看得見但柔和的外框後再下載
                 const framedCanvas = document.createElement('canvas');
                 const ctx = framedCanvas.getContext('2d');
@@ -1563,7 +1585,6 @@
                 };
 
                 ctx.clearRect(0, 0, framedCanvas.width, framedCanvas.height);
-
                 ctx.save();
                 drawRoundedRect(ctx, 6, 6, framedCanvas.width - 12, framedCanvas.height - 12, radius + 8);
                 ctx.fillStyle = '#f8fafc';
