@@ -141,14 +141,14 @@
             text-align: center;
         }
         .pass-label {
-            display: block;
+            display: inline; /* 改為 inline */
             font-size: 0.58rem;
             font-weight: 800;
             letter-spacing: 0.04em;
-            margin-bottom: 0.12rem;
+            margin-right: 4px; /* 增加與數字的間距 */
         }
         .pass-value {
-            display: block;
+            display: inline; /* 改為 inline */
             font-size: 0.72rem;
             font-weight: 900;
             white-space: nowrap;
@@ -184,17 +184,18 @@
             padding: 0.55rem 0.45rem;
             text-align: center;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
+            white-space: nowrap; /* 確保內容不換行 */
         }
         .metric-box-label {
-            display: block;
+            display: inline; /* 修改：由 block 改為 inline */
             font-size: 0.62rem;
             font-weight: 800;
             letter-spacing: 0.04em;
-            margin-bottom: 0.15rem;
+            margin-right: 4px; /* 修改：增加與右側數字的間距 */
         }
         .metric-box-value,
         .metric-box button {
-            display: inline-block;
+            display: inline; /* 修改：由 inline-block 改為 inline */
             font-size: 1rem;
             line-height: 1.1;
             font-weight: 900;
@@ -434,7 +435,7 @@
             background: transparent !important;
             border: 0 !important;
             border-radius: 0 !important;
-            /* 修改：微調 padding-bottom 以優化間距與直線長度 */
+            /* 增加 padding-bottom 使垂直直線超越數字 */
             padding: 0 0.35rem 0.4rem !important; 
             box-shadow: none !important;
             text-align: left !important;
@@ -500,7 +501,6 @@
         }
         /* 金額帳目增加明顯分隔線與粗體，並增加與上方文字的距離 */
         td[data-label="金額帳目"] { 
-            /* 修改：增加 padding 與 margin 使文字遠離虛線 */
             padding-top: 0.7rem !important; 
             margin-top: 0.7rem; 
             border-top: 2px dashed #cbd5e1 !important; color: #1e293b; font-size: 0.9rem; font-weight: 700;
@@ -1512,7 +1512,7 @@
                 td.style.setProperty('top', '-8px', 'important');
             });
 
-            // 特別針對數值區塊額外拉升 (修正：調整偏移量為 -13px 以解決文字離虛線太近的問題)
+            // 特別針對數值區塊額外拉升 (向上移 10px)
             if (metricGrid) {
                 metricGrid.style.setProperty('margin-top', '-13px', 'important');
             }
