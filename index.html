@@ -141,14 +141,14 @@
             text-align: center;
         }
         .pass-label {
-            display: inline; /* 改為 inline */
+            display: block; /* 恢復預設堆疊 */
             font-size: 0.58rem;
             font-weight: 800;
             letter-spacing: 0.04em;
-            margin-right: 4px; /* 增加與數字的間距 */
+            margin-bottom: 0.12rem;
         }
         .pass-value {
-            display: inline; /* 改為 inline */
+            display: block; /* 恢復預設堆疊 */
             font-size: 0.72rem;
             font-weight: 900;
             white-space: nowrap;
@@ -184,18 +184,18 @@
             padding: 0.55rem 0.45rem;
             text-align: center;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
-            white-space: nowrap; /* 確保內容不換行 */
+            white-space: nowrap;
         }
         .metric-box-label {
-            display: inline; /* 修改：由 block 改為 inline */
+            display: block; /* 恢復預設堆疊樣式 */
             font-size: 0.62rem;
             font-weight: 800;
             letter-spacing: 0.04em;
-            margin-right: 4px; /* 修改：增加與右側數字的間距 */
+            margin-bottom: 0.15rem;
         }
         .metric-box-value,
         .metric-box button {
-            display: inline; /* 修改：由 inline-block 改為 inline */
+            display: inline-block; /* 恢復預設堆疊樣式 */
             font-size: 1rem;
             line-height: 1.1;
             font-weight: 900;
@@ -244,6 +244,17 @@
         }
         .record-metric-grid .metric-box-value {
             font-size: 0.92rem;
+        }
+
+        /* 本次修改：僅針對下方紀錄列表強制水平排列 */
+        .record-metric-grid .metric-box-label {
+            display: inline !important; 
+            margin-right: 4px;
+            margin-bottom: 0 !important;
+        }
+        .record-metric-grid .metric-box-value, 
+        .record-metric-grid button {
+            display: inline !important;
         }
 
         /* 手機版：避免全部年份統計金額超出框框 */
@@ -299,7 +310,7 @@
             }
         }
 
-        /* 本次微調：整體改成平面感，移除明顯立體陰影 */
+        /* 整體改成平面感，移除明顯立體陰影 */
         [class*="shadow"],
         .stats-card,
         .pass-card,
@@ -406,9 +417,7 @@
             margin-top: 0.55rem;
         }
 
-
-
-        /* 本次微調：PASS 收合時減少下方空白，讓區塊貼齊卡片底部 */
+        /* PASS 收合時減少下方空白，讓區塊貼齊卡片底部 */
         .pass-summary-wrap.pass-collapsed {
             padding-bottom: 0.18rem !important;
             margin-bottom: -1.05rem !important;
@@ -421,7 +430,7 @@
             min-height: 0 !important;
         }
 
-        /* 本次微調：下方每筆紀錄的收入 / 支出 / 淨利改成簡潔文字列，不再使用方塊卡片 */
+        /* 下方每筆紀錄的收入 / 支出 / 淨利改成簡潔文字列 */
         .record-metric-grid {
             display: grid !important;
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -435,7 +444,6 @@
             background: transparent !important;
             border: 0 !important;
             border-radius: 0 !important;
-            /* 增加 padding-bottom 使垂直直線超越數字 */
             padding: 0 0.35rem 0.4rem !important; 
             box-shadow: none !important;
             text-align: left !important;
@@ -445,7 +453,6 @@
         }
         .record-metric-grid .metric-box-label {
             font-size: 0.58rem !important;
-            margin-bottom: 0 !important; 
             letter-spacing: 0.03em !important;
             color: #94a3b8 !important;
         }
@@ -487,19 +494,16 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #cbd5e1;
             transition: all 0.3s ease;
         }
-        /* 增加儲存格的上下空間，並加深基礎文字顏色 */
         td { 
             display: block; width: 100%; 
             padding: 0.15rem 0 !important; 
             border: none !important; text-align: left; color: #334155; 
         }
         
-        /* 客戶名稱加大加粗，增加對比 */
         td[data-label="客戶"] { 
             font-weight: 800; font-size: 1.2rem; color: #0f172a; 
             padding-bottom: 0.1rem !important; 
         }
-        /* 金額帳目增加明顯分隔線與粗體，並增加與上方文字的距離 */
         td[data-label="金額帳目"] { 
             padding-top: 0.7rem !important; 
             margin-top: 0.7rem; 
@@ -511,7 +515,6 @@
             padding-top: 0.5rem !important; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;
         }
 
-        /* 預約時間增加底線做為頭部資訊區隔 */
         .time-display { 
             font-size: 0.85rem; color: #475569; font-weight: 600; 
             border-bottom: 1px solid #f1f5f9; 
@@ -523,13 +526,11 @@
             .desktop-half-width { max-width: 50% !important; margin-left: auto; margin-right: auto; }
         }
 
-        /* 小幫手統計浮窗樣式 */
         #assistantSummaryModal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             z-index: 100; width: 90%; max-width: 350px;
         }
 
-        /* Lucide 圖示統一微調 */
         .lucide { width: 14px; height: 14px; stroke-width: 2; display: inline-block; vertical-align: -2px; }
         .btn-icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; }
     </style>
@@ -840,19 +841,15 @@
         let knownPassNames = [];
         let snapshotUnsubscribe = null;
 
-        // 篩選快取，供支出浮窗使用
         let currentYearRecords = [];
         let currentMonthRecords = [];
 
-        // 授權清單
         const allowedEmails = ['eroraror@gmail.com', 'graceyiyo@gmail.com'];
 
-        // 初始化圖示
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
         });
 
-        // 登入狀態監聽
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 if (allowedEmails.includes(user.email.toLowerCase())) {
@@ -1124,7 +1121,6 @@
             lucide.createIcons();
         };
 
-        // 三個快速開啟浮窗的入口
         window.showAllAssistantDetails = () => {
             toggleAssistantModal("小幫手薪資總計 (全期)", allRecords);
         };
@@ -1195,7 +1191,6 @@
             const status = document.getElementById('statusFilter').value;
             const payment = document.getElementById('paymentFilter').value;
 
-            // 統計數據變數 (僅受時間過濾影響，不受關鍵字影響)
             let mRev = 0, mExp = 0, mAc = 0, mWm = 0, mWt = 0;
             let yRev = 0, yExp = 0, yAc = 0, yWm = 0, yWt = 0;
             let aAc = 0, aWm = 0, aWt = 0, aRev = 0, aExp = 0;
@@ -1203,7 +1198,6 @@
             let mPassSummary = {}; 
             let yPassSummary = {}; 
             
-            // 重置篩選快取
             currentYearRecords = [];
             currentMonthRecords = [];
 
@@ -1213,7 +1207,6 @@
             document.getElementById('monthTitle').innerText = mon ? `${filterMonthName} 月份統計` : "全期統計";
 
             allRecords.forEach(r => {
-                // 全部累積計算
                 aAc += (r.acCount || 0); aWm += (r.wmCount || 0); aWt += (r.wtCount || 0);
                 aRev += (r.totalAmount || 0); aExp += (r.assistantPay || 0);
 
@@ -1221,7 +1214,6 @@
                 const iM = r.bookingTime.substring(0, 7);
                 const iQty = (r.acCount || 0) + (r.wmCount || 0) + (r.wtCount || 0);
 
-                // 年度統計計算 (不受列表篩選影響)
                 if (iY === filterYear) { 
                     currentYearRecords.push(r);
                     yRev += r.totalAmount; yExp += r.assistantPay; yAc += (r.acCount || 0); yWm += (r.wmCount || 0); yWt += (r.wtCount || 0); 
@@ -1233,7 +1225,6 @@
                     }
                 }
 
-                // 月度統計計算 (不受列表篩選影響)
                 if (!mon || iM === mon) { 
                     currentMonthRecords.push(r);
                     mRev += r.totalAmount; mExp += r.assistantPay; mAc += (r.acCount || 0); mWm += (r.wmCount || 0); mWt += (r.wtCount || 0);
@@ -1247,7 +1238,6 @@
                 }
             });
 
-            // 列表資料過濾 (受所有篩選器影響)
             const baseFiltered = allRecords.filter(i => {
                 const iM = i.bookingTime.substring(0, 7);
                 const searchStr = `${i.customerName} ${i.address} ${i.acBrand} ${i.assistantDetail || ''} ${i.passFrom || ''} ${i.note}`.toLowerCase();
@@ -1261,7 +1251,6 @@
                 return matchSearch && matchMonth && matchType && matchStatus && matchPayment;
             });
 
-            // 渲染年度 PASS 統計
             const passYearSortedKeys = Object.keys(yPassSummary).sort((a,b) => yPassSummary[b].rev - yPassSummary[a].rev);
             if (passYearSortedKeys.length > 0) {
                 document.getElementById('passYearSummarySection').classList.remove('hidden');
@@ -1297,7 +1286,6 @@
                 document.getElementById('passYearTotal').innerText = `總額 $${passYearTotalAmt.toLocaleString()}`;
             } else { document.getElementById('passYearSummarySection').classList.add('hidden'); }
 
-            // 渲染月度 PASS 統計
             const passSortedKeys = Object.keys(mPassSummary).sort((a,b) => mPassSummary[b].rev - mPassSummary[a].rev);
             if (passSortedKeys.length > 0) {
                 document.getElementById('passSummarySection').classList.remove('hidden');
@@ -1481,38 +1469,29 @@
         window.quickFilterUnpaid = () => { document.getElementById('paymentFilter').value = 'unpaid'; filterRecords(); };
         window.deleteRec = async (id) => { if(confirm('確定要刪除嗎？')) await deleteDoc(doc(db, "cleaningRecords", id)); };
 
-        // 截圖自動下載優化功能
         window.downloadRec = (id) => {
             const el = document.getElementById(`rec-${id}`);
             const actionCell = el.querySelector('.action-cell');
             const contentTds = el.querySelectorAll('td:not(.action-cell)');
             const customerTd = el.querySelector('td[data-label="客戶"]');
-            const metricGrid = el.querySelector('.record-metric-grid'); // 鎖定數據區域
-            
-            // 鎖定垂直直線 (左側邊框的 box) 進行向下移動處理
+            const metricGrid = el.querySelector('.record-metric-grid');
             const metricBoxesWithLines = el.querySelectorAll('.record-metric-grid .metric-box:not(:last-child)');
-
-            // 使用渲染後的 SVG 類名才能確實抓到圖示
             const iconsToHide = el.querySelectorAll('.lucide-phone, .lucide-map-pin, button[onclick^="copyText"]');
             
-            // 1. 隱藏按鈕區、圖示，處理底色與邊框
             actionCell.style.display = 'none';
             iconsToHide.forEach(icon => icon.style.display = 'none');
             
-            // 鎖定寬度防止負位移導致版面變寬
             const originalWidth = el.style.width;
             el.style.width = getComputedStyle(el).width;
             
             el.style.setProperty('background-color', '#ffffff', 'important');
             el.style.setProperty('border-top', 'none', 'important'); 
             
-            // 內容文字整體微調
             contentTds.forEach(td => {
                 td.style.setProperty('position', 'relative', 'important');
                 td.style.setProperty('top', '-8px', 'important');
             });
 
-            // 特別針對數值區塊額外拉升 (向上移 10px)
             if (metricGrid) {
                 metricGrid.style.setProperty('margin-top', '-13px', 'important');
             }
@@ -1521,7 +1500,6 @@
                 customerTd.style.setProperty('margin-top', '-10px', 'important');
             }
             
-            // 將垂直直線往下移動，並增加起點透明度補償 (修正：調整為 15px 以對應數據區塊偏移)
             metricBoxesWithLines.forEach(box => {
                 box.style.setProperty('border-right', 'none', 'important');
                 box.style.setProperty('background-image', 'linear-gradient(to bottom, transparent 15px, #e2e8f0 15px)', 'important');
@@ -1530,14 +1508,12 @@
                 box.style.setProperty('background-position', 'right', 'important');
             });
 
-            // 2. 執行截圖
             html2canvas(el, {
                 scale: 2, 
                 backgroundColor: "#ffffff", 
                 useCORS: true,
                 logging: false
             }).then(canvas => {
-                // 3. 還原所有修改的樣式
                 actionCell.style.display = 'flex';
                 iconsToHide.forEach(icon => icon.style.removeProperty('display'));
                 el.style.width = originalWidth;
@@ -1554,7 +1530,6 @@
                     customerTd.style.removeProperty('margin-top');
                 }
                 
-                // 還原分割線樣式
                 metricBoxesWithLines.forEach(box => {
                     box.style.removeProperty('border-right');
                     box.style.removeProperty('background-image');
@@ -1563,7 +1538,6 @@
                     box.style.removeProperty('background-position');
                 });
 
-                // 4. 為輸出的圖片加上看得見但柔和的外框後再下載
                 const framedCanvas = document.createElement('canvas');
                 const ctx = framedCanvas.getContext('2d');
                 const padding = 28;
