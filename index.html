@@ -855,15 +855,15 @@
                             <button onclick="clearMonthFilter()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl transition-all leading-none" title="清除年月篩選"><i data-lucide="calendar-x" class="w-4 h-4"></i></button>
                         </div>
                     </div>
-                    <!-- 本次修正：移除帳務狀態篩選，施工進度改為按鈕點選 -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                        <select id="typeFilter" onchange="filterRecords()" class="bg-slate-50 border-none rounded-xl p-2 text-[10px] outline-none h-[38px]">
-                            <option value="all">全部品項</option>
-                            <option value="ac">冷氣</option>
-                            <option value="wm">洗衣機</option>
-                            <option value="wt">水塔</option>
-                        </select>
-                        <div class="col-span-2 flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
+                    <!-- 本次修正：品項篩選也改為點選式分頁鈕，佈局採 1:1 分配 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div id="typeFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
+                            <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-white shadow-sm text-slate-700">全部品項</button>
+                            <button type="button" onclick="setTypeFilter('ac', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">冷氣</button>
+                            <button type="button" onclick="setTypeFilter('wm', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">洗衣機</button>
+                            <button type="button" onclick="setTypeFilter('wt', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">水塔</button>
+                        </div>
+                        <div id="statusFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
                             <button type="button" onclick="setStatusFilter('all', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-white shadow-sm text-slate-700">全部進度</button>
                             <button type="button" onclick="setStatusFilter('completed', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">已完成</button>
                             <button type="button" onclick="setStatusFilter('pending', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">待處理</button>
@@ -919,8 +919,10 @@
 
         let currentYearRecords = [];
         let currentMonthRecords = [];
-        // 本次修正：狀態篩選變數
+        
+        // 本次修正：狀態與品項篩選變數
         let currentStatusFilter = 'all';
+        let currentTypeFilter = 'all';
 
         const allowedEmails = ['eroraror@gmail.com', 'graceyiyo@gmail.com'];
 
@@ -1280,12 +1282,24 @@
             filterRecords();
         };
 
+        // 本次修正：處理品項按鈕點選
+        window.setTypeFilter = (val, btn) => {
+            currentTypeFilter = val;
+            document.querySelectorAll('.type-btn').forEach(b => {
+                b.classList.remove('bg-white', 'shadow-sm', 'text-slate-700');
+                b.classList.add('text-slate-400');
+            });
+            btn.classList.add('bg-white', 'shadow-sm', 'text-slate-700');
+            btn.classList.remove('text-slate-400');
+            filterRecords();
+        };
+
         window.filterRecords = () => {
             const kw = document.getElementById('searchKeyword').value.toLowerCase();
             const mon = document.getElementById('monthFilter').value;
-            const type = document.getElementById('typeFilter').value;
             
-            // 本次修正：從變數讀取進度篩選，移除帳務篩選邏輯
+            // 本次修正：從變數讀取點選後的篩選狀態
+            const type = currentTypeFilter;
             const status = currentStatusFilter;
 
             let mRev = 0, mExp = 0, mAc = 0, mWm = 0, mWt = 0;
@@ -1347,14 +1361,14 @@
                 
                 const matchSearch = searchStr.includes(kw);
                 const matchMonth = (!mon || iM === mon);
+                // 本次修正：使用點選狀態進行篩選
                 const matchType = (type === 'all' || (type === 'ac' && i.acCount > 0) || (type === 'wm' && i.wmCount > 0) || (type === 'wt' && i.wtCount > 0));
-                // 本次修正：套用按鈕狀態篩選
                 const matchStatus = (status === 'all' || i.status === status);
 
                 return matchSearch && matchMonth && matchType && matchStatus;
             });
 
-            // 更新懸浮待收組件核心修復邏輯
+            // 更新懸浮待收組件核心邏輯
             const floatingWrap = document.getElementById('floatingUnpaidWrap');
             const floatingBadgeCount = document.getElementById('unpaidCountBadge');
             const floatingList = document.getElementById('floatingUnpaidList');
@@ -1373,7 +1387,7 @@
                     </div>
                 `).join('');
             } else {
-                // 完全沒有待收時，強制隱藏按鈕與面板，並重置數字
+                // 當沒有待收款項時，絕對隱藏
                 floatingWrap.classList.add('hidden');
                 floatingList.classList.add('hidden');
                 floatingBadgeCount.innerText = "0";
