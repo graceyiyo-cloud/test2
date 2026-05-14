@@ -855,16 +855,16 @@
                             <button onclick="clearMonthFilter()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl transition-all leading-none" title="清除年月篩選"><i data-lucide="calendar-x" class="w-4 h-4"></i></button>
                         </div>
                     </div>
-                    <!-- 本次修正：品項篩選也改為點選式分頁鈕，佈局採 1:1 分配 -->
+                    <!-- 本次修正：品項與進度篩選按鈕群組 -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                         <div id="typeFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
-                            <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-white shadow-sm text-slate-700">全部品項</button>
+                            <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部品項</button>
                             <button type="button" onclick="setTypeFilter('ac', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">冷氣</button>
                             <button type="button" onclick="setTypeFilter('wm', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">洗衣機</button>
                             <button type="button" onclick="setTypeFilter('wt', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">水塔</button>
                         </div>
                         <div id="statusFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
-                            <button type="button" onclick="setStatusFilter('all', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-white shadow-sm text-slate-700">全部進度</button>
+                            <button type="button" onclick="setStatusFilter('all', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部進度</button>
                             <button type="button" onclick="setStatusFilter('completed', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">已完成</button>
                             <button type="button" onclick="setStatusFilter('pending', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">待處理</button>
                         </div>
@@ -920,7 +920,7 @@
         let currentYearRecords = [];
         let currentMonthRecords = [];
         
-        // 本次修正：狀態與品項篩選變數
+        // 狀態與品項篩選變數
         let currentStatusFilter = 'all';
         let currentTypeFilter = 'all';
 
@@ -1270,26 +1270,28 @@
             if (list) list.classList.toggle('hidden');
         };
 
-        // 本次修正：處理進度按鈕點選
+        // 本次修正：處理進度按鈕點選與配色
         window.setStatusFilter = (val, btn) => {
             currentStatusFilter = val;
+            const statusColors = { all: 'bg-slate-200', completed: 'bg-emerald-100', pending: 'bg-amber-100' };
             document.querySelectorAll('.status-btn').forEach(b => {
-                b.classList.remove('bg-white', 'shadow-sm', 'text-slate-700');
+                b.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-amber-100', 'shadow-sm', 'text-slate-700');
                 b.classList.add('text-slate-400');
             });
-            btn.classList.add('bg-white', 'shadow-sm', 'text-slate-700');
+            btn.classList.add(statusColors[val], 'shadow-sm', 'text-slate-700');
             btn.classList.remove('text-slate-400');
             filterRecords();
         };
 
-        // 本次修正：處理品項按鈕點選
+        // 本次修正：處理品項按鈕點選與配色
         window.setTypeFilter = (val, btn) => {
             currentTypeFilter = val;
+            const typeColors = { all: 'bg-slate-200', ac: 'bg-emerald-100', wm: 'bg-blue-100', wt: 'bg-purple-100' };
             document.querySelectorAll('.type-btn').forEach(b => {
-                b.classList.remove('bg-white', 'shadow-sm', 'text-slate-700');
+                b.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-blue-100', 'bg-purple-100', 'shadow-sm', 'text-slate-700');
                 b.classList.add('text-slate-400');
             });
-            btn.classList.add('bg-white', 'shadow-sm', 'text-slate-700');
+            btn.classList.add(typeColors[val], 'shadow-sm', 'text-slate-700');
             btn.classList.remove('text-slate-400');
             filterRecords();
         };
@@ -1298,7 +1300,7 @@
             const kw = document.getElementById('searchKeyword').value.toLowerCase();
             const mon = document.getElementById('monthFilter').value;
             
-            // 本次修正：從變數讀取點選後的篩選狀態
+            // 從變數讀取點選後的篩選狀態
             const type = currentTypeFilter;
             const status = currentStatusFilter;
 
@@ -1361,7 +1363,7 @@
                 
                 const matchSearch = searchStr.includes(kw);
                 const matchMonth = (!mon || iM === mon);
-                // 本次修正：使用點選狀態進行篩選
+                // 使用點選狀態進行篩選
                 const matchType = (type === 'all' || (type === 'ac' && i.acCount > 0) || (type === 'wm' && i.wmCount > 0) || (type === 'wt' && i.wtCount > 0));
                 const matchStatus = (status === 'all' || i.status === status);
 
