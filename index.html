@@ -25,7 +25,9 @@
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif; 
             background-color: #ffffff !important;
         }
-        .hidden { display: none; }
+        /* 本次修正：加上 !important 確保能蓋過 ID 選擇器的 display 屬性 */
+        .hidden { display: none !important; }
+        
         /* 已完成狀態：改成上方單一細線，不再使用左側直線 */
         .completed-row { 
             background-color: #f6f8fb !important; 
@@ -1328,13 +1330,14 @@
                 return matchSearch && matchMonth && matchType && matchStatus && matchPayment;
             });
 
-            // 更新懸浮待收組件核心邏輯
+            // 更新懸浮待收組件核心修復邏輯
             const floatingWrap = document.getElementById('floatingUnpaidWrap');
             const floatingBadgeCount = document.getElementById('unpaidCountBadge');
             const floatingList = document.getElementById('floatingUnpaidList');
             const floatingItemsContainer = document.getElementById('floatingUnpaidItems');
 
             if (systemUnpaidDetails.length > 0) {
+                // 有待收款項時顯示按鈕
                 floatingWrap.classList.remove('hidden');
                 floatingBadgeCount.innerText = systemUnpaidDetails.length;
                 floatingItemsContainer.innerHTML = systemUnpaidDetails.map(item => `
@@ -1346,7 +1349,7 @@
                     </div>
                 `).join('');
             } else {
-                // 當沒有待收款項時，絕對隱藏
+                // 完全沒有待收時，強制隱藏按鈕與面板，並重置數字
                 floatingWrap.classList.add('hidden');
                 floatingList.classList.add('hidden');
                 floatingBadgeCount.innerText = "0";
@@ -1672,7 +1675,6 @@
                 ctx.restore();
 
                 ctx.save();
-                ctx.shadowColor = 'transparent';
                 drawRoundedRect(ctx, padding, padding, canvas.width, canvas.height, radius);
                 ctx.clip();
                 ctx.drawImage(canvas, padding, padding);
