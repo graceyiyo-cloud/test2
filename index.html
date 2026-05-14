@@ -534,7 +534,7 @@
         .lucide { width: 14px; height: 14px; stroke-width: 2; display: inline-block; vertical-align: -2px; }
         .btn-icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; }
 
-        /* 本次新增：懸浮待收提醒組件樣式 */
+        /* 本次修改：懸浮待收提醒組件樣式 */
         #floatingUnpaidWrap {
             position: fixed;
             bottom: 24px;
@@ -833,7 +833,7 @@
                             </div>
                         </div>
 
-                        <!-- 舊有待收區塊已永久隱藏，改由懸浮組件接手 -->
+                        <!-- 舊有待收區塊設為隱藏 -->
                         <div id="unpaidSection" class="hidden"></div>
                     </div>
                 </div>
@@ -864,11 +864,11 @@
             </section>
         </div>
 
-        <!-- 本次新增：懸浮待收提醒 HTML 結構 -->
+        <!-- 懸浮待收提醒 HTML 結構 -->
         <div id="floatingUnpaidWrap" class="hidden">
             <div id="floatingUnpaidList" class="floating-unpaid-list hidden">
                 <h5 class="text-[11px] font-bold text-amber-700 uppercase tracking-widest mb-2 pb-2 border-b border-amber-100 flex justify-between items-center">
-                    <span>待收款明細</span>
+                    <span>待收款明細 (全系統)</span>
                     <button onclick="toggleFloatingUnpaid()" class="text-amber-400 font-bold">&times;</button>
                 </h5>
                 <div id="floatingUnpaidItems" class="space-y-1.5"></div>
@@ -1249,10 +1249,10 @@
             filterRecords();
         };
 
-        // 本次新增：切換懸浮待收列表面板
+        // 切換懸浮待收列表面板
         window.toggleFloatingUnpaid = () => {
             const list = document.getElementById('floatingUnpaidList');
-            list.classList.toggle('hidden');
+            if (list) list.classList.toggle('hidden');
         };
 
         window.filterRecords = () => {
@@ -1265,7 +1265,9 @@
             let mRev = 0, mExp = 0, mAc = 0, mWm = 0, mWt = 0;
             let yRev = 0, yExp = 0, yAc = 0, yWm = 0, yWt = 0;
             let aAc = 0, aWm = 0, aWt = 0, aRev = 0, aExp = 0;
-            let mUnpaidDetails = []; 
+            
+            // 本次邏輯修正：將全系統待收明細拉出來獨立追蹤
+            let systemUnpaidDetails = []; 
             let mPassSummary = {}; 
             let yPassSummary = {}; 
             
@@ -1278,8 +1280,14 @@
             document.getElementById('monthTitle').innerText = mon ? `${filterMonthName} 月份統計` : "全期統計";
 
             allRecords.forEach(r => {
+                // 1. 全系統總計
                 aAc += (r.acCount || 0); aWm += (r.wmCount || 0); aWt += (r.wtCount || 0);
                 aRev += (r.totalAmount || 0); aExp += (r.assistantPay || 0);
+
+                // 2. 核心邏輯修正：全系統待收追蹤 (不受月份篩選影響，確保「有待收就顯示驚嘆號」)
+                if (r.payment === 'unpaid') {
+                    systemUnpaidDetails.push({ id: r.id, name: r.customerName, amount: r.totalAmount });
+                }
 
                 const iY = r.bookingTime.split('-')[0];
                 const iM = r.bookingTime.substring(0, 7);
@@ -1299,7 +1307,6 @@
                 if (!mon || iM === mon) { 
                     currentMonthRecords.push(r);
                     mRev += r.totalAmount; mExp += r.assistantPay; mAc += (r.acCount || 0); mWm += (r.wmCount || 0); mWt += (r.wtCount || 0);
-                    if (r.payment === 'unpaid') mUnpaidDetails.push({ id: r.id, name: r.customerName, amount: r.totalAmount });
                     if (r.passFrom) {
                         mPassSummary[r.passFrom] = (mPassSummary[r.passFrom] || { qty: 0, rev: 0, exp: 0 });
                         mPassSummary[r.passFrom].qty += iQty;
@@ -1322,12 +1329,12 @@
                 return matchSearch && matchMonth && matchType && matchStatus && matchPayment;
             });
 
-            // 更新懸浮待收組件邏輯
+            // 更新懸浮待收組件
             const floatingWrap = document.getElementById('floatingUnpaidWrap');
-            if (mUnpaidDetails.length > 0) {
+            if (systemUnpaidDetails.length > 0) {
                 floatingWrap.classList.remove('hidden');
-                document.getElementById('unpaidCountBadge').innerText = mUnpaidDetails.length;
-                document.getElementById('floatingUnpaidItems').innerHTML = mUnpaidDetails.map(item => `
+                document.getElementById('unpaidCountBadge').innerText = systemUnpaidDetails.length;
+                document.getElementById('floatingUnpaidItems').innerHTML = systemUnpaidDetails.map(item => `
                     <div class="floating-unpaid-item">
                         <button onclick="scrollToRecord('${item.id}'); toggleFloatingUnpaid();" class="text-left hover:underline text-[13px] font-bold text-amber-800 truncate flex-1">
                             • ${item.name}
@@ -1336,6 +1343,7 @@
                     </div>
                 `).join('');
             } else {
+                // 如果沒有待收款，隱藏整個懸浮組件及面板
                 floatingWrap.classList.add('hidden');
                 document.getElementById('floatingUnpaidList').classList.add('hidden');
             }
