@@ -613,7 +613,8 @@
     </section>
 
     <div id="mainApp" class="hidden">
-        <nav class="bg-slate-600 text-white py-2 px-4 shadow-md sticky top-0 z-50">
+        <!-- 本次修正：移除 sticky top-0 z-50 -->
+        <nav class="bg-slate-600 text-white py-2 px-4 shadow-md">
             <div class="container mx-auto flex justify-between items-center">
                 <h1 class="text-lg font-bold tracking-widest">冷氣清洗紀錄</h1>
                 <div class="flex space-x-2">
@@ -855,7 +856,7 @@
                             <button onclick="clearMonthFilter()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl transition-all leading-none" title="清除年月篩選"><i data-lucide="calendar-x" class="w-4 h-4"></i></button>
                         </div>
                     </div>
-                    <!-- 本次修正：品項與進度篩選按鈕群組 -->
+                    <!-- 品項與進度篩選按鈕群組 -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                         <div id="typeFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
                             <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部品項</button>
