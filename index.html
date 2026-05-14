@@ -833,7 +833,7 @@
                             </div>
                         </div>
 
-                        <!-- 舊有待收區塊設為隱藏 -->
+                        <!-- 舊有待收區塊已隱藏 -->
                         <div id="unpaidSection" class="hidden"></div>
                     </div>
                 </div>
@@ -1266,7 +1266,7 @@
             let yRev = 0, yExp = 0, yAc = 0, yWm = 0, yWt = 0;
             let aAc = 0, aWm = 0, aWt = 0, aRev = 0, aExp = 0;
             
-            // 每次重新過濾前，重置系統待收明細
+            // 每次重新過濾前，重置全系統待收明細
             let systemUnpaidDetails = []; 
             let mPassSummary = {}; 
             let yPassSummary = {}; 
@@ -1280,14 +1280,13 @@
             document.getElementById('monthTitle').innerText = mon ? `${filterMonthName} 月份統計` : "全期統計";
 
             allRecords.forEach(r => {
-                // 1. 全系統總計
-                aAc += (r.acCount || 0); aWm += (r.wmCount || 0); aWt += (r.wtCount || 0);
-                aRev += (r.totalAmount || 0); aExp += (r.assistantPay || 0);
-
-                // 2. 系統待收追蹤
+                // 1. 全系統掃描待收
                 if (r.payment === 'unpaid') {
                     systemUnpaidDetails.push({ id: r.id, name: r.customerName, amount: r.totalAmount });
                 }
+
+                aAc += (r.acCount || 0); aWm += (r.wmCount || 0); aWt += (r.wtCount || 0);
+                aRev += (r.totalAmount || 0); aExp += (r.assistantPay || 0);
 
                 const iY = r.bookingTime.split('-')[0];
                 const iM = r.bookingTime.substring(0, 7);
@@ -1329,7 +1328,7 @@
                 return matchSearch && matchMonth && matchType && matchStatus && matchPayment;
             });
 
-            // 更新懸浮待收組件核心修復邏輯
+            // 更新懸浮待收組件核心邏輯
             const floatingWrap = document.getElementById('floatingUnpaidWrap');
             const floatingBadgeCount = document.getElementById('unpaidCountBadge');
             const floatingList = document.getElementById('floatingUnpaidList');
@@ -1347,11 +1346,10 @@
                     </div>
                 `).join('');
             } else {
-                // 完全沒有待收時，確保所有相關組件通通隱藏
+                // 當沒有待收款項時，絕對隱藏
                 floatingWrap.classList.add('hidden');
                 floatingList.classList.add('hidden');
                 floatingBadgeCount.innerText = "0";
-                floatingItemsContainer.innerHTML = "";
             }
 
             const passYearSortedKeys = Object.keys(yPassSummary).sort((a,b) => yPassSummary[b].rev - yPassSummary[a].rev);
@@ -1674,6 +1672,7 @@
                 ctx.restore();
 
                 ctx.save();
+                ctx.shadowColor = 'transparent';
                 drawRoundedRect(ctx, padding, padding, canvas.width, canvas.height, radius);
                 ctx.clip();
                 ctx.drawImage(canvas, padding, padding);
