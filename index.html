@@ -534,7 +534,7 @@
         .lucide { width: 14px; height: 14px; stroke-width: 2; display: inline-block; vertical-align: -2px; }
         .btn-icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; }
 
-        /* 本次修改：懸浮待收提醒組件樣式 */
+        /* 懸浮待收提醒組件樣式 */
         #floatingUnpaidWrap {
             position: fixed;
             bottom: 24px;
@@ -1266,7 +1266,7 @@
             let yRev = 0, yExp = 0, yAc = 0, yWm = 0, yWt = 0;
             let aAc = 0, aWm = 0, aWt = 0, aRev = 0, aExp = 0;
             
-            // 本次邏輯修正：將全系統待收明細拉出來獨立追蹤
+            // 每次重新過濾前，重置系統待收明細
             let systemUnpaidDetails = []; 
             let mPassSummary = {}; 
             let yPassSummary = {}; 
@@ -1284,7 +1284,7 @@
                 aAc += (r.acCount || 0); aWm += (r.wmCount || 0); aWt += (r.wtCount || 0);
                 aRev += (r.totalAmount || 0); aExp += (r.assistantPay || 0);
 
-                // 2. 核心邏輯修正：全系統待收追蹤 (不受月份篩選影響，確保「有待收就顯示驚嘆號」)
+                // 2. 系統待收追蹤
                 if (r.payment === 'unpaid') {
                     systemUnpaidDetails.push({ id: r.id, name: r.customerName, amount: r.totalAmount });
                 }
@@ -1329,12 +1329,16 @@
                 return matchSearch && matchMonth && matchType && matchStatus && matchPayment;
             });
 
-            // 更新懸浮待收組件
+            // 更新懸浮待收組件核心修復邏輯
             const floatingWrap = document.getElementById('floatingUnpaidWrap');
+            const floatingBadgeCount = document.getElementById('unpaidCountBadge');
+            const floatingList = document.getElementById('floatingUnpaidList');
+            const floatingItemsContainer = document.getElementById('floatingUnpaidItems');
+
             if (systemUnpaidDetails.length > 0) {
                 floatingWrap.classList.remove('hidden');
-                document.getElementById('unpaidCountBadge').innerText = systemUnpaidDetails.length;
-                document.getElementById('floatingUnpaidItems').innerHTML = systemUnpaidDetails.map(item => `
+                floatingBadgeCount.innerText = systemUnpaidDetails.length;
+                floatingItemsContainer.innerHTML = systemUnpaidDetails.map(item => `
                     <div class="floating-unpaid-item">
                         <button onclick="scrollToRecord('${item.id}'); toggleFloatingUnpaid();" class="text-left hover:underline text-[13px] font-bold text-amber-800 truncate flex-1">
                             • ${item.name}
@@ -1343,9 +1347,11 @@
                     </div>
                 `).join('');
             } else {
-                // 如果沒有待收款，隱藏整個懸浮組件及面板
+                // 完全沒有待收時，確保所有相關組件通通隱藏
                 floatingWrap.classList.add('hidden');
-                document.getElementById('floatingUnpaidList').classList.add('hidden');
+                floatingList.classList.add('hidden');
+                floatingBadgeCount.innerText = "0";
+                floatingItemsContainer.innerHTML = "";
             }
 
             const passYearSortedKeys = Object.keys(yPassSummary).sort((a,b) => yPassSummary[b].rev - yPassSummary[a].rev);
