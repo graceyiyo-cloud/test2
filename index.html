@@ -141,14 +141,14 @@
             text-align: center;
         }
         .pass-label {
-            display: block; 
+            display: block; /* 恢復預設堆疊 */
             font-size: 0.58rem;
             font-weight: 800;
             letter-spacing: 0.04em;
             margin-bottom: 0.12rem;
         }
         .pass-value {
-            display: block; 
+            display: block; /* 恢復預設堆疊 */
             font-size: 0.72rem;
             font-weight: 900;
             white-space: nowrap;
@@ -187,7 +187,7 @@
             white-space: nowrap;
         }
         .metric-box-label {
-            display: block; 
+            display: block; /* 恢復預設堆疊樣式 */
             font-size: 0.62rem;
             font-weight: 800;
             letter-spacing: 0.04em;
@@ -195,7 +195,7 @@
         }
         .metric-box-value,
         .metric-box button {
-            display: inline-block; 
+            display: inline-block; /* 恢復預設堆疊樣式 */
             font-size: 1rem;
             line-height: 1.1;
             font-weight: 900;
@@ -208,22 +208,22 @@
         .metric-box button { cursor: pointer; }
         .metric-box-rev { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
         .metric-box-exp { background: #fff1f2; border-color: #fecdd3; color: #e11d48; }
-        .metric-box-net { background: transparent !important; border-color: #e2e8f0 !important; color: #047857; }
+        .metric-box-net { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
 
         .stats-card-all .metric-box-rev { background: rgba(191, 219, 254, 0.14); border-color: rgba(191, 219, 254, 0.2); color: #dbeafe; }
         .stats-card-all .metric-box-exp { background: rgba(253, 164, 175, 0.14); border-color: rgba(253, 164, 175, 0.2); color: #fecdd3; }
-        .stats-card-all .metric-box-net { background: transparent !important; border-color: rgba(110, 231, 183, 0.22) !important; color: #bbf7d0; }
+        .stats-card-all .metric-box-net { background: rgba(110, 231, 183, 0.15); border-color: rgba(110, 231, 183, 0.22); color: #bbf7d0; }
 
         .stats-card-year .metric-box-rev { background: #f8fafc; border-color: #dbe4ef; color: #334155; }
         .stats-card-year .metric-box-exp { background: #fff1f2; border-color: #fecdd3; color: #e11d48; }
-        .stats-card-year .metric-box-net { background: transparent !important; border-color: #b7ebd1 !important; color: #047857; }
+        .stats-card-year .metric-box-net { background: #eefcf5; border-color: #b7ebd1; color: #047857; }
 
         .stats-card-month .metric-box-rev { background: #f5f3ff; border-color: #ddd6fe; color: #6d5cae; }
         .stats-card-month .metric-box-exp { background: #fff1f2; border-color: #fecdd3; color: #e11d48; }
-        .stats-card-month .metric-box-net { background: transparent !important; border-color: #c7d2fe !important; color: #4f46e5; }
+        .stats-card-month .metric-box-net { background: #eef2ff; border-color: #c7d2fe; color: #4f46e5; }
 
         .pass-metric.pass-net {
-            background: transparent !important;
+            background: #ecfdf5 !important;
             border: 1px solid #a7f3d0;
             color: #047857 !important;
         }
@@ -246,16 +246,7 @@
             font-size: 0.92rem;
         }
 
-        /* 僅針對下方紀錄列表強制水平排列，並改為置中 */
-        .record-metric-grid .metric-box {
-            background: transparent !important;
-            border: 0 !important;
-            border-radius: 0 !important;
-            /* 修改：padding-top 改為 1px 以微移文字位置，並保持透明底色 */
-            padding: 1px 0.35rem 0.4rem !important; 
-            box-shadow: none !important;
-            text-align: center !important; 
-        }
+        /* 本次修改：僅針對下方紀錄列表強制水平排列 */
         .record-metric-grid .metric-box-label {
             display: inline !important; 
             margin-right: 4px;
@@ -346,14 +337,14 @@
             box-shadow: none !important;
         }
 
-        /* 淨利區塊統一移除底色 */
+        /* 淨利區塊統一使用淺綠色系 */
         .metric-box-net,
         .stats-card-all .metric-box-net,
         .stats-card-year .metric-box-net,
         .stats-card-month .metric-box-net,
         .record-metric-grid .metric-box-net {
-            background: transparent !important;
-            border-color: #e2e8f0 !important;
+            background: #ecfdf5 !important;
+            border-color: #a7f3d0 !important;
             color: #047857 !important;
         }
         .metric-box-net .metric-box-label,
@@ -363,7 +354,7 @@
         .pass-metric.pass-net,
         .pass-year-theme .pass-metric.pass-net,
         .pass-month-theme .pass-metric.pass-net {
-            background: transparent !important;
+            background: #ecfdf5 !important;
             border-color: #a7f3d0 !important;
             color: #047857 !important;
         }
@@ -448,6 +439,14 @@
             padding: 0 !important; 
             border-radius: 0 !important;
             background: transparent !important;
+        }
+        .record-metric-grid .metric-box {
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            padding: 0 0.35rem 0.4rem !important; 
+            box-shadow: none !important;
+            text-align: left !important;
         }
         .record-metric-grid .metric-box:not(:last-child) {
             border-right: 1px solid #e2e8f0 !important;
@@ -534,6 +533,63 @@
 
         .lucide { width: 14px; height: 14px; stroke-width: 2; display: inline-block; vertical-align: -2px; }
         .btn-icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; }
+
+        /* 本次新增：懸浮待收提醒組件樣式 */
+        #floatingUnpaidWrap {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        .unpaid-badge {
+            background: #f59e0b;
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4) !important;
+            transition: all 0.2s ease;
+        }
+        .unpaid-badge:active { transform: scale(0.9); }
+        .unpaid-count-dot {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #e11d48;
+            color: white;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 2px 6px;
+            border-radius: 999px;
+            border: 2px solid white;
+        }
+        .floating-unpaid-list {
+            background: #fff;
+            border: 1px solid #fde68a;
+            border-radius: 1.25rem;
+            padding: 1rem;
+            width: 260px;
+            max-height: 50vh;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.15) !important;
+        }
+        .floating-unpaid-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #fef3c7;
+        }
+        .floating-unpaid-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body class="bg-[#faf9f6] min-h-screen text-slate-700">
@@ -777,15 +833,8 @@
                             </div>
                         </div>
 
-                        <div id="unpaidSection" class="border-t border-amber-200 mt-4 pt-4 -mx-5 px-5 pb-2 hidden">
-                            <div class="flex justify-between items-center mb-2">
-                                <h3 class="text-amber-700 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
-                                    <i data-lucide="alert-circle" class="w-3 h-3"></i> 本月待收款明細 (點擊姓名跳轉)
-                                </h3>
-                                <button onclick="quickFilterUnpaid()" class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md hover:bg-amber-200 transition-colors font-bold">查看全部待收</button>
-                            </div>
-                            <div id="unpaidList" class="space-y-1.5 text-amber-900"></div>
-                        </div>
+                        <!-- 舊有待收區塊已永久隱藏，改由懸浮組件接手 -->
+                        <div id="unpaidSection" class="hidden"></div>
                     </div>
                 </div>
 
@@ -813,6 +862,21 @@
 
                 <div class="overflow-x-auto"><table class="min-w-full text-sm"><tbody id="recordList" class="divide-y divide-slate-100"></tbody></table></div>
             </section>
+        </div>
+
+        <!-- 本次新增：懸浮待收提醒 HTML 結構 -->
+        <div id="floatingUnpaidWrap" class="hidden">
+            <div id="floatingUnpaidList" class="floating-unpaid-list hidden">
+                <h5 class="text-[11px] font-bold text-amber-700 uppercase tracking-widest mb-2 pb-2 border-b border-amber-100 flex justify-between items-center">
+                    <span>待收款明細</span>
+                    <button onclick="toggleFloatingUnpaid()" class="text-amber-400 font-bold">&times;</button>
+                </h5>
+                <div id="floatingUnpaidItems" class="space-y-1.5"></div>
+            </div>
+            <button onclick="toggleFloatingUnpaid()" class="unpaid-badge relative">
+                <i data-lucide="alert-circle" class="w-6 h-6"></i>
+                <span id="unpaidCountBadge" class="unpaid-count-dot">0</span>
+            </button>
         </div>
     </div>
 
@@ -1185,6 +1249,12 @@
             filterRecords();
         };
 
+        // 本次新增：切換懸浮待收列表面板
+        window.toggleFloatingUnpaid = () => {
+            const list = document.getElementById('floatingUnpaidList');
+            list.classList.toggle('hidden');
+        };
+
         window.filterRecords = () => {
             const kw = document.getElementById('searchKeyword').value.toLowerCase();
             const mon = document.getElementById('monthFilter').value;
@@ -1251,6 +1321,24 @@
 
                 return matchSearch && matchMonth && matchType && matchStatus && matchPayment;
             });
+
+            // 更新懸浮待收組件邏輯
+            const floatingWrap = document.getElementById('floatingUnpaidWrap');
+            if (mUnpaidDetails.length > 0) {
+                floatingWrap.classList.remove('hidden');
+                document.getElementById('unpaidCountBadge').innerText = mUnpaidDetails.length;
+                document.getElementById('floatingUnpaidItems').innerHTML = mUnpaidDetails.map(item => `
+                    <div class="floating-unpaid-item">
+                        <button onclick="scrollToRecord('${item.id}'); toggleFloatingUnpaid();" class="text-left hover:underline text-[13px] font-bold text-amber-800 truncate flex-1">
+                            • ${item.name}
+                        </button>
+                        <span class="font-black text-amber-600 text-[13px] ml-2">$${item.amount.toLocaleString()}</span>
+                    </div>
+                `).join('');
+            } else {
+                floatingWrap.classList.add('hidden');
+                document.getElementById('floatingUnpaidList').classList.add('hidden');
+            }
 
             const passYearSortedKeys = Object.keys(yPassSummary).sort((a,b) => yPassSummary[b].rev - yPassSummary[a].rev);
             if (passYearSortedKeys.length > 0) {
@@ -1321,11 +1409,6 @@
                 }).join('');
                 document.getElementById('passMonthTotal').innerText = `總額 $${passTotalAmt.toLocaleString()}`;
             } else { document.getElementById('passSummarySection').classList.add('hidden'); }
-
-            if (mUnpaidDetails.length > 0) {
-                document.getElementById('unpaidSection').classList.remove('hidden');
-                document.getElementById('unpaidList').innerHTML = mUnpaidDetails.map(item => `<div class="flex justify-between py-1.5 items-center"><button onclick="scrollToRecord('${item.id}')" class="text-left hover:underline decoration-amber-400 font-bold text-[14px]">• ${item.name}</button><span class="font-bold text-[15px]">$${item.amount.toLocaleString()}</span></div>`).join('');
-            } else { document.getElementById('unpaidSection').classList.add('hidden'); }
 
             document.getElementById('allAc').innerText = aAc; document.getElementById('allWm').innerText = aWm; document.getElementById('allWt').innerText = aWt;
             document.getElementById('allRev').innerText = `$${aRev.toLocaleString()}`; document.getElementById('allExp').innerText = `$${aExp.toLocaleString()}`; document.getElementById('allNet').innerText = `$${(aRev - aExp).toLocaleString()}`;
