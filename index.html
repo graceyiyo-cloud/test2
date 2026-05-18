@@ -592,6 +592,54 @@
             border-bottom: 1px dashed #fef3c7;
         }
         .floating-unpaid-item:last-child { border-bottom: none; }
+
+
+        /* 手機版篩選統計與篩選列排版微調 */
+        .filter-summary-head {
+            gap: 0.5rem;
+        }
+        .filter-count-line {
+            white-space: nowrap;
+        }
+        .date-filter-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.5rem;
+            align-items: end;
+        }
+        .clear-filter-row {
+            display: flex;
+        }
+        @media (max-width: 640px) {
+            .filter-summary-head {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 0.28rem !important;
+            }
+            .filter-summary-head #monthTitle {
+                line-height: 1.35 !important;
+                word-break: break-word !important;
+            }
+            .filter-count-line {
+                width: 100% !important;
+                font-size: 0.68rem !important;
+                line-height: 1.35 !important;
+                white-space: normal !important;
+            }
+            .date-filter-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 0.5rem !important;
+            }
+            .date-filter-row input[type="date"] {
+                font-size: 0.72rem !important;
+                padding-left: 0.45rem !important;
+                padding-right: 0.35rem !important;
+            }
+            .clear-filter-row button {
+                width: 100% !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-[#faf9f6] min-h-screen text-slate-700">
@@ -801,9 +849,9 @@
 
                     <div class="stats-card stats-card-month p-5">
                         <div>
-                            <div class="flex justify-between items-start">
+                            <div class="filter-summary-head flex justify-between items-start">
                                 <h3 class="text-emerald-600 text-[10px] font-bold uppercase tracking-widest" id="monthTitle">本月統計</h3>
-                                <div class="text-[10px] text-emerald-700/70"><span id="mCountsLabel">月度數量</span>: <span class="text-emerald-800 font-bold" id="mCounts">冷0 / 洗0 / 水0</span></div>
+                                <div class="filter-count-line text-[10px] text-emerald-700/70"><span id="mCountsLabel">月度數量</span>: <span class="text-emerald-800 font-bold" id="mCounts">冷0 / 洗0 / 水0</span></div>
                             </div>
                             <div class="metric-box-grid mt-3">
                                 <div class="metric-box metric-box-rev">
@@ -849,7 +897,7 @@
                             </div>
                             <input type="text" id="searchKeyword" oninput="filterRecords()" placeholder="關鍵字搜尋：姓名、電話、地址、機型、PASS、小幫手、備註..." class="w-full bg-slate-50 border-none rounded-xl p-3 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-100">
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-2 items-end">
+                        <div class="date-filter-row">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">起始日期</label>
                                 <input type="date" id="dateStartFilter" onchange="filterRecords()" class="w-full bg-slate-50 border-none rounded-xl p-2.5 text-sm outline-none font-medium h-[42px]">
@@ -858,7 +906,6 @@
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">結束日期</label>
                                 <input type="date" id="dateEndFilter" onchange="filterRecords()" class="w-full bg-slate-50 border-none rounded-xl p-2.5 text-sm outline-none font-medium h-[42px]">
                             </div>
-                            <button onclick="clearAllFilters()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2.5 rounded-xl transition-all leading-none h-[42px] text-[11px] font-bold flex items-center justify-center gap-1" title="清除全部篩選"><i data-lucide="rotate-ccw" class="w-4 h-4"></i>清除全部篩選</button>
                         </div>
                     </div>
                     <!-- 品項與進度篩選按鈕群組 -->
@@ -874,6 +921,9 @@
                             <button type="button" onclick="setStatusFilter('completed', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">已完成</button>
                             <button type="button" onclick="setStatusFilter('pending', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">待處理</button>
                         </div>
+                    </div>
+                    <div class="clear-filter-row">
+                        <button onclick="clearAllFilters()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2.5 rounded-xl transition-all leading-none h-[42px] text-[11px] font-bold flex items-center justify-center gap-1" title="清除全部篩選"><i data-lucide="rotate-ccw" class="w-4 h-4"></i>清除全部篩選</button>
                     </div>
                 </div>
 
