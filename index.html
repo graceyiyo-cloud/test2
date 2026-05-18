@@ -640,6 +640,79 @@
                 width: 100% !important;
             }
         }
+
+        /* 篩選區塊改為點選展開，減少清單上方佔用空間 */
+        .filter-shell {
+            padding: 0.65rem !important;
+        }
+        .filter-toggle-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border: 0;
+            background: #f8fafc;
+            border-radius: 1rem;
+            padding: 0.75rem 0.85rem;
+            color: #475569;
+            text-align: left;
+        }
+        .filter-toggle-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+        .filter-toggle-title {
+            font-size: 0.85rem;
+            font-weight: 900;
+            color: #334155;
+            white-space: nowrap;
+        }
+        .filter-toggle-status {
+            display: block;
+            margin-top: 0.1rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #94a3b8;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+        .filter-toggle-right {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex: 0 0 auto;
+            font-size: 0.72rem;
+            font-weight: 900;
+            color: #64748b;
+        }
+        .filter-panel {
+            margin-top: 0.75rem;
+        }
+        .filter-shell.filter-collapsed .filter-panel {
+            display: none !important;
+        }
+        .filter-shell.filter-collapsed .filter-chevron {
+            transform: rotate(0deg);
+        }
+        .filter-shell:not(.filter-collapsed) .filter-chevron {
+            transform: rotate(180deg);
+        }
+        .filter-chevron {
+            transition: transform 0.2s ease;
+        }
+        @media (max-width: 640px) {
+            .filter-toggle-status {
+                max-width: 62vw;
+            }
+            .filter-shell {
+                margin-bottom: 0.75rem !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-[#faf9f6] min-h-screen text-slate-700">
@@ -889,41 +962,57 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-3 md:p-5 rounded-2xl shadow-sm border border-slate-100 mb-6 space-y-4">
-                    <div class="flex flex-col gap-3">
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
-                                <i data-lucide="search" class="w-4 h-4"></i>
+                <div id="filterShell" class="filter-shell filter-collapsed bg-white rounded-2xl shadow-sm border border-slate-100 mb-6">
+                    <button type="button" onclick="toggleFilterPanel()" class="filter-toggle-btn">
+                        <span class="filter-toggle-left">
+                            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-slate-500 flex-none"></i>
+                            <span class="min-w-0">
+                                <span class="filter-toggle-title">篩選條件</span>
+                                <span id="filterStatusText" class="filter-toggle-status">目前：本月份</span>
+                            </span>
+                        </span>
+                        <span class="filter-toggle-right">
+                            <span class="filter-toggle-word">展開</span>
+                            <i data-lucide="chevron-down" class="filter-chevron w-4 h-4"></i>
+                        </span>
+                    </button>
+
+                    <div id="filterPanel" class="filter-panel space-y-4">
+                        <div class="flex flex-col gap-3">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
+                                    <i data-lucide="search" class="w-4 h-4"></i>
+                                </div>
+                                <input type="text" id="searchKeyword" oninput="filterRecords()" placeholder="關鍵字搜尋：姓名、電話、地址、機型、PASS、小幫手、備註..." class="w-full bg-slate-50 border-none rounded-xl p-3 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-100">
                             </div>
-                            <input type="text" id="searchKeyword" oninput="filterRecords()" placeholder="關鍵字搜尋：姓名、電話、地址、機型、PASS、小幫手、備註..." class="w-full bg-slate-50 border-none rounded-xl p-3 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-100">
-                        </div>
-                        <div class="date-filter-row">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">起始日期</label>
-                                <input type="date" id="dateStartFilter" onchange="filterRecords()" class="w-full bg-slate-50 border-none rounded-xl p-2.5 text-sm outline-none font-medium h-[42px]">
+                            <div class="date-filter-row">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">起始日期</label>
+                                    <input type="date" id="dateStartFilter" onchange="filterRecords()" class="w-full bg-slate-50 border-none rounded-xl p-2.5 text-sm outline-none font-medium h-[42px]">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">結束日期</label>
+                                    <input type="date" id="dateEndFilter" onchange="filterRecords()" class="w-full bg-slate-50 border-none rounded-xl p-2.5 text-sm outline-none font-medium h-[42px]">
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">結束日期</label>
-                                <input type="date" id="dateEndFilter" onchange="filterRecords()" class="w-full bg-slate-50 border-none rounded-xl p-2.5 text-sm outline-none font-medium h-[42px]">
+                        </div>
+                        <!-- 品項與進度篩選按鈕群組 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div id="typeFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
+                                <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部品項</button>
+                                <button type="button" onclick="setTypeFilter('ac', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">冷氣</button>
+                                <button type="button" onclick="setTypeFilter('wm', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">洗衣機</button>
+                                <button type="button" onclick="setTypeFilter('wt', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">水塔</button>
+                            </div>
+                            <div id="statusFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
+                                <button type="button" onclick="setStatusFilter('all', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部進度</button>
+                                <button type="button" onclick="setStatusFilter('completed', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">已完成</button>
+                                <button type="button" onclick="setStatusFilter('pending', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">待處理</button>
                             </div>
                         </div>
-                    </div>
-                    <!-- 品項與進度篩選按鈕群組 -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <div id="typeFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
-                            <button type="button" onclick="setTypeFilter('all', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部品項</button>
-                            <button type="button" onclick="setTypeFilter('ac', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">冷氣</button>
-                            <button type="button" onclick="setTypeFilter('wm', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">洗衣機</button>
-                            <button type="button" onclick="setTypeFilter('wt', this)" class="type-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">水塔</button>
+                        <div class="clear-filter-row">
+                            <button onclick="clearAllFilters()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2.5 rounded-xl transition-all leading-none h-[42px] text-[11px] font-bold flex items-center justify-center gap-1" title="清除全部篩選，並回到當月份"><i data-lucide="rotate-ccw" class="w-4 h-4"></i>清除全部篩選</button>
                         </div>
-                        <div id="statusFilterGroup" class="flex gap-1 bg-slate-50 rounded-xl p-1 h-[38px]">
-                            <button type="button" onclick="setStatusFilter('all', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all bg-slate-200 shadow-sm text-slate-700">全部進度</button>
-                            <button type="button" onclick="setStatusFilter('completed', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">已完成</button>
-                            <button type="button" onclick="setStatusFilter('pending', this)" class="status-btn flex-1 rounded-lg text-[10px] font-bold transition-all text-slate-400">待處理</button>
-                        </div>
-                    </div>
-                    <div class="clear-filter-row">
-                        <button onclick="clearAllFilters()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2.5 rounded-xl transition-all leading-none h-[42px] text-[11px] font-bold flex items-center justify-center gap-1" title="清除全部篩選"><i data-lucide="rotate-ccw" class="w-4 h-4"></i>清除全部篩選</button>
                     </div>
                 </div>
 
@@ -1325,6 +1414,44 @@
             });
         };
 
+        function setDateFilterToCurrentMonth() {
+            const now = new Date();
+            const first = new Date(now.getFullYear(), now.getMonth(), 1);
+            const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            document.getElementById('dateStartFilter').value = formatLocalDate(first);
+            document.getElementById('dateEndFilter').value = formatLocalDate(last);
+        }
+
+        window.toggleFilterPanel = () => {
+            const shell = document.getElementById('filterShell');
+            if (!shell) return;
+            shell.classList.toggle('filter-collapsed');
+            const word = shell.querySelector('.filter-toggle-word');
+            if (word) word.innerText = shell.classList.contains('filter-collapsed') ? '展開' : '收合';
+            lucide.createIcons();
+        };
+
+        function updateFilterStatusText(isPureCurrentMonth, startDate, endDate, kw, type, status) {
+            const el = document.getElementById('filterStatusText');
+            if (!el) return;
+            const parts = [];
+            if (isPureCurrentMonth) {
+                parts.push('本月份');
+            } else if (startDate && endDate) {
+                parts.push(`${startDate.replaceAll('-', '/')}～${endDate.replaceAll('-', '/')}`);
+            } else if (startDate) {
+                parts.push(`${startDate.replaceAll('-', '/')} 之後`);
+            } else if (endDate) {
+                parts.push(`${endDate.replaceAll('-', '/')} 之前`);
+            } else {
+                parts.push('全部日期');
+            }
+            if (kw) parts.push(`關鍵字「${kw}」`);
+            if (type !== 'all') parts.push({ ac: '冷氣', wm: '洗衣機', wt: '水塔' }[type] || type);
+            if (status !== 'all') parts.push({ completed: '已完成', pending: '待處理' }[status] || status);
+            el.innerText = `目前：${parts.join('｜')}`;
+        }
+
         function resetFilterButtonStyles(groupSelector, activeValue) {
             const colorMap = { all: 'bg-slate-200', completed: 'bg-emerald-100', pending: 'bg-amber-100', ac: 'bg-emerald-100', wm: 'bg-blue-100', wt: 'bg-purple-100' };
             document.querySelectorAll(groupSelector).forEach(btn => {
@@ -1340,8 +1467,7 @@
 
         window.clearAllFilters = () => {
             document.getElementById('searchKeyword').value = "";
-            document.getElementById('dateStartFilter').value = "";
-            document.getElementById('dateEndFilter').value = "";
+            setDateFilterToCurrentMonth();
             currentTypeFilter = 'all';
             currentStatusFilter = 'all';
             resetFilterButtonStyles('.type-btn', 'all');
@@ -1406,6 +1532,7 @@
             const currentMonthFirst = formatLocalDate(new Date(now.getFullYear(), now.getMonth(), 1));
             const currentMonthLast = formatLocalDate(new Date(now.getFullYear(), now.getMonth() + 1, 0));
             const isPureCurrentMonth = startDate === currentMonthFirst && endDate === currentMonthLast && !kw && type === 'all' && status === 'all';
+            updateFilterStatusText(isPureCurrentMonth, startDate, endDate, kw, type, status);
             const periodTitle = (() => {
                 if (isPureCurrentMonth) return `${String(now.getMonth() + 1).padStart(2, '0')} 月份統計`;
                 if (startDate && endDate) return `${startDate.replaceAll('-', '/')}～${endDate.replaceAll('-', '/')} 篩選統計`;
