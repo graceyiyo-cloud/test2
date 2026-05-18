@@ -803,19 +803,19 @@
                         <div>
                             <div class="flex justify-between items-start">
                                 <h3 class="text-emerald-600 text-[10px] font-bold uppercase tracking-widest" id="monthTitle">本月統計</h3>
-                                <div class="text-[10px] text-emerald-700/70">月度數量: <span class="text-emerald-800 font-bold" id="mCounts">冷0 / 洗0 / 水0</span></div>
+                                <div class="text-[10px] text-emerald-700/70"><span id="mCountsLabel">月度數量</span>: <span class="text-emerald-800 font-bold" id="mCounts">冷0 / 洗0 / 水0</span></div>
                             </div>
                             <div class="metric-box-grid mt-3">
                                 <div class="metric-box metric-box-rev">
-                                    <span class="metric-box-label">本月總營收</span>
+                                    <span class="metric-box-label" id="mRevLabel">本月總營收</span>
                                     <span class="metric-box-value" id="mRev">$0</span>
                                 </div>
                                 <div class="metric-box metric-box-exp">
-                                    <span class="metric-box-label">本月支出</span>
+                                    <span class="metric-box-label" id="mExpLabel">本月支出</span>
                                     <button onclick="showMonthAssistantDetails()" id="mExp">$0</button>
                                 </div>
                                 <div class="metric-box metric-box-net">
-                                    <span class="metric-box-label">本月淨利</span>
+                                    <span class="metric-box-label" id="mNetLabel">本月淨利</span>
                                     <span class="metric-box-value" id="mNet">$0</span>
                                 </div>
                             </div>
@@ -824,7 +824,7 @@
                                 <button type="button" class="pass-summary-head" onclick="togglePassSummary('passSummarySection')">
                                     <span class="pass-summary-title-area">
                                         <h3 class="text-emerald-700 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
-                                            <i data-lucide="forward" class="w-3 h-3"></i> PASS 來源統計 (月度)
+                                            <i data-lucide="forward" class="w-3 h-3"></i> <span id="passFilteredTitle">PASS 來源統計 (月度)</span>
                                         </h3>
                                     </span>
                                     <span class="pass-summary-actions">
@@ -858,7 +858,7 @@
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">結束日期</label>
                                 <input type="date" id="dateEndFilter" onchange="filterRecords()" class="w-full bg-slate-50 border-none rounded-xl p-2.5 text-sm outline-none font-medium h-[42px]">
                             </div>
-                            <button onclick="clearDateFilter()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2.5 rounded-xl transition-all leading-none h-[42px] text-[11px] font-bold flex items-center justify-center gap-1" title="清除期間篩選"><i data-lucide="calendar-x" class="w-4 h-4"></i>清除期間</button>
+                            <button onclick="clearAllFilters()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2.5 rounded-xl transition-all leading-none h-[42px] text-[11px] font-bold flex items-center justify-center gap-1" title="清除全部篩選"><i data-lucide="rotate-ccw" class="w-4 h-4"></i>清除全部篩選</button>
                         </div>
                     </div>
                     <!-- 品項與進度篩選按鈕群組 -->
@@ -1275,11 +1275,32 @@
             });
         };
 
-        window.clearDateFilter = () => {
+        function resetFilterButtonStyles(groupSelector, activeValue) {
+            const colorMap = { all: 'bg-slate-200', completed: 'bg-emerald-100', pending: 'bg-amber-100', ac: 'bg-emerald-100', wm: 'bg-blue-100', wt: 'bg-purple-100' };
+            document.querySelectorAll(groupSelector).forEach(btn => {
+                btn.classList.remove('bg-white', 'bg-slate-200', 'bg-emerald-100', 'bg-amber-100', 'bg-blue-100', 'bg-purple-100', 'shadow-sm', 'text-slate-700');
+                btn.classList.add('text-slate-400');
+                const onclickText = btn.getAttribute('onclick') || '';
+                if (onclickText.includes(`'${activeValue}'`)) {
+                    btn.classList.add(colorMap[activeValue] || 'bg-slate-200', 'shadow-sm', 'text-slate-700');
+                    btn.classList.remove('text-slate-400');
+                }
+            });
+        }
+
+        window.clearAllFilters = () => {
+            document.getElementById('searchKeyword').value = "";
             document.getElementById('dateStartFilter').value = "";
             document.getElementById('dateEndFilter').value = "";
+            currentTypeFilter = 'all';
+            currentStatusFilter = 'all';
+            resetFilterButtonStyles('.type-btn', 'all');
+            resetFilterButtonStyles('.status-btn', 'all');
             filterRecords();
+            lucide.createIcons();
         };
+
+        window.clearDateFilter = window.clearAllFilters;
 
         // 切換懸浮待收列表面板
         window.toggleFloatingUnpaid = () => {
@@ -1332,15 +1353,25 @@
 
             const now = new Date();
             const filterYear = startDate ? startDate.split('-')[0] : now.getFullYear().toString();
+            const currentMonthFirst = formatLocalDate(new Date(now.getFullYear(), now.getMonth(), 1));
+            const currentMonthLast = formatLocalDate(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+            const isPureCurrentMonth = startDate === currentMonthFirst && endDate === currentMonthLast && !kw && type === 'all' && status === 'all';
             const periodTitle = (() => {
+                if (isPureCurrentMonth) return `${String(now.getMonth() + 1).padStart(2, '0')} 月份統計`;
                 if (startDate && endDate) return `${startDate.replaceAll('-', '/')}～${endDate.replaceAll('-', '/')} 篩選統計`;
                 if (startDate) return `${startDate.replaceAll('-', '/')} 之後篩選統計`;
                 if (endDate) return `${endDate.replaceAll('-', '/')} 之前篩選統計`;
-                return '全期間篩選統計';
+                return '全部資料篩選統計';
             })();
 
             document.getElementById('yearTitle').innerText = `${filterYear} 年度統計`;
             document.getElementById('monthTitle').innerText = periodTitle;
+            document.getElementById('mCountsLabel').innerText = isPureCurrentMonth ? '月度數量' : '篩選數量';
+            document.getElementById('mRevLabel').innerText = isPureCurrentMonth ? '本月總營收' : '篩選總營收';
+            document.getElementById('mExpLabel').innerText = isPureCurrentMonth ? '本月支出' : '篩選支出';
+            document.getElementById('mNetLabel').innerText = isPureCurrentMonth ? '本月淨利' : '篩選淨利';
+            const passFilteredTitle = document.getElementById('passFilteredTitle');
+            if (passFilteredTitle) passFilteredTitle.innerText = isPureCurrentMonth ? 'PASS 來源統計 (月度)' : 'PASS 來源統計 (篩選)';
 
             const getDateOnly = (record) => (record.bookingTime || '').substring(0, 10);
             const getSearchText = (record) => `${record.customerName || ''} ${record.phone || ''} ${record.address || ''} ${record.acBrand || ''} ${record.assistantDetail || ''} ${record.passFrom || ''} ${record.note || ''}`.toLowerCase();
