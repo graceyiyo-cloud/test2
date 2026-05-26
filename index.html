@@ -471,24 +471,36 @@
                 const receipts = details.匯款紀錄.reduce((s,r) => s + (parseFloat(String(r[Object.keys(r).find(k=>k.includes('金額'))||'金額']).replace(/,/g,''))||0), 0);
                 const charges = (details.客變紀錄 || []).reduce((s,r) => s + (Number(r.客變金額)||0), 0);
                 
+                let expBeforeShiZhao = charges;
+                PAYMENT_STAGES.forEach(st => {
+                    if (['客變', '使照', '銀貸', '交屋'].includes(st.k)) return;
+                    const kMatchH = Object.keys(house).find(x=>x.includes(st.k) && !x.includes('總價'));
+                    const kMatchL = Object.keys(land).find(x=>x.includes(st.k) && !x.includes('總價'));
+                    expBeforeShiZhao += (kMatchH ? (parseFloat(String(house[kMatchH]).replace(/,/g,''))||0) : 0);
+                    expBeforeShiZhao += (kMatchL ? (parseFloat(String(land[kMatchL]).replace(/,/g,''))||0) : 0);
+                });
+                
                 let rem = receipts; const stageStatus = {};
                 const isPrioritizePrepay = details.基本資料?.優先預收;
                 const prepayAmt = parseFloat(String(details.基本資料.預收款).replace(/,/g, '')) || 0; 
-                if (isPrioritizePrepay) {
+                
+                const canPrioritizePrepay = isPrioritizePrepay && (receipts >= expBeforeShiZhao + prepayAmt);
+
+                if (canPrioritizePrepay) {
                     rem = Math.max(0, rem - prepayAmt);
                 }
 
                 PAYMENT_STAGES.forEach(st => {
                     let exp = 0; if (st.k === '客變') { exp = charges; } else {
-                        const kMatchH = Object.keys(house).find(x=>x.includes(st.k));
-                        const kMatchL = Object.keys(land).find(x=>x.includes(st.k));
+                        const kMatchH = Object.keys(house).find(x=>x.includes(st.k) && !x.includes('總價'));
+                        const kMatchL = Object.keys(land).find(x=>x.includes(st.k) && !x.includes('總價'));
                         const hA = kMatchH ? (parseFloat(String(house[kMatchH]).replace(/,/g,''))||0) : 0;
                         const lA = kMatchL ? (parseFloat(String(land[kMatchL]).replace(/,/g,''))||0) : 0;
                         exp = hA + lA;
                     }
                     
                     let paid = 0; if (rem >= exp) { paid = exp; rem -= exp; } else { paid = rem; rem = 0; }
-                    if (st.k === '使照' && !isPrioritizePrepay) { 
+                    if (st.k === '使照' && !canPrioritizePrepay) { 
                         rem = Math.max(0, rem - prepayAmt); 
                     }
                     
@@ -604,10 +616,22 @@
             const receipts = details.匯款紀錄.reduce((s,r) => s + (parseFloat(String(r[Object.keys(r).find(k=>k.includes('金額'))||'金額']).replace(/,/g,''))||0), 0);
             const charges = (details.客變紀錄 || []).reduce((s,r) => s + (Number(r.客變金額)||0), 0);
             
+            let expBeforeShiZhao = charges;
+            PAYMENT_STAGES.forEach(st => {
+                if (['客變', '使照', '銀貸', '交屋'].includes(st.k)) return;
+                const kMatchH = Object.keys(house).find(x=>x.includes(st.k) && !x.includes('總價'));
+                const kMatchL = Object.keys(land).find(x=>x.includes(st.k) && !x.includes('總價'));
+                expBeforeShiZhao += (kMatchH ? (parseFloat(String(house[kMatchH]).replace(/,/g,''))||0) : 0);
+                expBeforeShiZhao += (kMatchL ? (parseFloat(String(land[kMatchL]).replace(/,/g,''))||0) : 0);
+            });
+
             let rem = receipts; const stageStatus = {};
             const isPrioritizePrepay = details.基本資料?.優先預收;
             const prepayAmt = parseFloat(String(details.基本資料.預收款).replace(/,/g, '')) || 0; 
-            if (isPrioritizePrepay) {
+            
+            const canPrioritizePrepay = isPrioritizePrepay && (receipts >= expBeforeShiZhao + prepayAmt);
+
+            if (canPrioritizePrepay) {
                 rem = Math.max(0, rem - prepayAmt);
             }
 
@@ -621,7 +645,7 @@
                 }
                 
                 let paid = 0; if (rem >= exp) { paid = exp; rem -= exp; } else { paid = rem; rem = 0; }
-                if (st.k === '使照' && !isPrioritizePrepay) { 
+                if (st.k === '使照' && !canPrioritizePrepay) { 
                     rem = Math.max(0, rem - prepayAmt); 
                 }
                 
@@ -857,7 +881,7 @@
                           {isEditingMode ? <input className="border px-2 py-1 rounded w-28 text-base" value={selectedUnit.基本資料.買方} onChange={e=>setSelectedUnit({...selectedUnit, 基本資料:{...selectedUnit.基本資料, 買方:e.target.value}})}/> : (selectedUnit.基本資料.買方||'未填寫')}
                           {!isEditingMode && selectedUnit.基本資料.車位 && <span className="text-sm font-normal text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-200 ml-1">車位: {normStr(selectedUnit.基本資料.車位)}</span>}
                           {!isEditingMode && selectedUnit.基本資料.預收款 && (
-                            <label className={`text-sm font-normal px-2.5 py-0.5 rounded-md border flex items-center gap-1.5 cursor-pointer transition-all ${selectedUnit.基本資料.優先預收 ? 'text-purple-700 bg-purple-50 border-purple-200 shadow-sm' : 'text-amber-600 bg-amber-50 border-amber-200'}`} title="打勾後，匯款將優先沖銷預收款 (無視工程款是否繳清)">
+                            <label className={`text-sm font-normal px-2.5 py-0.5 rounded-md border flex items-center gap-1.5 cursor-pointer transition-all ${selectedUnit.基本資料.優先預收 ? 'text-purple-700 bg-purple-50 border-purple-200 shadow-sm' : 'text-amber-600 bg-amber-50 border-amber-200'}`} title="打勾後，當累計金額達使照款且足夠付清預收時，系統將優先從最新一筆匯款中自動扣抵">
                               <input 
                                 type="checkbox" 
                                 disabled={!isAdmin}
@@ -924,8 +948,19 @@
                         const charges = (selectedUnit.客變紀錄 || []).reduce((s,r) => s + (Number(r.客變金額)||0), 0);
                         let rem = receipts; const prepay = parseFloat(String(selectedUnit.基本資料.預收款).replace(/,/g, '')) || 0;
                         
+                        let expBeforeShiZhao = charges;
+                        PAYMENT_STAGES.forEach(st => {
+                            if (['客變', '使照', '銀貸', '交屋'].includes(st.k)) return;
+                            const kMatchH = Object.keys(house).find(x=>x.includes(st.k) && !x.includes('總價'));
+                            const kMatchL = Object.keys(land).find(x=>x.includes(st.k) && !x.includes('總價'));
+                            expBeforeShiZhao += (kMatchH ? (parseFloat(String(house[kMatchH]).replace(/,/g,''))||0) : 0);
+                            expBeforeShiZhao += (kMatchL ? (parseFloat(String(land[kMatchL]).replace(/,/g,''))||0) : 0);
+                        });
+
                         const isPrioritizePrepay = selectedUnit.基本資料?.優先預收;
-                        if (isPrioritizePrepay) {
+                        const canPrioritizePrepay = isPrioritizePrepay && (receipts >= expBeforeShiZhao + prepay);
+                        
+                        if (canPrioritizePrepay) {
                             rem = Math.max(0, rem - prepay);
                         }
 
@@ -942,7 +977,7 @@
                           if (exp<=0 && st.k!=='成交') return null;
                           
                           let paid=0; if (st.k!=='成交') { if(rem>=exp) { paid=exp; rem-=exp; } else { paid=rem; rem=0; } }
-                          if (st.k === '使照' && !isPrioritizePrepay) rem = Math.max(0, rem - prepay);
+                          if (st.k === '使照' && !canPrioritizePrepay) rem = Math.max(0, rem - prepay);
                           
                           return (
                             <tr key={st.k} className={`${st.k==='成交'?'bg-gray-50':st.k==='客變'?'bg-purple-50':paid>=exp?'bg-green-50/70':paid>0?'bg-orange-50/70':'hover:bg-gray-50/30'} rounded-lg transition-all`}>
@@ -968,35 +1003,64 @@
                       <tbody>
                       {(() => {
                         const prepayAmount = parseFloat(String(selectedUnit.基本資料.預收款).replace(/,/g, '')) || 0;
-                        let unallocatedPrepay = prepayAmount; let runningReceipts = 0;
                         const houseForExp = selectedUnit.財務款項.house || {}; const landForExp = selectedUnit.財務款項.land || {};
                         const chargesForExp = (selectedUnit.客變紀錄 || []).reduce((s,r) => s + (Number(r.客變金額)||0), 0);
                         
-                        let expBeforePrepayLimit = chargesForExp;
+                        let expBeforeShiZhao = chargesForExp;
                         PAYMENT_STAGES.forEach(st => {
-                            // 修正點：移除 '使照' 的排除，讓匯款先補滿使照款，才會溢出至預收款
-                            if (['客變', '銀貸', '交屋'].includes(st.k)) return;
+                            if (['客變', '使照', '銀貸', '交屋'].includes(st.k)) return;
                             const kMatchH = Object.keys(houseForExp).find(x=>x.includes(st.k) && !x.includes('總價'));
                             const kMatchL = Object.keys(landForExp).find(x=>x.includes(st.k) && !x.includes('總價'));
-                            expBeforePrepayLimit += (kMatchH ? (parseFloat(String(houseForExp[kMatchH]).replace(/,/g,''))||0) : 0);
-                            expBeforePrepayLimit += (kMatchL ? (parseFloat(String(landForExp[kMatchL]).replace(/,/g,''))||0) : 0);
+                            expBeforeShiZhao += (kMatchH ? (parseFloat(String(houseForExp[kMatchH]).replace(/,/g,''))||0) : 0);
+                            expBeforeShiZhao += (kMatchL ? (parseFloat(String(landForExp[kMatchL]).replace(/,/g,''))||0) : 0);
                         });
 
+                        const records = selectedUnit.匯款紀錄 || [];
+                        const totalReceipts = records.reduce((s,r) => s + (parseFloat(String(r[Object.keys(r).find(k=>k.includes('金額'))||'金額']).replace(/,/g,''))||0), 0);
+                        
                         const isPrioritizePrepay = selectedUnit.基本資料?.優先預收;
-                        let expBeforePrepay = isPrioritizePrepay ? 0 : expBeforePrepayLimit;
+                        const canPrioritizePrepay = isPrioritizePrepay && (totalReceipts >= expBeforeShiZhao + prepayAmount);
 
-                        return (selectedUnit.匯款紀錄 || []).map((r,i) => {
-                            const amtKey = Object.keys(r).find(k=>k.includes('金額'))||'金額';
-                            const rawAmt = parseFloat(String(r[amtKey]).replace(/,/g,''))||0;
-                            runningReceipts += rawAmt; let amt = rawAmt; let splitPrepay = 0;
-                            
-                            if (unallocatedPrepay > 0 && runningReceipts > expBeforePrepay) { 
-                                const availableForPrepay = Math.min(rawAmt, runningReceipts - expBeforePrepay);
-                                splitPrepay = Math.min(unallocatedPrepay, availableForPrepay); 
-                                amt = amt - splitPrepay; 
-                                unallocatedPrepay -= splitPrepay; 
+                        let prepayAllocations = {}; 
+                        let unallocated = prepayAmount;
+
+                        if (canPrioritizePrepay) {
+                            // 當優先預收條件達成時：強制從「最後一筆紀錄」開始往前扣抵預收款
+                            for (let i = records.length - 1; i >= 0; i--) {
+                                const r = records[i];
+                                const rawAmt = parseFloat(String(r[Object.keys(r).find(k=>k.includes('金額'))||'金額']).replace(/,/g,''))||0;
+                                if (unallocated > 0 && rawAmt > 0) {
+                                    const allocate = Math.min(unallocated, rawAmt);
+                                    prepayAllocations[r._id] = allocate;
+                                    unallocated -= allocate;
+                                }
                             }
-                            
+                        } else {
+                            // 正常邏輯：等匯款超過「使照款」門檻後，依序（由前至後）提撥預收款
+                            let expBeforePrepayNormal = expBeforeShiZhao;
+                            const kMatchH = Object.keys(houseForExp).find(x=>x.includes('使照') && !x.includes('總價'));
+                            const kMatchL = Object.keys(landForExp).find(x=>x.includes('使照') && !x.includes('總價'));
+                            expBeforePrepayNormal += (kMatchH ? (parseFloat(String(houseForExp[kMatchH]).replace(/,/g,''))||0) : 0);
+                            expBeforePrepayNormal += (kMatchL ? (parseFloat(String(landForExp[kMatchL]).replace(/,/g,''))||0) : 0);
+
+                            let running = 0;
+                            for (let i = 0; i < records.length; i++) {
+                                const r = records[i];
+                                const rawAmt = parseFloat(String(r[Object.keys(r).find(k=>k.includes('金額'))||'金額']).replace(/,/g,''))||0;
+                                running += rawAmt;
+                                if (unallocated > 0 && running > expBeforePrepayNormal) {
+                                    const available = Math.min(rawAmt, running - expBeforePrepayNormal);
+                                    const allocate = Math.min(unallocated, available);
+                                    prepayAllocations[r._id] = allocate;
+                                    unallocated -= allocate;
+                                }
+                            }
+                        }
+
+                        return records.map((r,i) => {
+                            const rawAmt = parseFloat(String(r[Object.keys(r).find(k=>k.includes('金額'))||'金額']).replace(/,/g,''))||0;
+                            const splitPrepay = prepayAllocations[r._id] || 0;
+                            const amt = rawAmt - splitPrepay;
                             const rK = r._id; const cD = firebaseInvoices[rK] || {};
                             const handleDelete = async ()=>{
                                 if(!confirm("確定要刪除這筆匯款紀錄嗎？"))return;
