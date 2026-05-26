@@ -972,17 +972,18 @@
                         const houseForExp = selectedUnit.財務款項.house || {}; const landForExp = selectedUnit.財務款項.land || {};
                         const chargesForExp = (selectedUnit.客變紀錄 || []).reduce((s,r) => s + (Number(r.客變金額)||0), 0);
                         
-                        let expBeforeShiZhao = chargesForExp;
+                        let expBeforePrepayLimit = chargesForExp;
                         PAYMENT_STAGES.forEach(st => {
-                            if (['客變', '使照', '銀貸', '交屋'].includes(st.k)) return;
+                            // 修正點：移除 '使照' 的排除，讓匯款先補滿使照款，才會溢出至預收款
+                            if (['客變', '銀貸', '交屋'].includes(st.k)) return;
                             const kMatchH = Object.keys(houseForExp).find(x=>x.includes(st.k) && !x.includes('總價'));
                             const kMatchL = Object.keys(landForExp).find(x=>x.includes(st.k) && !x.includes('總價'));
-                            expBeforeShiZhao += (kMatchH ? (parseFloat(String(houseForExp[kMatchH]).replace(/,/g,''))||0) : 0);
-                            expBeforeShiZhao += (kMatchL ? (parseFloat(String(landForExp[kMatchL]).replace(/,/g,''))||0) : 0);
+                            expBeforePrepayLimit += (kMatchH ? (parseFloat(String(houseForExp[kMatchH]).replace(/,/g,''))||0) : 0);
+                            expBeforePrepayLimit += (kMatchL ? (parseFloat(String(landForExp[kMatchL]).replace(/,/g,''))||0) : 0);
                         });
 
                         const isPrioritizePrepay = selectedUnit.基本資料?.優先預收;
-                        let expBeforePrepay = isPrioritizePrepay ? 0 : expBeforeShiZhao;
+                        let expBeforePrepay = isPrioritizePrepay ? 0 : expBeforePrepayLimit;
 
                         return (selectedUnit.匯款紀錄 || []).map((r,i) => {
                             const amtKey = Object.keys(r).find(k=>k.includes('金額'))||'金額';
