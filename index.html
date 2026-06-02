@@ -57,10 +57,10 @@
         /* 強制移除斜體 */
         em, i, .italic { font-style: normal !important; }
 
-        /* 針對小空間的日期輸入框特別縮小文字 */
-        .date-input-sm { font-size: 13px !important; letter-spacing: -0.5px !important; }
-        @media (max-width: 768px) {
-            .date-input-sm { font-size: 11px !important; padding-left: 2px !important; padding-right: 2px !important; }
+        /* 針對完食/棄書小視窗的日期欄位，強制縮小文字與內距避免超出框線 */
+        .date-input-sm {
+            font-size: 0.75rem !important;
+            padding: 0.1rem 0.2rem !important;
         }
 
         /* 手機版：大綱欄位固定高度並可上下滑動，方便修改長文字 */
@@ -111,7 +111,7 @@
             ChevronDown, ExternalLink, Pin, PinOff, ChevronUp, Lock, Copy
         } from 'https://esm.sh/lucide-react@0.344.0';
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, updateDoc, deleteDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
         let firebaseConfig;
@@ -233,7 +233,8 @@
         function App() {
             const [user, setUser] = useState(null);
             const [googleUser, setGoogleUser] = useState(null);
-            const [authStep, setAuthStep] = useState('login');
+            const [authStep, setAuthStep] = useState('login'); // login, checking, link_or_new, linking
+            
             const [books, setBooks] = useState([]);
             const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
             const [loading, setLoading] = useState(true);
@@ -261,12 +262,36 @@
             const searchInputRef = useRef(null);
 
             useEffect(() => {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) signInWithCustomToken(auth, __initial_auth_token);
-                } catch (err) { console.error("Auth Failed:", err); }
+                const initApp = async () => {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+                        else await signInAnonymously(auth);
+                    } catch (err) { console.error("Auth Failed:", err); }
 
+                    const sid = localStorage.getItem('reading_tracker_id');
+                    const spw = localStorage.getItem('reading_tracker_pw');
+
+                    if (sid && spw) {
+                        try {
+                            const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', `reading_list_${sid}`, 'settings');
+                            const settingsSnap = await getDoc(settingsRef);
+                            
+                            if (settingsSnap.exists() && settingsSnap.data().password === spw) {
+                                setCustomId(sid);
+                                setLoginPassword(spw);
+                                setIsLoggedIn(true);
+                            }
+                        } catch (e) {
+                            console.error("Session verification failed", e);
+                        }
+                    }
+                    setLoading(false);
+                };
+
+                initApp();
                 const unsubscribe = onAuthStateChanged(auth, async (curr) => {
                     setUser(curr);
+                    // Google 登入後檢查綁定狀態
                     if (curr && !curr.isAnonymous) {
                         setGoogleUser(curr);
                         setAuthStep('checking');
@@ -284,12 +309,7 @@
                             setAuthStep('login');
                             setIsSearching(false);
                         }
-                    } else {
-                        setGoogleUser(null);
-                        setIsLoggedIn(false);
-                        setAuthStep('login');
                     }
-                    setLoading(false);
                 });
                 return () => unsubscribe();
             }, []);
@@ -355,39 +375,7 @@
                     setIsSearching(false);
                 } catch (err) {
                     console.error("Google Auth Error:", err);
-                    let errMsg = "登入取消或失敗";
-                    // 精準攔截常見錯誤並顯示給開發者
-                    if (err.code === 'auth/unauthorized-domain') errMsg = "錯誤：網域未授權，請至 Firebase 後台設定";
-                    else if (err.code === 'auth/popup-closed-by-user') errMsg = "登入視窗已被關閉";
-                    else if (err.code) errMsg = `登入失敗: ${err.code}`;
-                    
-                    showToast(errMsg, "error");
-                    setIsSearching(false);
-                }
-            };
-
-            const handleLinkAccount = async (e) => {
-                e.preventDefault();
-                const id = customId.trim();
-                const pw = loginPassword.trim();
-                if (id.length < 3) return showToast("ID 過短", "error");
-                if (pw.length === 0) return showToast("請輸入密碼", "error");
-                setIsSearching(true);
-                try {
-                    const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', `reading_list_${id}`, 'settings');
-                    const settingsSnap = await getDoc(settingsRef);
-                    if (settingsSnap.exists() && settingsSnap.data().password === pw) {
-                        const mappingRef = doc(db, 'artifacts', appId, 'public', 'data', 'google_users', googleUser.uid);
-                        await setDoc(mappingRef, { mappedId: id });
-                        setIsLoggedIn(true);
-                        showToast("舊資料綁定成功！");
-                    } else {
-                        showToast("密碼錯誤或查無此 ID", "error");
-                    }
-                } catch (err) {
-                    console.error(err);
-                    showToast("綁定失敗", "error");
-                } finally {
+                    showToast("登入取消或失敗", "error");
                     setIsSearching(false);
                 }
             };
@@ -404,6 +392,50 @@
                 } catch (err) {
                     console.error(err);
                     showToast("建立失敗", "error");
+                } finally {
+                    setIsSearching(false);
+                }
+            };
+
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                const id = customId.trim();
+                const pw = loginPassword.trim();
+
+                if (id.length < 3) return showToast("ID 過短", "error");
+                if (pw.length === 0) return showToast("請輸入密碼", "error");
+
+                setIsSearching(true);
+                try {
+                    const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', `reading_list_${id}`, 'settings');
+                    const settingsSnap = await getDoc(settingsRef);
+
+                    if (settingsSnap.exists() && settingsSnap.data().password) {
+                        if (settingsSnap.data().password !== pw) {
+                            showToast("密碼錯誤", "error");
+                            setIsSearching(false);
+                            return;
+                        }
+                    } else {
+                        // 如果原本沒密碼，幫忙設定
+                        await setDoc(settingsRef, { password: pw }, { merge: true });
+                    }
+
+                    // 如果是處於綁定狀態 (有 GoogleUser)
+                    if (googleUser) {
+                        const mappingRef = doc(db, 'artifacts', appId, 'public', 'data', 'google_users', googleUser.uid);
+                        await setDoc(mappingRef, { mappedId: id });
+                        showToast("舊資料綁定成功！");
+                    } else {
+                        showToast("登入成功！");
+                    }
+
+                    localStorage.setItem('reading_tracker_id', id);
+                    localStorage.setItem('reading_tracker_pw', pw);
+                    setIsLoggedIn(true);
+                } catch (err) {
+                    console.error(err);
+                    showToast("驗證失敗", "error");
                 } finally {
                     setIsSearching(false);
                 }
@@ -449,13 +481,10 @@
             }, [books]);
 
             const filteredBooks = useMemo(() => {
-                // 將關鍵字以空格切分並過濾空值
                 const terms = searchTerm.toLowerCase().split(/\s+/).filter(t => t !== '');
                 return books.filter(b => {
                     const matchStatus = statusFilter === 'all' || b.status === statusFilter;
                     const matchRating = ratingFilter === 0 || (b.rating || 0) >= ratingFilter;
-                    
-                    // 必須符合所有切分出來的關鍵字
                     const matchTerms = terms.length === 0 || terms.every(term => 
                         b.title.toLowerCase().includes(term) || 
                         b.author?.toLowerCase().includes(term) || 
@@ -569,49 +598,57 @@
 
             if (!isLoggedIn) {
                 return (
-                    <div className="min-h-screen flex items-center justify-center p-6 bg-paper animate-fade-in">
-                        <div className="bg-white p-10 rounded-[2.5rem] shadow-xl w-full max-md text-center border border-stone-200">
-                            <BookOpen size={64} className="mx-auto text-wood-300 mb-6" />
-                            <h1 className="text-4xl font-title mb-2 tracking-widest text-ink">雲端書櫃</h1>
+                    <div className="min-h-screen flex items-center justify-center p-4 bg-paper animate-fade-in">
+                        <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl w-full max-w-[340px] text-center border border-stone-200">
+                            <BookOpen size={42} className="mx-auto text-wood-300 mb-4" />
+                            <h1 className="text-2xl font-title mb-1 tracking-widest text-ink">雲端書櫃</h1>
                             
                             {authStep === 'login' && (
-                                <>
-                                    <p className="text-sub mb-8 text-sm">使用 Google 帳號登入開啟閱讀空間</p>
-                                    <button onClick={handleGoogleLogin} disabled={isSearching} className="w-full bg-wood-500 text-white py-4 rounded-2xl font-title shadow-lg hover:bg-wood-600 transition-all flex items-center justify-center gap-2">
-                                        {isSearching ? <RefreshCw className="animate-spin" /> : 'Google 帳號登入'}
+                                <div className="mt-6">
+                                    <p className="text-sub mb-4 text-xs">使用 Google 帳號一鍵登入</p>
+                                    <button onClick={handleGoogleLogin} disabled={isSearching} className="w-full bg-wood-500 text-white py-2.5 rounded-xl font-title shadow-md hover:bg-wood-600 transition-all flex items-center justify-center gap-2 text-sm">
+                                        {isSearching ? <RefreshCw className="animate-spin" size={16} /> : 'Google 登入'}
                                     </button>
-                                </>
+                                </div>
                             )}
 
                             {authStep === 'checking' && (
-                                <div className="py-8 flex flex-col items-center">
-                                    <RefreshCw className="animate-spin text-wood-300 mb-4" size={32} />
-                                    <p className="text-sm text-sub tracking-widest">正在載入您的書櫃...</p>
+                                <div className="py-8 space-y-3">
+                                    <RefreshCw className="animate-spin mx-auto text-wood-300" size={24} />
+                                    <p className="text-xs text-sub">正在確認帳號資料...</p>
                                 </div>
                             )}
 
                             {authStep === 'link_or_new' && (
-                                <div className="animate-fade-in text-left">
-                                    <p className="text-sub mb-6 text-sm text-center">首次使用此 Google 帳號<br/>要綁定舊資料，還是建立新書櫃？</p>
-                                    
-                                    <form onSubmit={handleLinkAccount} className="space-y-3 mb-6 bg-stone-50 p-5 rounded-3xl border border-stone-100 relative">
-                                        <p className="text-xs text-stone-500 font-title mb-1 flex items-center gap-1.5"><Lock size={14}/> 綁定舊有 ID</p>
-                                        <input value={customId} onChange={e => setCustomId(e.target.value)} placeholder="舊的專屬 ID" className="w-full p-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-wood-200 transition-all bg-white" />
-                                        <input type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="舊的登入密碼" className="w-full p-3 rounded-xl border text-sm outline-none focus:ring-2 focus:ring-wood-200 transition-all bg-white" />
-                                        <button type="submit" disabled={isSearching} className="w-full bg-wood-400 text-white py-3 rounded-xl text-sm font-title shadow-sm hover:bg-wood-500 transition-all flex items-center justify-center gap-2 mt-2">
+                                <div className="animate-fade-in mt-6">
+                                    <p className="text-sub mb-4 text-xs">初次登入，請選擇：</p>
+                                    <div className="space-y-2.5">
+                                        <button onClick={() => setAuthStep('linking')} className="w-full bg-stone-50 text-stone-600 border border-stone-200 py-2.5 rounded-xl font-title hover:bg-stone-100 transition-all text-sm">
+                                            綁定現有的書櫃 ID
+                                        </button>
+                                        <button onClick={handleStartFresh} disabled={isSearching} className="w-full bg-wood-500 text-white py-2.5 rounded-xl font-title shadow-md hover:bg-wood-600 transition-all flex items-center justify-center gap-2 text-sm">
+                                            {isSearching ? <RefreshCw className="animate-spin" size={16} /> : '建立全新書櫃'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {authStep === 'linking' && (
+                                <form onSubmit={handleLogin} className="space-y-3 animate-fade-in mt-6">
+                                    <p className="text-sub mb-3 text-xs">請輸入原本的 ID 與密碼</p>
+                                    <div className="space-y-2">
+                                        <input value={customId} onChange={e => setCustomId(e.target.value)} placeholder="舊的書櫃 ID" className="w-full p-2.5 rounded-xl border text-center text-sm outline-none focus:ring-2 focus:ring-wood-200 transition-all" required />
+                                        <input type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="登入密碼" className="w-full p-2.5 rounded-xl border text-center text-sm outline-none focus:ring-2 focus:ring-wood-200 transition-all" required />
+                                    </div>
+                                    <div className="pt-1 space-y-2">
+                                        <button type="submit" disabled={isSearching} className="w-full bg-wood-500 text-white py-2.5 rounded-xl font-title shadow-md hover:bg-wood-600 transition-all flex items-center justify-center gap-2 text-sm">
                                             {isSearching ? <RefreshCw className="animate-spin" size={16} /> : '確認綁定'}
                                         </button>
-                                    </form>
-
-                                    <div className="relative flex items-center justify-center mb-6">
-                                        <div className="absolute w-full border-t border-stone-200"></div>
-                                        <span className="bg-white px-3 text-xs text-stone-300 relative">或</span>
+                                        <button type="button" onClick={() => setAuthStep('link_or_new')} className="w-full text-xs text-stone-400 hover:text-stone-600 py-1.5">
+                                            返回上一步
+                                        </button>
                                     </div>
-
-                                    <button type="button" onClick={handleStartFresh} disabled={isSearching} className="w-full bg-white text-wood-500 border border-wood-500 py-3 rounded-xl text-sm font-title hover:bg-wood-50 transition-all flex items-center justify-center">
-                                        建立全新書櫃
-                                    </button>
-                                </div>
+                                </form>
                             )}
                         </div>
                     </div>
@@ -625,8 +662,8 @@
                     <header className="flex justify-between items-center pt-1 pb-1 border-b border-stone-200 px-1">
                         <div className="flex items-center gap-2 text-xl tracking-widest text-ink font-title"><BookOpen className="text-wood-400"/> 閱讀手帳</div>
                         <div className="flex items-center gap-4 text-xs text-sub">
-                            <span className="flex items-center gap-1 font-medium"><User size={14}/> {googleUser?.displayName || customId}</span>
-                            <button onClick={() => { signOut(auth); setIsLoggedIn(false); setCustomId(''); setLoginPassword(''); setAuthStep('login'); }} className="hover:text-dried-500 transition-colors" title="登出"><LogOut size={18}/></button>
+                            <span className="flex items-center gap-1 font-medium"><User size={14}/> {customId}</span>
+                            <button onClick={() => { setIsLoggedIn(false); localStorage.removeItem('reading_tracker_id'); localStorage.removeItem('reading_tracker_pw'); setCustomId(''); setLoginPassword(''); setAuthStep('login'); auth.signOut(); }} className="hover:text-dried-500 transition-colors" title="登出"><LogOut size={18}/></button>
                         </div>
                     </header>
 
@@ -920,7 +957,7 @@
                                                             <div className="grid grid-cols-2 gap-2">
                                                                 <div className="flex flex-col gap-0.5">
                                                                     <label className="text-xs text-sub font-normal">日期</label>
-                                                                    <input type="date" value={inlineData.date} onChange={e=>setInlineData({...inlineData, date:e.target.value})} className="date-input-sm w-full px-1.5 py-1 text-[10px] tracking-tighter border rounded-lg h-8 min-w-0" />
+                                                                    <input type="date" value={inlineData.date} onChange={e=>setInlineData({...inlineData, date:e.target.value})} className="w-full text-xs tracking-tighter border rounded-lg h-8 min-w-0 date-input-sm" />
                                                                 </div>
                                                                 <div className="flex flex-col items-center justify-end pb-1"><StarRating rating={inlineData.rating || 0} setRating={r => setInlineData({...inlineData, rating: r})} interactive={true} size={14} /></div>
                                                             </div>
@@ -931,7 +968,7 @@
                                                             <div className="grid grid-cols-2 gap-2">
                                                                 <div className="flex flex-col gap-0.5">
                                                                     <label className="text-xs text-sub font-normal">日期</label>
-                                                                    <input type="date" value={inlineData.date} onChange={e=>setInlineData({...inlineData, date:e.target.value})} className="date-input-sm w-full px-1.5 py-1 text-[10px] tracking-tighter border rounded-lg h-8 min-w-0" />
+                                                                    <input type="date" value={inlineData.date} onChange={e=>setInlineData({...inlineData, date:e.target.value})} className="w-full text-xs tracking-tighter border rounded-lg h-8 min-w-0 date-input-sm" />
                                                                 </div>
                                                                 <div className="flex flex-col gap-0.5">
                                                                     <label className="text-xs text-sub font-normal">章節</label>
