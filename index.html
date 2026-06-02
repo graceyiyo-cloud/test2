@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>文青轉盤 App</title>
+    <title>命運轉盤</title>
     
     <link rel="apple-touch-icon" href="app-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="app-icon.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700&display=swap" rel="stylesheet">
 
     <style>
-        /* ==================== 基礎設定與配色 ==================== */
+        /* ==================== 多巴胺配色設定 ==================== */
         :root {
-            --bg-color: #F5F4F0;      /* 燕麥米白 */
-            --primary-color: #8C9A9E; /* 莫蘭迪藍灰 */
-            --accent-color: #C2B4A6;  /* 拿鐵大地色 */
-            --text-main: #4A4A4A;     /* 柔和深灰 */
+            --bg-color: #FFFDF0;      /* 溫柔粉奶黃 */
+            --primary-color: #FF597B; /* 果凍粉紅 */
+            --accent-color: #9B5DE5;  /* 薰衣草紫 */
+            --text-main: #333333;     /* 深炭灰 */
             --nav-bg: #FFFFFF;        /* 底部導覽列背景 */
-            --danger-color: #D98C8C;  /* 柔和磚紅 */
+            --danger-color: #FF4A4A;  
         }
 
         * {
@@ -32,7 +33,8 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            font-family: 'Helvetica Neue', Helvetica, Arial, 'PingFang TC', '微軟正黑體', sans-serif;
+            /* 全局套用可愛圓體字型 */
+            font-family: 'Zen Maru Gothic', 'Comic Sans MS', 'PingFang TC', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
@@ -41,22 +43,20 @@
 
         /* ==================== 佈局區塊 ==================== */
         header {
-            height: 60px;
+            height: 65px;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             background-color: #fff;
-            border-bottom: 1px solid #EAE8E3;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            border-bottom: 3px dashed #FFE17D; /* 點綴可愛虛線 */
         }
         
         #currentTitle {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: var(--primary-color);
-            letter-spacing: 1px;
         }
 
         main {
@@ -69,10 +69,10 @@
         }
 
         nav {
-            height: 70px;
+            height: 75px;
             flex-shrink: 0;
             background-color: var(--nav-bg);
-            border-top: 1px solid #EAE8E3;
+            border-top: 2px solid #FFE17D;
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -86,16 +86,27 @@
             justify-content: center;
             background: none;
             border: none;
-            color: var(--primary-color);
-            font-size: 0.75rem;
+            color: #A0A0A0;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            font-size: 0.8rem;
+            font-weight: bold;
             cursor: pointer;
-            width: 60px;
+            width: 65px;
             height: 100%;
-            transition: color 0.2s;
-            gap: 4px;
+            transition: transform 0.2s, color 0.2s;
+            gap: 2px;
         }
-
-        .nav-btn:hover, .nav-btn:active { color: var(--accent-color); }
+        
+        /* 讓按鈕點擊時有彈跳感 */
+        .nav-btn:active {
+            transform: scale(0.9);
+        }
+        
+        /* 當前活動顏色隨機套用多巴胺色 */
+        .nav-btn:nth-child(1) { color: #FF597B; }
+        .nav-btn:nth-child(2) { color: #FF8E53; }
+        .nav-btn:nth-child(3) { color: #00BBF9; }
+        .nav-btn:nth-child(4) { color: #9B5DE5; }
 
         /* ==================== 轉盤與指針 ==================== */
         .wheel-wrapper {
@@ -105,18 +116,19 @@
             aspect-ratio: 1 / 1;
         }
 
+        /* 冰淇淋甜筒造型的可愛指針 */
         .pointer {
             position: absolute;
-            top: -15px;
+            top: -18px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 30px solid var(--text-main);
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 35px solid #FF4A75;
             z-index: 10;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
         }
 
         #wheelCanvas {
@@ -124,7 +136,7 @@
             height: 100%;
             border-radius: 50%;
             background-color: #fff;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 25px rgba(255, 142, 83, 0.15); /* 帶有溫暖色調的陰影 */
             cursor: pointer;
         }
 
@@ -132,7 +144,8 @@
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(74, 74, 74, 0.4);
+            background-color: rgba(50, 50, 50, 0.3);
+            backdrop-filter: blur(4px); /* 背景微微模糊，增加高階感 */
             display: none;
             justify-content: center;
             align-items: center;
@@ -146,17 +159,18 @@
             background-color: var(--bg-color);
             width: 100%;
             max-width: 360px;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 24px; /* 更圓潤的角 */
+            padding: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
-            max-height: 85vh; /* 防止內容過多超出螢幕 */
+            max-height: 85vh;
+            border: 3px solid #FFF; /* 白色內邊框，像貼紙一樣 */
         }
 
         .modal-header {
-            font-size: 1.1rem;
-            color: var(--primary-color);
+            font-size: 1.2rem;
+            color: var(--accent-color);
             font-weight: bold;
             margin-bottom: 15px;
             text-align: center;
@@ -167,20 +181,20 @@
         
         .close-icon { cursor: pointer; color: var(--text-main); }
 
-        /* 主題切換下拉選單樣式 */
         .project-selector-group {
             background: #fff;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 16px;
             margin-bottom: 15px;
-            border: 1px solid #EAE8E3;
+            border: 2px dashed #FFE17D;
         }
         .project-select {
             width: 100%;
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid var(--accent-color);
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid var(--primary-color);
             color: var(--text-main);
+            font-family: 'Zen Maru Gothic', sans-serif;
             font-size: 0.95rem;
             outline: none;
             background-color: #fff;
@@ -188,23 +202,29 @@
 
         .add-item-group { display: flex; gap: 10px; margin-bottom: 15px; }
         .add-item-group input {
-            flex-grow: 1; padding: 10px; border: 1px solid var(--accent-color);
-            border-radius: 8px; font-size: 1rem; outline: none; background: #fff;
+            flex-grow: 1; padding: 12px; border: 2px solid #FFE17D;
+            border-radius: 12px; font-size: 1rem; outline: none; background: #fff;
+            font-family: 'Zen Maru Gothic', sans-serif;
         }
         .btn-primary {
             background-color: var(--primary-color); color: #FFF;
-            border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer;
-            font-weight: bold; width: 100%;
+            border: none; padding: 12px 16px; border-radius: 12px; cursor: pointer;
+            font-weight: bold; width: 100%; font-family: 'Zen Maru Gothic', sans-serif;
+            box-shadow: 0 4px 0 #D63356; /* 2.5D Q版按鈕效果 */
         }
+        .btn-primary:active { transform: translateY(4px); box-shadow: none; }
+
         .btn-outline {
-            background-color: transparent; color: var(--primary-color);
-            border: 2px solid var(--primary-color); padding: 10px 16px; border-radius: 8px; 
+            background-color: #FFFFFF; color: var(--accent-color);
+            border: 2px solid var(--accent-color); padding: 10px 16px; border-radius: 12px; 
             cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px;
+            font-family: 'Zen Maru Gothic', sans-serif;
         }
         .btn-danger-outline {
-            background-color: transparent; color: var(--danger-color);
-            border: 1px dashed var(--danger-color); padding: 6px 12px; border-radius: 6px;
-            cursor: pointer; font-size: 0.8rem; margin-top: 8px; width: 100%;
+            background-color: transparent; color: #FF4A4A;
+            border: 2px dotted #FF4A4A; padding: 6px 12px; border-radius: 10px;
+            cursor: pointer; font-size: 0.8rem; margin-top: 10px; width: 100%;
+            font-family: 'Zen Maru Gothic', sans-serif;
         }
 
         .item-list {
@@ -216,21 +236,24 @@
 
         .item-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 0; border-bottom: 1px solid #EAE8E3;
+            padding: 10px 8px; border-bottom: 2px dashed #FFF;
+            background: rgba(255,255,255,0.5);
+            margin-bottom: 6px;
+            border-radius: 8px;
         }
 
         .icon-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; }
         .icon-btn.delete { color: var(--danger-color); }
         
         #fileInput { display: none; }
-        .modal-content p { color: #666; font-size: 0.85rem; line-height: 1.4; text-align: center;}
+        .modal-content p { color: #666; font-size: 0.85rem; line-height: 1.4; text-align: center; margin-bottom: 10px;}
 
     </style>
 </head>
 <body>
 
     <header>
-        <span style="font-size: 0.75rem; color: #999; margin-bottom: 2px;">當前主題</span>
+        <span style="font-size: 0.75rem; color: #A0A0A0; margin-bottom: 2px; font-weight: bold;">✨ 目前的大輪盤 ✨</span>
         <div id="currentTitle">載入中...</div>
     </header>
 
@@ -243,94 +266,90 @@
 
     <nav>
         <button class="nav-btn" onclick="startSpin()">
-            <span class="material-symbols-outlined">play_circle</span>
-            抽籤
+            <span class="material-symbols-outlined" style="font-size: 2rem;">star</span>
+            呼嚕轉
         </button>
         <button class="nav-btn" onclick="openModal('editModal')">
-            <span class="material-symbols-outlined">layers</span>
-            主題清單
+            <span class="material-symbols-outlined" style="font-size: 2rem;">category</span>
+            換主題
         </button>
         <button class="nav-btn" onclick="openModal('historyModal')">
-            <span class="material-symbols-outlined">history</span>
-            歷史
+            <span class="material-symbols-outlined" style="font-size: 2rem;">history_edu</span>
+            小紀錄
         </button>
         <button class="nav-btn" onclick="openModal('backupModal')">
-            <span class="material-symbols-outlined">cloud_sync</span>
-            備份
+            <span class="material-symbols-outlined" style="font-size: 2rem;">box</span>
+            大備份
         </button>
     </nav>
 
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                切換與編輯主題
+                🎈 切換與編輯主題
                 <span class="material-symbols-outlined close-icon" onclick="closeModal('editModal')">close</span>
             </div>
             
             <div class="project-selector-group">
-                <label style="font-size: 0.8rem; color: #888; display:block; margin-bottom: 5px;">選擇或創建主題：</label>
                 <select id="projectSelect" class="project-select" onchange="switchProject(this.value)"></select>
-                <button class="btn-outline" style="padding: 6px; font-size: 0.85rem; margin-top: 8px;" onclick="createNewProject()">+ 建立全新主題</button>
-                <button id="deleteProjBtn" class="btn-danger-outline" onclick="deleteCurrentProject()">刪除此主題</button>
+                <button class="btn-outline" style="padding: 8px; font-size: 0.85rem; margin-top: 8px;" onclick="createNewProject()">＋ 建立全新主題</button>
+                <button id="deleteProjBtn" class="btn-danger-outline" onclick="deleteCurrentProject()">💥 刪除這個主題</button>
             </div>
 
-            <div style="border-top: 1px solid #DDD; margin: 5px 0 15px 0;"></div>
-
-            <label style="font-size: 0.8rem; color: #888; margin-bottom: 5px; display: block;">編輯此主題的抽籤項目：</label>
             <div class="add-item-group">
-                <input type="text" id="newItemInput" placeholder="輸入新項目..." onkeypress="handleEnter(event)">
-                <button class="btn-primary" style="width: auto;" onclick="addItem()">新增</button>
+                <input type="text" id="newItemInput" placeholder="想加點什麼呢..." onkeypress="handleEnter(event)">
+                <button class="btn-primary" style="width: auto; padding: 0 20px;" onclick="addItem()">加入</button>
             </div>
             <div id="itemList" class="item-list"></div>
-            <button class="btn-primary" onclick="closeModal('editModal')">確認關閉</button>
+            <button class="btn-primary" onclick="closeModal('editModal')">好啦儲存！</button>
         </div>
     </div>
 
     <div id="historyModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                抽籤紀錄
+                📝 剛剛抽到了什麼
                 <span class="material-symbols-outlined close-icon" onclick="closeModal('historyModal')">close</span>
             </div>
             <div id="historyList" class="item-list"></div>
-            <button class="btn-outline" onclick="clearHistory()">清空紀錄</button>
+            <button class="btn-outline" onclick="clearHistory()">全部忘記</button>
         </div>
     </div>
 
     <div id="backupModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                資料全量備份
+                📦 資料大打包
                 <span class="material-symbols-outlined close-icon" onclick="closeModal('backupModal')">close</span>
             </div>
-            <p style="margin-bottom: 20px;">這會將你「所有轉盤主題」打包成一個檔案下載，換手機時可用此檔案還原。</p>
-            <button class="btn-primary" onclick="exportData()">匯出完整備份 (.json)</button>
-            <button class="btn-outline" onclick="document.getElementById('fileInput').click()">從檔案還原所有轉盤</button>
+            <p>要把所有的轉盤主題打包帶走，或是從舊存檔搬回來嗎？</p>
+            <button class="btn-primary" style="margin-bottom: 12px;" onclick="exportData()">導出備份檔案 (.json)</button>
+            <button class="btn-outline" onclick="document.getElementById('fileInput').click()">導入備份檔案</button>
             <input type="file" id="fileInput" accept=".json" onchange="importData(event)">
         </div>
     </div>
 
     <script>
-        // --- 多專案資料結構初始化 ---
+        // --- 資料結構初始化 ---
         const defaultAppData = {
             current: "晚餐吃什麼",
             lists: {
-                "晚餐吃什麼": ["便當", "火鍋", "義大利麵", "滷肉飯", "牛肉麵", "壽司"],
-                "去哪裡玩": ["台北", "台中", "台南", "高雄", "花蓮", "宜蘭"]
+                "晚餐吃什麼": ["大火鍋", "義大利麵", "香滷肉飯", "讚牛肉麵", "迴轉壽司", "麥當勞"],
+                "假日去哪玩": ["陽明山", "台中港", "台南安平", "高雄駁二", "宜蘭礁溪"]
             }
         };
 
-        // 從 LocalStorage 載入整包 App 資料
         let appData = JSON.parse(localStorage.getItem('multiWheelAppData')) || defaultAppData;
         let historyData = JSON.parse(localStorage.getItem('wheelHistory')) || [];
         
-        const colors = ['#8C9A9E', '#C2B4A6', '#D1CFC0', '#A3B1AA', '#E0D4C3'];
+        // 多巴胺繽紛配色陣列
+        const colors = ['#FF597B', '#FF8E53', '#FFD166', '#06D6A0', '#00BBF9', '#9B5DE5'];
 
         // --- Canvas 轉盤控制 ---
         const canvas = document.getElementById('wheelCanvas');
         const ctx = canvas.getContext('2d');
         let currentAngle = 0, spinVelocity = 0, isSpinning = false;
-        const centerX = canvas.width / 2, centerY = canvas.height / 2, radius = centerX;
+        const centerX = canvas.width / 2, centerY = canvas.height / 2, radius = centerX - 10;
 
         function drawWheel() {
             const items = appData.lists[appData.current] || [];
@@ -343,31 +362,53 @@
                 const startAngle = currentAngle + i * sliceAngle;
                 const endAngle = startAngle + sliceAngle;
 
+                // 1. 畫多巴胺色塊
                 ctx.beginPath();
                 ctx.moveTo(centerX, centerY);
                 ctx.arc(centerX, centerY, radius, startAngle, endAngle);
                 ctx.fillStyle = colors[i % colors.length];
                 ctx.fill();
-                ctx.lineWidth = 3;
+                
+                // 2. 畫白色香草分隔線
+                ctx.lineWidth = 6; 
                 ctx.strokeStyle = '#FFFFFF';
                 ctx.stroke();
 
+                // 3. 寫上可愛圓體字
                 ctx.save();
                 ctx.translate(centerX, centerY);
                 ctx.rotate(startAngle + sliceAngle / 2);
                 ctx.textAlign = "right";
                 ctx.textBaseline = "middle";
                 ctx.fillStyle = "#FFFFFF";
-                ctx.font = "bold 40px 'PingFang TC', sans-serif";
-                ctx.fillText(items[i], radius - 50, 0); 
+                
+                // 設定 Canvas 使用可愛字體
+                ctx.font = "bold 42px 'Zen Maru Gothic', sans-serif";
+                
+                // 幫文字加上微微的深色陰影，讓淡色（如黃色）更清晰
+                ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+
+                ctx.fillText(items[i], radius - 60, 0); 
                 ctx.restore();
             }
+
+            // 4. 轉盤最中心加一個可愛的白色裝飾糖果圓心
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+            ctx.shadowColor = "rgba(0, 0, 0, 0.05)";
+            ctx.shadowBlur = 5;
+            ctx.stroke();
         }
 
         // --- 旋轉物理動畫 ---
         function animate() {
             currentAngle += spinVelocity;
-            spinVelocity *= 0.985; // 阻尼
+            spinVelocity *= 0.986; // 稍微調高一點點，轉起來更輕快
             drawWheel();
 
             if (spinVelocity < 0.002) {
@@ -383,7 +424,7 @@
             const items = appData.lists[appData.current] || [];
             if (isSpinning || items.length < 2) return;
             isSpinning = true;
-            spinVelocity = Math.random() * 0.3 + 0.4; 
+            spinVelocity = Math.random() * 0.25 + 0.45; 
             animate();
         }
 
@@ -397,18 +438,17 @@
             
             const winner = items[winnerIndex];
             
-            // 寫入歷史
             const timeString = new Date().toLocaleTimeString('zh-TW', {hour: '2-digit', minute:'2-digit'});
             historyData.unshift({ theme: appData.current, time: timeString, result: winner });
             if(historyData.length > 50) historyData.pop();
             localStorage.setItem('wheelHistory', JSON.stringify(historyData));
 
-            setTimeout(() => { alert(`🎉 【${appData.current}】抽中了：${winner}`); }, 200);
+            setTimeout(() => { alert(`🎉 哇呼！抽中了：${winner}`); }, 200);
         }
 
-        // --- 多主題專案管理邏輯 ---
+        // --- 主題管理邏輯 ---
         function updateHeaderTitle() {
-            document.getElementById('currentTitle').innerText = appData.current;
+            document.getElementById('currentTitle').innerText = "🎈 " + appData.current;
         }
 
         function saveToStorage() {
@@ -425,17 +465,16 @@
         }
 
         function createNewProject() {
-            const name = prompt("請輸入新主題的名稱（例如：宵夜吃什麼）：");
+            const name = prompt("想建立什麼新主題呢？（例如：今天要穿什麼色）：");
             if (!name || name.trim() === "") return;
             const cleanName = name.trim();
             
             if (appData.lists[cleanName]) {
-                alert("這個主題名稱已經存在囉！");
+                alert("這個主題已經存在囉！");
                 return;
             }
 
-            // 建立新主題並給予 2 個預設選項
-            appData.lists[cleanName] = ["選項 A", "選項 B"];
+            appData.lists[cleanName] = ["選項一", "選項二"];
             appData.current = cleanName;
             saveToStorage();
             updateHeaderTitle();
@@ -447,12 +486,11 @@
         function deleteCurrentProject() {
             const keys = Object.keys(appData.lists);
             if (keys.length <= 1) {
-                alert("這是你最後一個主題了，不能再刪除囉！");
+                alert("不能刪除最後一個主題唷！");
                 return;
             }
-            if (confirm(`確定要永久刪除【${appData.current}】這個主題嗎？`)) {
+            if (confirm(`確定要丟掉【${appData.current}】這個主題嗎？`)) {
                 delete appData.lists[appData.current];
-                // 自動切換到剩餘的第一個主題
                 appData.current = Object.keys(appData.lists)[0];
                 saveToStorage();
                 updateHeaderTitle();
@@ -469,7 +507,7 @@
             ).join('');
         }
 
-        // --- 項目編輯邏輯 ---
+        // --- 編輯功能 ---
         function openModal(id) {
             document.getElementById(id).classList.add('active');
             if(id === 'editModal') {
@@ -492,9 +530,9 @@
             const items = appData.lists[appData.current] || [];
             list.innerHTML = items.map((item, index) => `
                 <div class="item-row">
-                    <span>${item}</span>
+                    <span style="font-weight: bold;">${item}</span>
                     <button class="icon-btn delete" onclick="deleteItem(${index})">
-                        <span class="material-symbols-outlined">delete</span>
+                        <span class="material-symbols-outlined">delete_forever</span>
                     </button>
                 </div>
             `).join('');
@@ -514,30 +552,30 @@
 
         function deleteItem(index) {
             const items = appData.lists[appData.current];
-            if(items.length <= 2) { alert("轉盤至少需要兩個項目喔！"); return; }
+            if(items.length <= 2) { alert("太少選項就不能轉了啦（至少2個）！"); return; }
             items.splice(index, 1);
             renderEditList();
         }
 
-        // --- 歷史與全量備份邏輯 ---
+        // --- 歷史與備份 ---
         function renderHistory() {
             const list = document.getElementById('historyList');
             if(historyData.length === 0) {
-                list.innerHTML = '<div style="text-align:center; padding: 20px; color: #999;">尚無紀錄</div>';
+                list.innerHTML = '<div style="text-align:center; padding: 20px; color: #BBB; font-weight:bold;">空空如也</div>';
                 return;
             }
             list.innerHTML = historyData.map(h => `
                 <div class="item-row">
                     <div>
-                        <div style="font-size:0.75rem; color:#999;">${h.theme} (${h.time})</div>
-                        <div style="font-weight: bold; color: var(--primary-color); margin-top:2px;">${h.result}</div>
+                        <div style="font-size:0.75rem; color:#AAA; font-weight:bold;">📌 ${h.theme} (${h.time})</div>
+                        <div style="font-weight: bold; color: var(--primary-color); margin-top:2px; font-size:1.05rem;">🎯 ${h.result}</div>
                     </div>
                 </div>
             `).join('');
         }
 
         function clearHistory() {
-            if(confirm('確定要清空所有抽籤紀錄嗎？')) {
+            if(confirm('要擦掉所有的抽籤秘密嗎？')) {
                 historyData = [];
                 localStorage.removeItem('wheelHistory');
                 renderHistory();
@@ -550,7 +588,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `全主題轉盤備份_${new Date().toISOString().slice(0,10)}.json`;
+            a.download = `多巴胺轉盤備份_${new Date().toISOString().slice(0,10)}.json`;
             a.click();
             URL.revokeObjectURL(url);
         }
@@ -568,19 +606,19 @@
                         updateHeaderTitle();
                         drawWheel();
                         closeModal('backupModal');
-                        alert("✅ 所有轉盤主題還原成功！");
+                        alert("🎉 哇！所有可愛主題都搬回來了！");
                     } else {
-                        alert("❌ 檔案格式不符合多專案結構。");
+                        alert("唔...檔案格式好像不太對。");
                     }
                 } catch (err) {
-                    alert("❌ 讀取檔案失敗。");
+                    alert("讀取失敗ＱＱ");
                 }
                 event.target.value = '';
             };
             reader.readAsText(file);
         }
 
-        // 初始化
+        // 啟動！
         updateHeaderTitle();
         drawWheel();
         canvas.addEventListener('click', startSpin);
