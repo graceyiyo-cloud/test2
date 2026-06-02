@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>命運轉盤</title>
+    <title>命運轉轉轉</title>
     
     <link rel="apple-touch-icon" href="app-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="app-icon.png">
@@ -12,14 +12,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700&display=swap" rel="stylesheet">
 
     <style>
-        /* ==================== 多巴胺配色設定 ==================== */
+        /* ==================== 回歸文青風基礎配色 ==================== */
         :root {
-            --bg-color: #FFFDF0;      /* 溫柔粉奶黃 */
-            --primary-color: #FF597B; /* 果凍粉紅 */
-            --accent-color: #9B5DE5;  /* 薰衣草紫 */
-            --text-main: #333333;     /* 深炭灰 */
+            --bg-color: #F5F4F0;      /* 燕麥米白 */
+            --primary-color: #8C9A9E; /* 莫蘭迪藍灰 */
+            --accent-color: #C2B4A6;  /* 拿鐵大地色 */
+            --text-main: #4A4A4A;     /* 柔和深灰 */
             --nav-bg: #FFFFFF;        /* 底部導覽列背景 */
-            --danger-color: #FF4A4A;  
+            --danger-color: #D98C8C;  /* 柔和磚紅 */
         }
 
         * {
@@ -34,29 +34,31 @@
             height: 100vh;
             overflow: hidden;
             /* 全局套用可愛圓體字型 */
-            font-family: 'Zen Maru Gothic', 'Comic Sans MS', 'PingFang TC', sans-serif;
+            font-family: 'Zen Maru Gothic', 'PingFang TC', '微軟正黑體', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
             flex-direction: column;
         }
 
-        /* ==================== 佈局區塊 ==================== */
+        /* ==================== 乾淨的佈局區塊 ==================== */
         header {
-            height: 65px;
+            height: 60px;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             background-color: #fff;
-            border-bottom: 3px dashed #FFE17D; /* 點綴可愛虛線 */
+            border-bottom: 1px solid #EAE8E3;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
         
         #currentTitle {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: var(--primary-color);
+            letter-spacing: 1px;
         }
 
         main {
@@ -69,10 +71,10 @@
         }
 
         nav {
-            height: 75px;
+            height: 70px;
             flex-shrink: 0;
             background-color: var(--nav-bg);
-            border-top: 2px solid #FFE17D;
+            border-top: 1px solid #EAE8E3;
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -86,27 +88,19 @@
             justify-content: center;
             background: none;
             border: none;
-            color: #A0A0A0;
+            color: var(--primary-color);
             font-family: 'Zen Maru Gothic', sans-serif;
-            font-size: 0.8rem;
-            font-weight: bold;
+            font-size: 0.75rem;
             cursor: pointer;
-            width: 65px;
+            width: 70px;
             height: 100%;
-            transition: transform 0.2s, color 0.2s;
-            gap: 2px;
+            transition: color 0.2s;
+            gap: 4px;
         }
-        
-        /* 讓按鈕點擊時有彈跳感 */
-        .nav-btn:active {
-            transform: scale(0.9);
+
+        .nav-btn:hover, .nav-btn:active {
+            color: var(--accent-color);
         }
-        
-        /* 當前活動顏色隨機套用多巴胺色 */
-        .nav-btn:nth-child(1) { color: #FF597B; }
-        .nav-btn:nth-child(2) { color: #FF8E53; }
-        .nav-btn:nth-child(3) { color: #00BBF9; }
-        .nav-btn:nth-child(4) { color: #9B5DE5; }
 
         /* ==================== 轉盤與指針 ==================== */
         .wheel-wrapper {
@@ -116,19 +110,18 @@
             aspect-ratio: 1 / 1;
         }
 
-        /* 冰淇淋甜筒造型的可愛指針 */
         .pointer {
             position: absolute;
-            top: -18px;
+            top: -15px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 18px solid transparent;
-            border-right: 18px solid transparent;
-            border-top: 35px solid #FF4A75;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid var(--text-main);
             z-index: 10;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
         }
 
         #wheelCanvas {
@@ -136,7 +129,7 @@
             height: 100%;
             border-radius: 50%;
             background-color: #fff;
-            box-shadow: 0 10px 25px rgba(255, 142, 83, 0.15); /* 帶有溫暖色調的陰影 */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
             cursor: pointer;
         }
 
@@ -144,8 +137,7 @@
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(50, 50, 50, 0.3);
-            backdrop-filter: blur(4px); /* 背景微微模糊，增加高階感 */
+            background-color: rgba(74, 74, 74, 0.4);
             display: none;
             justify-content: center;
             align-items: center;
@@ -159,18 +151,17 @@
             background-color: var(--bg-color);
             width: 100%;
             max-width: 360px;
-            border-radius: 24px; /* 更圓潤的角 */
-            padding: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
             max-height: 85vh;
-            border: 3px solid #FFF; /* 白色內邊框，像貼紙一樣 */
         }
 
         .modal-header {
-            font-size: 1.2rem;
-            color: var(--accent-color);
+            font-size: 1.1rem;
+            color: var(--primary-color);
             font-weight: bold;
             margin-bottom: 15px;
             text-align: center;
@@ -183,16 +174,16 @@
 
         .project-selector-group {
             background: #fff;
-            padding: 12px;
-            border-radius: 16px;
+            padding: 10px;
+            border-radius: 8px;
             margin-bottom: 15px;
-            border: 2px dashed #FFE17D;
+            border: 1px solid #EAE8E3;
         }
         .project-select {
             width: 100%;
-            padding: 10px;
-            border-radius: 10px;
-            border: 2px solid var(--primary-color);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--accent-color);
             color: var(--text-main);
             font-family: 'Zen Maru Gothic', sans-serif;
             font-size: 0.95rem;
@@ -202,28 +193,25 @@
 
         .add-item-group { display: flex; gap: 10px; margin-bottom: 15px; }
         .add-item-group input {
-            flex-grow: 1; padding: 12px; border: 2px solid #FFE17D;
-            border-radius: 12px; font-size: 1rem; outline: none; background: #fff;
+            flex-grow: 1; padding: 10px; border: 1px solid var(--accent-color);
+            border-radius: 8px; font-size: 1rem; outline: none; background: #fff;
             font-family: 'Zen Maru Gothic', sans-serif;
         }
         .btn-primary {
             background-color: var(--primary-color); color: #FFF;
-            border: none; padding: 12px 16px; border-radius: 12px; cursor: pointer;
+            border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer;
             font-weight: bold; width: 100%; font-family: 'Zen Maru Gothic', sans-serif;
-            box-shadow: 0 4px 0 #D63356; /* 2.5D Q版按鈕效果 */
         }
-        .btn-primary:active { transform: translateY(4px); box-shadow: none; }
-
         .btn-outline {
-            background-color: #FFFFFF; color: var(--accent-color);
-            border: 2px solid var(--accent-color); padding: 10px 16px; border-radius: 12px; 
+            background-color: transparent; color: var(--primary-color);
+            border: 2px solid var(--primary-color); padding: 10px 16px; border-radius: 8px; 
             cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px;
             font-family: 'Zen Maru Gothic', sans-serif;
         }
         .btn-danger-outline {
-            background-color: transparent; color: #FF4A4A;
-            border: 2px dotted #FF4A4A; padding: 6px 12px; border-radius: 10px;
-            cursor: pointer; font-size: 0.8rem; margin-top: 10px; width: 100%;
+            background-color: transparent; color: var(--danger-color);
+            border: 1px dashed var(--danger-color); padding: 6px 12px; border-radius: 6px;
+            cursor: pointer; font-size: 0.8rem; margin-top: 8px; width: 100%;
             font-family: 'Zen Maru Gothic', sans-serif;
         }
 
@@ -236,24 +224,21 @@
 
         .item-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 8px; border-bottom: 2px dashed #FFF;
-            background: rgba(255,255,255,0.5);
-            margin-bottom: 6px;
-            border-radius: 8px;
+            padding: 10px 0; border-bottom: 1px solid #EAE8E3;
         }
 
         .icon-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; }
         .icon-btn.delete { color: var(--danger-color); }
         
         #fileInput { display: none; }
-        .modal-content p { color: #666; font-size: 0.85rem; line-height: 1.4; text-align: center; margin-bottom: 10px;}
+        .modal-content p { color: #666; font-size: 0.85rem; line-height: 1.4; text-align: center;}
 
     </style>
 </head>
 <body>
 
     <header>
-        <span style="font-size: 0.75rem; color: #A0A0A0; margin-bottom: 2px; font-weight: bold;">✨ 目前的大輪盤 ✨</span>
+        <span style="font-size: 0.75rem; color: #999; margin-bottom: 2px;">當前主題</span>
         <div id="currentTitle">載入中...</div>
     </header>
 
@@ -266,83 +251,85 @@
 
     <nav>
         <button class="nav-btn" onclick="startSpin()">
-            <span class="material-symbols-outlined" style="font-size: 2rem;">star</span>
-            呼嚕轉
+            <span class="material-symbols-outlined">play_circle</span>
+            抽籤
         </button>
         <button class="nav-btn" onclick="openModal('editModal')">
-            <span class="material-symbols-outlined" style="font-size: 2rem;">category</span>
-            換主題
+            <span class="material-symbols-outlined">layers</span>
+            主題清單
         </button>
         <button class="nav-btn" onclick="openModal('historyModal')">
-            <span class="material-symbols-outlined" style="font-size: 2rem;">history_edu</span>
-            小紀錄
+            <span class="material-symbols-outlined">history</span>
+            紀錄
         </button>
         <button class="nav-btn" onclick="openModal('backupModal')">
-            <span class="material-symbols-outlined" style="font-size: 2rem;">box</span>
-            大備份
+            <span class="material-symbols-outlined">cloud_sync</span>
+            備份/還原
         </button>
     </nav>
 
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                🎈 切換與編輯主題
+                切換與編輯主題
                 <span class="material-symbols-outlined close-icon" onclick="closeModal('editModal')">close</span>
             </div>
             
             <div class="project-selector-group">
+                <label style="font-size: 0.8rem; color: #888; display:block; margin-bottom: 5px;">選擇主題：</label>
                 <select id="projectSelect" class="project-select" onchange="switchProject(this.value)"></select>
-                <button class="btn-outline" style="padding: 8px; font-size: 0.85rem; margin-top: 8px;" onclick="createNewProject()">＋ 建立全新主題</button>
-                <button id="deleteProjBtn" class="btn-danger-outline" onclick="deleteCurrentProject()">💥 刪除這個主題</button>
+                <button class="btn-outline" style="padding: 6px; font-size: 0.85rem; margin-top: 8px;" onclick="createNewProject()">+ 建立全新主題</button>
+                <button id="deleteProjBtn" class="btn-danger-outline" onclick="deleteCurrentProject()">刪除此主題</button>
             </div>
 
+            <div style="border-top: 1px solid #DDD; margin: 5px 0 15px 0;"></div>
+
             <div class="add-item-group">
-                <input type="text" id="newItemInput" placeholder="想加點什麼呢..." onkeypress="handleEnter(event)">
-                <button class="btn-primary" style="width: auto; padding: 0 20px;" onclick="addItem()">加入</button>
+                <input type="text" id="newItemInput" placeholder="輸入新項目..." onkeypress="handleEnter(event)">
+                <button class="btn-primary" style="width: auto;" onclick="addItem()">新增</button>
             </div>
             <div id="itemList" class="item-list"></div>
-            <button class="btn-primary" onclick="closeModal('editModal')">好啦儲存！</button>
+            <button class="btn-primary" onclick="closeModal('editModal')">完成並儲存</button>
         </div>
     </div>
 
     <div id="historyModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                📝 剛剛抽到了什麼
+                抽籤紀錄
                 <span class="material-symbols-outlined close-icon" onclick="closeModal('historyModal')">close</span>
             </div>
             <div id="historyList" class="item-list"></div>
-            <button class="btn-outline" onclick="clearHistory()">全部忘記</button>
+            <button class="btn-outline" onclick="clearHistory()">清空紀錄</button>
         </div>
     </div>
 
     <div id="backupModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                📦 資料大打包
+                資料備份/還原
                 <span class="material-symbols-outlined close-icon" onclick="closeModal('backupModal')">close</span>
             </div>
-            <p>要把所有的轉盤主題打包帶走，或是從舊存檔搬回來嗎？</p>
-            <button class="btn-primary" style="margin-bottom: 12px;" onclick="exportData()">導出備份檔案 (.json)</button>
-            <button class="btn-outline" onclick="document.getElementById('fileInput').click()">導入備份檔案</button>
+            <p style="margin-bottom: 20px;">將目前的「所有轉盤主題」儲存為檔案，或從先前存檔的檔案進行還原。</p>
+            <button class="btn-primary" onclick="exportData()">匯出完整備份 (.json)</button>
+            <button class="btn-outline" onclick="document.getElementById('fileInput').click()">從檔案還原所有轉盤</button>
             <input type="file" id="fileInput" accept=".json" onchange="importData(event)">
         </div>
     </div>
 
     <script>
-        // --- 資料結構初始化 ---
         const defaultAppData = {
             current: "晚餐吃什麼",
             lists: {
-                "晚餐吃什麼": ["大火鍋", "義大利麵", "香滷肉飯", "讚牛肉麵", "迴轉壽司", "麥當勞"],
-                "假日去哪玩": ["陽明山", "台中港", "台南安平", "高雄駁二", "宜蘭礁溪"]
+                "晚餐吃什麼": ["便當", "火鍋", "義大利麵", "滷肉飯", "牛肉麵", "壽司"],
+                "去哪裡玩": ["台北", "台中", "台南", "高雄", "花蓮", "宜蘭"]
             }
         };
 
         let appData = JSON.parse(localStorage.getItem('multiWheelAppData')) || defaultAppData;
         let historyData = JSON.parse(localStorage.getItem('wheelHistory')) || [];
         
-        // 多巴胺繽紛配色陣列
+        // 僅保留此處的「多巴胺繽紛配色」，轉盤本身色彩亮麗，但周邊介面保持文青優雅
         const colors = ['#FF597B', '#FF8E53', '#FFD166', '#06D6A0', '#00BBF9', '#9B5DE5'];
 
         // --- Canvas 轉盤控制 ---
@@ -362,19 +349,19 @@
                 const startAngle = currentAngle + i * sliceAngle;
                 const endAngle = startAngle + sliceAngle;
 
-                // 1. 畫多巴胺色塊
+                // 繪製多巴胺色塊
                 ctx.beginPath();
                 ctx.moveTo(centerX, centerY);
                 ctx.arc(centerX, centerY, radius, startAngle, endAngle);
                 ctx.fillStyle = colors[i % colors.length];
                 ctx.fill();
                 
-                // 2. 畫白色香草分隔線
-                ctx.lineWidth = 6; 
+                // 乾淨的白色分隔線
+                ctx.lineWidth = 4; 
                 ctx.strokeStyle = '#FFFFFF';
                 ctx.stroke();
 
-                // 3. 寫上可愛圓體字
+                // 寫上可愛圓體字
                 ctx.save();
                 ctx.translate(centerX, centerY);
                 ctx.rotate(startAngle + sliceAngle / 2);
@@ -382,33 +369,32 @@
                 ctx.textBaseline = "middle";
                 ctx.fillStyle = "#FFFFFF";
                 
-                // 設定 Canvas 使用可愛字體
-                ctx.font = "bold 42px 'Zen Maru Gothic', sans-serif";
+                ctx.font = "bold 42px 'Zen Maru Gothic', 'PingFang TC', sans-serif";
                 
-                // 幫文字加上微微的深色陰影，讓淡色（如黃色）更清晰
-                ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+                // 加上輕微文字陰影，確保在亮黃/亮色背景下文字依舊清晰 scannable
+                ctx.shadowColor = "rgba(0, 0, 0, 0.12)";
                 ctx.shadowBlur = 4;
-                ctx.shadowOffsetX = 2;
-                ctx.shadowOffsetY = 2;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
 
-                ctx.fillText(items[i], radius - 60, 0); 
+                ctx.fillText(items[i], radius - 50, 0); 
                 ctx.restore();
             }
 
-            // 4. 轉盤最中心加一個可愛的白色裝飾糖果圓心
+            // 轉盤中心點白色小圓盤
             ctx.beginPath();
-            ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+            ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
             ctx.fillStyle = '#FFFFFF';
             ctx.fill();
-            ctx.shadowColor = "rgba(0, 0, 0, 0.05)";
-            ctx.shadowBlur = 5;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#EAE8E3';
             ctx.stroke();
         }
 
         // --- 旋轉物理動畫 ---
         function animate() {
             currentAngle += spinVelocity;
-            spinVelocity *= 0.986; // 稍微調高一點點，轉起來更輕快
+            spinVelocity *= 0.985;
             drawWheel();
 
             if (spinVelocity < 0.002) {
@@ -424,7 +410,7 @@
             const items = appData.lists[appData.current] || [];
             if (isSpinning || items.length < 2) return;
             isSpinning = true;
-            spinVelocity = Math.random() * 0.25 + 0.45; 
+            spinVelocity = Math.random() * 0.3 + 0.4; 
             animate();
         }
 
@@ -443,12 +429,12 @@
             if(historyData.length > 50) historyData.pop();
             localStorage.setItem('wheelHistory', JSON.stringify(historyData));
 
-            setTimeout(() => { alert(`🎉 哇呼！抽中了：${winner}`); }, 200);
+            setTimeout(() => { alert(`🎉 抽中了：${winner}`); }, 200);
         }
 
         // --- 主題管理邏輯 ---
         function updateHeaderTitle() {
-            document.getElementById('currentTitle').innerText = "🎈 " + appData.current;
+            document.getElementById('currentTitle').innerText = appData.current;
         }
 
         function saveToStorage() {
@@ -465,16 +451,16 @@
         }
 
         function createNewProject() {
-            const name = prompt("想建立什麼新主題呢？（例如：今天要穿什麼色）：");
+            const name = prompt("請輸入新主題的名稱：");
             if (!name || name.trim() === "") return;
             const cleanName = name.trim();
             
             if (appData.lists[cleanName]) {
-                alert("這個主題已經存在囉！");
+                alert("這個主題名稱已經存在囉！");
                 return;
             }
 
-            appData.lists[cleanName] = ["選項一", "選項二"];
+            appData.lists[cleanName] = ["選項 A", "選項 B"];
             appData.current = cleanName;
             saveToStorage();
             updateHeaderTitle();
@@ -486,10 +472,10 @@
         function deleteCurrentProject() {
             const keys = Object.keys(appData.lists);
             if (keys.length <= 1) {
-                alert("不能刪除最後一個主題唷！");
+                alert("不能刪除最後一個主題喔！");
                 return;
             }
-            if (confirm(`確定要丟掉【${appData.current}】這個主題嗎？`)) {
+            if (confirm(`確定要永久刪除【${appData.current}】這個主題嗎？`)) {
                 delete appData.lists[appData.current];
                 appData.current = Object.keys(appData.lists)[0];
                 saveToStorage();
@@ -530,9 +516,9 @@
             const items = appData.lists[appData.current] || [];
             list.innerHTML = items.map((item, index) => `
                 <div class="item-row">
-                    <span style="font-weight: bold;">${item}</span>
+                    <span>${item}</span>
                     <button class="icon-btn delete" onclick="deleteItem(${index})">
-                        <span class="material-symbols-outlined">delete_forever</span>
+                        <span class="material-symbols-outlined">delete</span>
                     </button>
                 </div>
             `).join('');
@@ -552,7 +538,7 @@
 
         function deleteItem(index) {
             const items = appData.lists[appData.current];
-            if(items.length <= 2) { alert("太少選項就不能轉了啦（至少2個）！"); return; }
+            if(items.length <= 2) { alert("轉盤至少需要兩個項目喔！"); return; }
             items.splice(index, 1);
             renderEditList();
         }
@@ -561,21 +547,21 @@
         function renderHistory() {
             const list = document.getElementById('historyList');
             if(historyData.length === 0) {
-                list.innerHTML = '<div style="text-align:center; padding: 20px; color: #BBB; font-weight:bold;">空空如也</div>';
+                list.innerHTML = '<div style="text-align:center; padding: 20px; color: #999;">尚無紀錄</div>';
                 return;
             }
             list.innerHTML = historyData.map(h => `
                 <div class="item-row">
                     <div>
-                        <div style="font-size:0.75rem; color:#AAA; font-weight:bold;">📌 ${h.theme} (${h.time})</div>
-                        <div style="font-weight: bold; color: var(--primary-color); margin-top:2px; font-size:1.05rem;">🎯 ${h.result}</div>
+                        <div style="font-size:0.75rem; color:#999;">${h.theme} (${h.time})</div>
+                        <div style="font-weight: bold; color: var(--primary-color); margin-top:2px;">${h.result}</div>
                     </div>
                 </div>
             `).join('');
         }
 
         function clearHistory() {
-            if(confirm('要擦掉所有的抽籤秘密嗎？')) {
+            if(confirm('確定要清空所有抽籤紀錄嗎？')) {
                 historyData = [];
                 localStorage.removeItem('wheelHistory');
                 renderHistory();
@@ -588,7 +574,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `多巴胺轉盤備份_${new Date().toISOString().slice(0,10)}.json`;
+            a.download = `轉盤完整備份_${new Date().toISOString().slice(0,10)}.json`;
             a.click();
             URL.revokeObjectURL(url);
         }
@@ -606,19 +592,19 @@
                         updateHeaderTitle();
                         drawWheel();
                         closeModal('backupModal');
-                        alert("🎉 哇！所有可愛主題都搬回來了！");
+                        alert("✅ 所有主題還原成功！");
                     } else {
-                        alert("唔...檔案格式好像不太對。");
+                        alert("❌ 檔案格式不正確。");
                     }
                 } catch (err) {
-                    alert("讀取失敗ＱＱ");
+                    alert("❌ 讀取檔案失敗。");
                 }
                 event.target.value = '';
             };
             reader.readAsText(file);
         }
 
-        // 啟動！
+        // 初始化
         updateHeaderTitle();
         drawWheel();
         canvas.addEventListener('click', startSpin);
