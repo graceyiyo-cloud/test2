@@ -8,11 +8,28 @@
     <link class="app-icon" rel="apple-touch-icon" href="app-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="app-icon.png">
     
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700&display=swap" rel="stylesheet">
 
     <style>
-        /* ==================== 基礎設定與配色 ==================== */
+        /* ==================== 解決手機版 Icon 變成英文文字的問題 ==================== */
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined' !important;
+            font-feature-settings: 'liga' 1 !important;
+            -webkit-font-feature-settings: 'liga' 1 !important;
+            font-weight: normal;
+            font-style: normal;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ==================== 基礎設定與配色 (文青風 UI) ==================== */
         :root {
             --bg-color: #F5F4F0;      /* 燕麥米白 */
             --primary-color: #8C9A9E; /* 莫蘭迪藍灰 */
@@ -31,8 +48,7 @@
 
         body, html {
             width: 100vw;
-            /* 💡 核心修正：改用 dvh (動態視窗高度)，完美解決手機瀏覽器工具欄遮擋問題 */
-            height: 100dvh; 
+            height: 100dvh; /* 動態視窗高度，防止底部工具列遮擋 */
             overflow: hidden;
             font-family: 'Zen Maru Gothic', 'PingFang TC', '微軟正黑體', sans-serif;
             background-color: var(--bg-color);
@@ -78,8 +94,7 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            /* 💡 適配 iPhone 底部黑條 */
-            padding-bottom: env(safe-area-inset-bottom); 
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .nav-btn {
@@ -340,6 +355,7 @@
         let appData = JSON.parse(localStorage.getItem('multiWheelAppData')) || defaultAppData;
         let historyData = JSON.parse(localStorage.getItem('wheelHistory')) || [];
         
+        // 轉盤本體多巴胺繽紛配色
         const colors = ['#FF597B', '#FF8E53', '#FFD166', '#06D6A0', '#00BBF9', '#9B5DE5'];
 
         // --- Canvas 轉盤控制 ---
@@ -433,7 +449,7 @@
             if(historyData.length > 50) historyData.pop();
             localStorage.setItem('wheelHistory', JSON.stringify(historyData));
 
-            // 💡 修正：不再使用 native alert()，改為將文字塞入客製化彈窗並開啟
+            // 開啟客製化結果視窗
             setTimeout(() => { 
                 document.getElementById('resultText').innerHTML = `抽中了：<br><span style="color:#FF597B; font-size:1.6rem;">${winner}</span>`;
                 openModal('resultModal');
