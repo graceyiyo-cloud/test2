@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>文青轉盤 App (多巴胺版)</title>
+    <title>文青轉盤 App</title>
     
-    <!-- 手機加入主畫面的可愛 App 圖示設定 -->
     <link class="app-icon" rel="apple-touch-icon" href="app-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="app-icon.png">
     
-    <!-- 引入 Google Material Symbols & 完美支援繁體中文的思源黑體 (涵蓋粗體與極粗體) -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
 
@@ -301,7 +299,6 @@
         </button>
     </nav>
 
-    <!-- 客製化抽籤結果視窗 -->
     <div id="resultModal" class="modal-overlay">
         <div class="modal-content" style="max-width: 280px; text-align: center; padding: 25px 20px;">
             <div style="font-size: 2.5rem; margin-bottom: 10px;">🎉</div>
@@ -312,7 +309,6 @@
         </div>
     </div>
 
-    <!-- 1. 主題清單與內容編輯 Modal -->
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -340,7 +336,6 @@
         </div>
     </div>
 
-    <!-- 2. 歷史紀錄 Modal -->
     <div id="historyModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -354,7 +349,6 @@
         </div>
     </div>
 
-    <!-- 3. 備份與還原 Modal -->
     <div id="backupModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -366,11 +360,10 @@
             <p style="margin-bottom: 20px; font-weight: 500;">將目前的「所有轉盤主題」儲存為檔案，或從先前存檔的檔案進行還原。</p>
             <button class="btn-primary" onclick="exportData()">匯出完整備份 (.json)</button>
             <button class="btn-outline" onclick="document.getElementById('fileInput').click()">從檔案還原所有轉盤</button>
-            <input type="file" id="fileInput" accept=".json" onchange="importData(event)">
+            <input type="file" id="fileInput" onchange="importData(event)">
         </div>
     </div>
 
-    <!-- ==================== JavaScript 核心邏輯 ==================== -->
     <script>
         const defaultAppData = {
             current: "晚餐吃什麼",
@@ -418,8 +411,6 @@
                 ctx.textAlign = "right";
                 ctx.textBaseline = "middle";
                 ctx.fillStyle = "#FFFFFF";
-                
-                // 💡 修正：Canvas 繪圖字體同步改為 'Noto Sans TC'，字重設為 900 (極粗)，呈現厚實活潑的 dopamine 視覺質感
                 ctx.font = "900 42px 'Noto Sans TC', sans-serif";
                 
                 ctx.shadowColor = "rgba(0, 0, 0, 0.12)";
@@ -638,6 +629,14 @@
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
+
+            // 💡 核心修復：在前端 JavaScript 進行防錯檢查，確保用戶上傳的是正確的 .json 格式檔案
+            if (!file.name.toLowerCase().endsWith('.json')) {
+                alert("❌ 請選擇副檔名為 .json 的備份檔案喔！");
+                event.target.value = ''; // 清空上傳，防止錯誤掛載
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
@@ -650,7 +649,7 @@
                         closeModal('backupModal');
                         alert("✅ 所有主題還原成功！");
                     } else {
-                        alert("❌ 檔案格式不正確。");
+                        alert("❌ 檔案內容格式不正確。");
                     }
                 } catch (err) {
                     alert("❌ 讀取檔案失敗。");
