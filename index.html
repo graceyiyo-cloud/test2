@@ -352,8 +352,14 @@
                 try {
                     await signInWithPopup(auth, provider);
                 } catch (err) {
-                    console.error(err);
-                    showToast("登入取消或失敗", "error");
+                    console.error("Google Auth Error:", err);
+                    let errMsg = "登入取消或失敗";
+                    // 精準攔截常見錯誤並顯示給開發者
+                    if (err.code === 'auth/unauthorized-domain') errMsg = "錯誤：網域未授權，請至 Firebase 後台設定";
+                    else if (err.code === 'auth/popup-closed-by-user') errMsg = "登入視窗已被關閉";
+                    else if (err.code) errMsg = `登入失敗: ${err.code}`;
+                    
+                    showToast(errMsg, "error");
                     setIsSearching(false);
                 }
             };
