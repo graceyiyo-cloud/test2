@@ -3,14 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>文青轉盤 App</title>
+    <title>文青轉盤 App (多巴胺版)</title>
     
+    <!-- 手機加入主畫面的可愛 App 圖示設定 -->
     <link class="app-icon" rel="apple-touch-icon" href="app-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="app-icon.png">
     
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700&display=swap" rel="stylesheet">
+    <!-- 引入 Google Material Symbols & 完美支援繁體中文的思源黑體 (涵蓋粗體與極粗體) -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
 
     <style>
+        /* ==================== 解決手機版 Icon 變成英文文字的問題 ==================== */
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined' !important;
+            font-feature-settings: 'liga' 1 !important;
+            -webkit-font-feature-settings: 'liga' 1 !important;
+            font-weight: normal;
+            font-style: normal;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+        }
+
         /* ==================== 基礎設定與配色 (文青風 UI) ==================== */
         :root {
             --bg-color: #F5F4F0;      /* 燕麥米白 */
@@ -30,9 +50,9 @@
 
         body, html {
             width: 100vw;
-            height: 100dvh; /* 動態視窗高度，完美貼合手機螢幕 */
-            overflow: hidden;
-            font-family: 'Zen Maru Gothic', 'PingFang TC', '微軟正黑體', sans-serif;
+            height: 100dvh; /* 動態視窗高度，防止手機瀏覽器工具列遮擋 */
+            overflow: hidden; /* 禁止全局滾動條，確保元件不超出畫面 */
+            font-family: 'Noto Sans TC', 'PingFang TC', '微軟正黑體', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
@@ -54,7 +74,7 @@
         
         #currentTitle {
             font-size: 1.1rem;
-            font-weight: bold;
+            font-weight: 700;
             color: var(--primary-color);
             letter-spacing: 1px;
         }
@@ -87,8 +107,9 @@
             background: none;
             border: none;
             color: var(--primary-color);
-            font-family: 'Zen Maru Gothic', sans-serif;
+            font-family: 'Noto Sans TC', sans-serif;
             font-size: 0.75rem;
+            font-weight: 700;
             cursor: pointer;
             width: 75px;
             height: 100%;
@@ -100,7 +121,6 @@
             color: var(--accent-color);
         }
 
-        /* 控制 SVG 圖示顏色與大小 */
         .nav-btn svg {
             stroke: currentColor;
             transition: stroke 0.2s;
@@ -166,7 +186,7 @@
         .modal-header {
             font-size: 1.1rem;
             color: var(--primary-color);
-            font-weight: bold;
+            font-weight: 700;
             margin-bottom: 15px;
             text-align: center;
             display: flex;
@@ -194,8 +214,9 @@
             border-radius: 6px;
             border: 1px solid var(--accent-color);
             color: var(--text-main);
-            font-family: 'Zen Maru Gothic', sans-serif;
+            font-family: 'Noto Sans TC', sans-serif;
             font-size: 0.95rem;
+            font-weight: 700;
             outline: none;
             background-color: #fff;
         }
@@ -204,24 +225,26 @@
         .add-item-group input {
             flex-grow: 1; padding: 10px; border: 1px solid var(--accent-color);
             border-radius: 8px; font-size: 1rem; outline: none; background: #fff;
-            font-family: 'Zen Maru Gothic', sans-serif;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 500;
         }
         .btn-primary {
             background-color: var(--primary-color); color: #FFF;
             border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer;
-            font-weight: bold; width: 100%; font-family: 'Zen Maru Gothic', sans-serif;
+            font-weight: 700; width: 100%; font-family: 'Noto Sans TC', sans-serif;
         }
         .btn-outline {
             background-color: transparent; color: var(--primary-color);
             border: 2px solid var(--primary-color); padding: 10px 16px; border-radius: 8px; 
-            cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px;
-            font-family: 'Zen Maru Gothic', sans-serif;
+            cursor: pointer; font-weight: 700; width: 100%; margin-top: 10px;
+            font-family: 'Noto Sans TC', sans-serif;
         }
         .btn-danger-outline {
             background-color: transparent; color: var(--danger-color);
             border: 1px dashed var(--danger-color); padding: 6px 12px; border-radius: 6px;
             cursor: pointer; font-size: 0.8rem; margin-top: 8px; width: 100%;
-            font-family: 'Zen Maru Gothic', sans-serif;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 700;
         }
 
         .item-list {
@@ -234,6 +257,7 @@
         .item-row {
             display: flex; justify-content: space-between; align-items: center;
             padding: 10px 0; border-bottom: 1px solid #EAE8E3;
+            font-weight: 500;
         }
 
         .icon-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; }
@@ -247,7 +271,7 @@
 <body>
 
     <header>
-        <span style="font-size: 0.75rem; color: #999; margin-bottom: 2px;">當前主題</span>
+        <span style="font-size: 0.75rem; color: #999; margin-bottom: 2px; font-weight: 500;">當前主題</span>
         <div id="currentTitle">載入中...</div>
     </header>
 
@@ -277,16 +301,18 @@
         </button>
     </nav>
 
+    <!-- 客製化抽籤結果視窗 -->
     <div id="resultModal" class="modal-overlay">
         <div class="modal-content" style="max-width: 280px; text-align: center; padding: 25px 20px;">
             <div style="font-size: 2.5rem; margin-bottom: 10px;">🎉</div>
-            <div id="resultText" style="font-size: 1.3rem; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; line-height: 1.4;">
+            <div id="resultText" style="font-size: 1.3rem; font-weight: 900; color: var(--primary-color); margin-bottom: 20px; line-height: 1.4;">
                 抽中了：
             </div>
             <button class="btn-primary" onclick="closeModal('resultModal')">好耶</button>
         </div>
     </div>
 
+    <!-- 1. 主題清單與內容編輯 Modal -->
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -297,7 +323,7 @@
             </div>
             
             <div class="project-selector-group">
-                <label style="font-size: 0.8rem; color: #888; display:block; margin-bottom: 5px;">選擇主題：</label>
+                <label style="font-size: 0.8rem; color: #888; display:block; margin-bottom: 5px; font-weight: 700;">選擇主題：</label>
                 <select id="projectSelect" class="project-select" onchange="switchProject(this.value)"></select>
                 <button class="btn-outline" style="padding: 6px; font-size: 0.85rem; margin-top: 8px;" onclick="createNewProject()">+ 建立全新主題</button>
                 <button id="deleteProjBtn" class="btn-danger-outline" onclick="deleteCurrentProject()">刪除此主題</button>
@@ -314,6 +340,7 @@
         </div>
     </div>
 
+    <!-- 2. 歷史紀錄 Modal -->
     <div id="historyModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -327,6 +354,7 @@
         </div>
     </div>
 
+    <!-- 3. 備份與還原 Modal -->
     <div id="backupModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -335,13 +363,14 @@
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </span>
             </div>
-            <p style="margin-bottom: 20px;">將目前的「所有轉盤主題」儲存為檔案，或從先前存檔的檔案進行還原。</p>
+            <p style="margin-bottom: 20px; font-weight: 500;">將目前的「所有轉盤主題」儲存為檔案，或從先前存檔的檔案進行還原。</p>
             <button class="btn-primary" onclick="exportData()">匯出完整備份 (.json)</button>
             <button class="btn-outline" onclick="document.getElementById('fileInput').click()">從檔案還原所有轉盤</button>
             <input type="file" id="fileInput" accept=".json" onchange="importData(event)">
         </div>
     </div>
 
+    <!-- ==================== JavaScript 核心邏輯 ==================== -->
     <script>
         const defaultAppData = {
             current: "晚餐吃什麼",
@@ -389,7 +418,9 @@
                 ctx.textAlign = "right";
                 ctx.textBaseline = "middle";
                 ctx.fillStyle = "#FFFFFF";
-                ctx.font = "bold 42px 'Zen Maru Gothic', 'PingFang TC', sans-serif";
+                
+                // 💡 修正：Canvas 繪圖字體同步改為 'Noto Sans TC'，字重設為 900 (極粗)，呈現厚實活潑的 dopamine 視覺質感
+                ctx.font = "900 42px 'Noto Sans TC', sans-serif";
                 
                 ctx.shadowColor = "rgba(0, 0, 0, 0.12)";
                 ctx.shadowBlur = 4;
@@ -448,7 +479,7 @@
             localStorage.setItem('wheelHistory', JSON.stringify(historyData));
 
             setTimeout(() => { 
-                document.getElementById('resultText').innerHTML = `抽中了：<br><span style="color:#FF597B; font-size:1.6rem;">${winner}</span>`;
+                document.getElementById('resultText').innerHTML = `抽中了：<br><span style="color:#FF597B; font-size:1.6rem; font-weight:900;">${winner}</span>`;
                 openModal('resultModal');
             }, 200);
         }
@@ -545,7 +576,7 @@
             `).join('');
         }
 
-        // 綁定點擊按鈕 0（即第一個抽籤按鈕）來呼叫 startSpin
+        // 綁定抽籤按鈕
         document.querySelectorAll('.nav-btn')[0].removeAttribute('onclick');
         document.querySelectorAll('.nav-btn')[0].addEventListener('click', startSpin);
 
@@ -579,7 +610,7 @@
                 <div class="item-row">
                     <div>
                         <div style="font-size:0.75rem; color:#999;">${h.theme} (${h.time})</div>
-                        <div style="font-weight: bold; color: var(--primary-color); margin-top:2px;">${h.result}</div>
+                        <div style="font-weight: 700; color: var(--primary-color); margin-top:2px;">${h.result}</div>
                     </div>
                 </div>
             `).join('');
