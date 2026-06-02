@@ -271,7 +271,7 @@
                         setGoogleUser(curr);
                         setAuthStep('checking');
                         try {
-                            const mappingRef = doc(db, 'artifacts', appId, 'public', 'google_users', curr.uid);
+                            const mappingRef = doc(db, 'artifacts', appId, 'public', 'data', 'google_users', curr.uid);
                             const mappingSnap = await getDoc(mappingRef);
                             if (mappingSnap.exists() && mappingSnap.data().mappedId) {
                                 setCustomId(mappingSnap.data().mappedId);
@@ -282,6 +282,7 @@
                         } catch (e) {
                             console.error("Mapping fetch error", e);
                             setAuthStep('login');
+                            setIsSearching(false);
                         }
                     } else {
                         setGoogleUser(null);
@@ -351,6 +352,7 @@
                 const provider = new GoogleAuthProvider();
                 try {
                     await signInWithPopup(auth, provider);
+                    setIsSearching(false);
                 } catch (err) {
                     console.error("Google Auth Error:", err);
                     let errMsg = "登入取消或失敗";
@@ -375,7 +377,7 @@
                     const settingsRef = doc(db, 'artifacts', appId, 'public', 'data', `reading_list_${id}`, 'settings');
                     const settingsSnap = await getDoc(settingsRef);
                     if (settingsSnap.exists() && settingsSnap.data().password === pw) {
-                        const mappingRef = doc(db, 'artifacts', appId, 'public', 'google_users', googleUser.uid);
+                        const mappingRef = doc(db, 'artifacts', appId, 'public', 'data', 'google_users', googleUser.uid);
                         await setDoc(mappingRef, { mappedId: id });
                         setIsLoggedIn(true);
                         showToast("舊資料綁定成功！");
@@ -394,7 +396,7 @@
                 setIsSearching(true);
                 try {
                     const newId = googleUser.uid;
-                    const mappingRef = doc(db, 'artifacts', appId, 'public', 'google_users', googleUser.uid);
+                    const mappingRef = doc(db, 'artifacts', appId, 'public', 'data', 'google_users', googleUser.uid);
                     await setDoc(mappingRef, { mappedId: newId });
                     setCustomId(newId);
                     setIsLoggedIn(true);
