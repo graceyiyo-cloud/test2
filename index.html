@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>文青轉盤 App</title>
     
+    <link rel="apple-touch-icon" href="app-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="app-icon.png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
 
     <style>
@@ -22,13 +25,13 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            -webkit-tap-highlight-color: transparent; /* 隱藏點擊高光 */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body, html {
             width: 100vw;
             height: 100vh;
-            overflow: hidden; /* 絕對防護：禁止全局滾動條 */
+            overflow: hidden;
             font-family: 'Helvetica Neue', Helvetica, Arial, 'PingFang TC', '微軟正黑體', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
@@ -41,12 +44,19 @@
             height: 60px;
             flex-shrink: 0;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            background-color: #fff;
+            border-bottom: 1px solid #EAE8E3;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        
+        #currentTitle {
+            font-size: 1.1rem;
             font-weight: bold;
             color: var(--primary-color);
-            letter-spacing: 2px;
+            letter-spacing: 1px;
         }
 
         main {
@@ -85,9 +95,7 @@
             gap: 4px;
         }
 
-        .nav-btn:hover, .nav-btn:active {
-            color: var(--accent-color);
-        }
+        .nav-btn:hover, .nav-btn:active { color: var(--accent-color); }
 
         /* ==================== 轉盤與指針 ==================== */
         .wheel-wrapper {
@@ -143,11 +151,11 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
-            max-height: 80vh; /* 防止內容過多超出螢幕 */
+            max-height: 85vh; /* 防止內容過多超出螢幕 */
         }
 
         .modal-header {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--primary-color);
             font-weight: bold;
             margin-bottom: 15px;
@@ -157,15 +165,31 @@
             align-items: center;
         }
         
-        .close-icon {
-            cursor: pointer;
+        .close-icon { cursor: pointer; color: var(--text-main); }
+
+        /* 主題切換下拉選單樣式 */
+        .project-selector-group {
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #EAE8E3;
+        }
+        .project-select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--accent-color);
             color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            background-color: #fff;
         }
 
         .add-item-group { display: flex; gap: 10px; margin-bottom: 15px; }
         .add-item-group input {
             flex-grow: 1; padding: 10px; border: 1px solid var(--accent-color);
-            border-radius: 8px; font-size: 1rem; outline: none;
+            border-radius: 8px; font-size: 1rem; outline: none; background: #fff;
         }
         .btn-primary {
             background-color: var(--primary-color); color: #FFF;
@@ -177,32 +201,38 @@
             border: 2px solid var(--primary-color); padding: 10px 16px; border-radius: 8px; 
             cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px;
         }
+        .btn-danger-outline {
+            background-color: transparent; color: var(--danger-color);
+            border: 1px dashed var(--danger-color); padding: 6px 12px; border-radius: 6px;
+            cursor: pointer; font-size: 0.8rem; margin-top: 8px; width: 100%;
+        }
 
         .item-list {
             flex-grow: 1;
-            overflow-y: auto; /* 內部滾動條，保護外層佈局 */
+            overflow-y: auto;
             margin-bottom: 15px;
             padding-right: 5px;
         }
 
         .item-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-bottom: 1px solid #EAE8E3;
+            padding: 10px 0; border-bottom: 1px solid #EAE8E3;
         }
 
-        .icon-btn {
-            background: none; border: none; cursor: pointer; display: flex; align-items: center;
-        }
+        .icon-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; }
         .icon-btn.delete { color: var(--danger-color); }
         
-        /* 隱藏的檔案上傳標籤 */
         #fileInput { display: none; }
+        .modal-content p { color: #666; font-size: 0.85rem; line-height: 1.4; text-align: center;}
 
     </style>
 </head>
 <body>
 
-    <header>決定轉盤</header>
+    <header>
+        <span style="font-size: 0.75rem; color: #999; margin-bottom: 2px;">當前主題</span>
+        <div id="currentTitle">載入中...</div>
+    </header>
 
     <main>
         <div class="wheel-wrapper">
@@ -217,8 +247,8 @@
             抽籤
         </button>
         <button class="nav-btn" onclick="openModal('editModal')">
-            <span class="material-symbols-outlined">edit_square</span>
-            編輯
+            <span class="material-symbols-outlined">layers</span>
+            主題清單
         </button>
         <button class="nav-btn" onclick="openModal('historyModal')">
             <span class="material-symbols-outlined">history</span>
@@ -233,15 +263,26 @@
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                編輯清單
+                切換與編輯主題
                 <span class="material-symbols-outlined close-icon" onclick="closeModal('editModal')">close</span>
             </div>
+            
+            <div class="project-selector-group">
+                <label style="font-size: 0.8rem; color: #888; display:block; margin-bottom: 5px;">選擇或創建主題：</label>
+                <select id="projectSelect" class="project-select" onchange="switchProject(this.value)"></select>
+                <button class="btn-outline" style="padding: 6px; font-size: 0.85rem; margin-top: 8px;" onclick="createNewProject()">+ 建立全新主題</button>
+                <button id="deleteProjBtn" class="btn-danger-outline" onclick="deleteCurrentProject()">刪除此主題</button>
+            </div>
+
+            <div style="border-top: 1px solid #DDD; margin: 5px 0 15px 0;"></div>
+
+            <label style="font-size: 0.8rem; color: #888; margin-bottom: 5px; display: block;">編輯此主題的抽籤項目：</label>
             <div class="add-item-group">
                 <input type="text" id="newItemInput" placeholder="輸入新項目..." onkeypress="handleEnter(event)">
                 <button class="btn-primary" style="width: auto;" onclick="addItem()">新增</button>
             </div>
             <div id="itemList" class="item-list"></div>
-            <button class="btn-primary" onclick="closeModal('editModal')">完成並儲存</button>
+            <button class="btn-primary" onclick="closeModal('editModal')">確認關閉</button>
         </div>
     </div>
 
@@ -259,32 +300,43 @@
     <div id="backupModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                資料備份
+                資料全量備份
                 <span class="material-symbols-outlined close-icon" onclick="closeModal('backupModal')">close</span>
             </div>
-            <p style="margin-bottom: 20px; font-size: 0.9rem; text-align: center;">將目前的轉盤清單儲存為檔案，或從先前存檔的檔案還原。</p>
-            <button class="btn-primary" onclick="exportData()">匯出清單備份 (.json)</button>
-            <button class="btn-outline" onclick="document.getElementById('fileInput').click()">從檔案還原清單</button>
+            <p style="margin-bottom: 20px;">這會將你「所有轉盤主題」打包成一個檔案下載，換手機時可用此檔案還原。</p>
+            <button class="btn-primary" onclick="exportData()">匯出完整備份 (.json)</button>
+            <button class="btn-outline" onclick="document.getElementById('fileInput').click()">從檔案還原所有轉盤</button>
             <input type="file" id="fileInput" accept=".json" onchange="importData(event)">
         </div>
     </div>
 
     <script>
-        // --- 初始化與資料庫 (LocalStorage) ---
-        const defaultItems = ["喝咖啡", "看書", "看電影", "散步", "整理房間", "聽音樂"];
-        let items = JSON.parse(localStorage.getItem('wheelData')) || defaultItems;
+        // --- 多專案資料結構初始化 ---
+        const defaultAppData = {
+            current: "晚餐吃什麼",
+            lists: {
+                "晚餐吃什麼": ["便當", "火鍋", "義大利麵", "滷肉飯", "牛肉麵", "壽司"],
+                "去哪裡玩": ["台北", "台中", "台南", "高雄", "花蓮", "宜蘭"]
+            }
+        };
+
+        // 從 LocalStorage 載入整包 App 資料
+        let appData = JSON.parse(localStorage.getItem('multiWheelAppData')) || defaultAppData;
         let historyData = JSON.parse(localStorage.getItem('wheelHistory')) || [];
         
         const colors = ['#8C9A9E', '#C2B4A6', '#D1CFC0', '#A3B1AA', '#E0D4C3'];
 
-        // --- 轉盤繪製邏輯 ---
+        // --- Canvas 轉盤控制 ---
         const canvas = document.getElementById('wheelCanvas');
         const ctx = canvas.getContext('2d');
         let currentAngle = 0, spinVelocity = 0, isSpinning = false;
         const centerX = canvas.width / 2, centerY = canvas.height / 2, radius = centerX;
 
         function drawWheel() {
+            const items = appData.lists[appData.current] || [];
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (items.length === 0) return;
+            
             const sliceAngle = (2 * Math.PI) / items.length;
 
             for (let i = 0; i < items.length; i++) {
@@ -312,10 +364,10 @@
             }
         }
 
-        // --- 旋轉動畫與結果計算 ---
+        // --- 旋轉物理動畫 ---
         function animate() {
             currentAngle += spinVelocity;
-            spinVelocity *= 0.985; // 阻尼減速
+            spinVelocity *= 0.985; // 阻尼
             drawWheel();
 
             if (spinVelocity < 0.002) {
@@ -328,6 +380,7 @@
         }
 
         function startSpin() {
+            const items = appData.lists[appData.current] || [];
             if (isSpinning || items.length < 2) return;
             isSpinning = true;
             spinVelocity = Math.random() * 0.3 + 0.4; 
@@ -335,6 +388,7 @@
         }
 
         function calculateWinner() {
+            const items = appData.lists[appData.current];
             const sliceAngle = (2 * Math.PI) / items.length;
             const degrees = (currentAngle % (2 * Math.PI)) * (180 / Math.PI);
             const pointerAngle = 270 - degrees;
@@ -343,32 +397,99 @@
             
             const winner = items[winnerIndex];
             
-            // 記錄到歷史
+            // 寫入歷史
             const timeString = new Date().toLocaleTimeString('zh-TW', {hour: '2-digit', minute:'2-digit'});
-            historyData.unshift({ time: timeString, result: winner });
-            if(historyData.length > 50) historyData.pop(); // 最多存50筆
+            historyData.unshift({ theme: appData.current, time: timeString, result: winner });
+            if(historyData.length > 50) historyData.pop();
             localStorage.setItem('wheelHistory', JSON.stringify(historyData));
 
-            setTimeout(() => { alert(`🎉 抽中了：${winner}`); }, 200);
+            setTimeout(() => { alert(`🎉 【${appData.current}】抽中了：${winner}`); }, 200);
         }
 
-        // --- Modal 控制與編輯邏輯 ---
+        // --- 多主題專案管理邏輯 ---
+        function updateHeaderTitle() {
+            document.getElementById('currentTitle').innerText = appData.current;
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('multiWheelAppData', JSON.stringify(appData));
+        }
+
+        function switchProject(projectName) {
+            if(!appData.lists[projectName]) return;
+            appData.current = projectName;
+            saveToStorage();
+            updateHeaderTitle();
+            drawWheel();
+            renderEditList();
+        }
+
+        function createNewProject() {
+            const name = prompt("請輸入新主題的名稱（例如：宵夜吃什麼）：");
+            if (!name || name.trim() === "") return;
+            const cleanName = name.trim();
+            
+            if (appData.lists[cleanName]) {
+                alert("這個主題名稱已經存在囉！");
+                return;
+            }
+
+            // 建立新主題並給予 2 個預設選項
+            appData.lists[cleanName] = ["選項 A", "選項 B"];
+            appData.current = cleanName;
+            saveToStorage();
+            updateHeaderTitle();
+            populateProjectSelect();
+            renderEditList();
+            drawWheel();
+        }
+
+        function deleteCurrentProject() {
+            const keys = Object.keys(appData.lists);
+            if (keys.length <= 1) {
+                alert("這是你最後一個主題了，不能再刪除囉！");
+                return;
+            }
+            if (confirm(`確定要永久刪除【${appData.current}】這個主題嗎？`)) {
+                delete appData.lists[appData.current];
+                // 自動切換到剩餘的第一個主題
+                appData.current = Object.keys(appData.lists)[0];
+                saveToStorage();
+                updateHeaderTitle();
+                populateProjectSelect();
+                renderEditList();
+                drawWheel();
+            }
+        }
+
+        function populateProjectSelect() {
+            const select = document.getElementById('projectSelect');
+            select.innerHTML = Object.keys(appData.lists).map(key => 
+                `<option value="${key}" ${key === appData.current ? 'selected' : ''}>${key}</option>`
+            ).join('');
+        }
+
+        // --- 項目編輯邏輯 ---
         function openModal(id) {
             document.getElementById(id).classList.add('active');
-            if(id === 'editModal') renderEditList();
+            if(id === 'editModal') {
+                populateProjectSelect();
+                renderEditList();
+            }
             if(id === 'historyModal') renderHistory();
         }
 
         function closeModal(id) {
             document.getElementById(id).classList.remove('active');
             if(id === 'editModal') {
-                localStorage.setItem('wheelData', JSON.stringify(items));
+                saveToStorage();
                 drawWheel();
             }
         }
 
         function renderEditList() {
             const list = document.getElementById('itemList');
+            const items = appData.lists[appData.current] || [];
             list.innerHTML = items.map((item, index) => `
                 <div class="item-row">
                     <span>${item}</span>
@@ -383,7 +504,7 @@
             const input = document.getElementById('newItemInput');
             const val = input.value.trim();
             if (val) {
-                items.push(val);
+                appData.lists[appData.current].push(val);
                 input.value = '';
                 renderEditList();
             }
@@ -392,12 +513,13 @@
         function handleEnter(e) { if(e.key === 'Enter') addItem(); }
 
         function deleteItem(index) {
-            if(items.length <= 2) { alert("至少需要兩個項目喔！"); return; }
+            const items = appData.lists[appData.current];
+            if(items.length <= 2) { alert("轉盤至少需要兩個項目喔！"); return; }
             items.splice(index, 1);
             renderEditList();
         }
 
-        // --- 歷史紀錄邏輯 ---
+        // --- 歷史與全量備份邏輯 ---
         function renderHistory() {
             const list = document.getElementById('historyList');
             if(historyData.length === 0) {
@@ -406,8 +528,10 @@
             }
             list.innerHTML = historyData.map(h => `
                 <div class="item-row">
-                    <span style="color: #999; font-size: 0.85rem;">${h.time}</span>
-                    <span style="font-weight: bold; color: var(--primary-color);">${h.result}</span>
+                    <div>
+                        <div style="font-size:0.75rem; color:#999;">${h.theme} (${h.time})</div>
+                        <div style="font-weight: bold; color: var(--primary-color); margin-top:2px;">${h.result}</div>
+                    </div>
                 </div>
             `).join('');
         }
@@ -420,14 +544,13 @@
             }
         }
 
-        // --- 備份與還原邏輯 (JSON) ---
         function exportData() {
-            const dataStr = JSON.stringify(items);
+            const dataStr = JSON.stringify(appData);
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `轉盤備份_${new Date().toISOString().slice(0,10)}.json`;
+            a.download = `全主題轉盤備份_${new Date().toISOString().slice(0,10)}.json`;
             a.click();
             URL.revokeObjectURL(url);
         }
@@ -439,24 +562,26 @@
             reader.onload = function(e) {
                 try {
                     const imported = JSON.parse(e.target.result);
-                    if(Array.isArray(imported) && imported.length >= 2) {
-                        items = imported;
-                        localStorage.setItem('wheelData', JSON.stringify(items));
+                    if(imported.current && imported.lists) {
+                        appData = imported;
+                        saveToStorage();
+                        updateHeaderTitle();
                         drawWheel();
                         closeModal('backupModal');
-                        alert("✅ 還原成功！");
+                        alert("✅ 所有轉盤主題還原成功！");
                     } else {
-                        alert("❌ 檔案格式不正確或項目過少。");
+                        alert("❌ 檔案格式不符合多專案結構。");
                     }
                 } catch (err) {
-                    alert("❌ 讀取檔案失敗，請確認是否為正確的 JSON 備份檔。");
+                    alert("❌ 讀取檔案失敗。");
                 }
-                event.target.value = ''; // 清空 input 讓下次可以選同一個檔案
+                event.target.value = '';
             };
             reader.readAsText(file);
         }
 
-        // 初始化繪製與事件綁定
+        // 初始化
+        updateHeaderTitle();
         drawWheel();
         canvas.addEventListener('click', startSpin);
 
