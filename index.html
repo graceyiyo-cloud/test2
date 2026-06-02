@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>命運轉轉轉</title>
     
-    <link rel="apple-touch-icon" href="app-icon.png">
+    <link class="app-icon" rel="apple-touch-icon" href="app-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="app-icon.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700&display=swap" rel="stylesheet">
 
     <style>
-        /* ==================== 回歸文青風基礎配色 ==================== */
+        /* ==================== 基礎設定與配色 ==================== */
         :root {
             --bg-color: #F5F4F0;      /* 燕麥米白 */
             --primary-color: #8C9A9E; /* 莫蘭迪藍灰 */
@@ -31,9 +31,9 @@
 
         body, html {
             width: 100vw;
-            height: 100vh;
+            /* 💡 核心修正：改用 dvh (動態視窗高度)，完美解決手機瀏覽器工具欄遮擋問題 */
+            height: 100dvh; 
             overflow: hidden;
-            /* 全局套用可愛圓體字型 */
             font-family: 'Zen Maru Gothic', 'PingFang TC', '微軟正黑體', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
@@ -41,7 +41,7 @@
             flex-direction: column;
         }
 
-        /* ==================== 乾淨的佈局區塊 ==================== */
+        /* ==================== 佈局區塊 ==================== */
         header {
             height: 60px;
             flex-shrink: 0;
@@ -78,7 +78,8 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding-bottom: env(safe-area-inset-bottom);
+            /* 💡 適配 iPhone 底部黑條 */
+            padding-bottom: env(safe-area-inset-bottom); 
         }
 
         .nav-btn {
@@ -268,6 +269,16 @@
         </button>
     </nav>
 
+    <div id="resultModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 280px; text-align: center; padding: 25px 20px;">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">🎉</div>
+            <div id="resultText" style="font-size: 1.3rem; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; line-height: 1.4;">
+                抽中了：
+            </div>
+            <button class="btn-primary" onclick="closeModal('resultModal')">好耶</button>
+        </div>
+    </div>
+
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -329,7 +340,6 @@
         let appData = JSON.parse(localStorage.getItem('multiWheelAppData')) || defaultAppData;
         let historyData = JSON.parse(localStorage.getItem('wheelHistory')) || [];
         
-        // 僅保留此處的「多巴胺繽紛配色」，轉盤本身色彩亮麗，但周邊介面保持文青優雅
         const colors = ['#FF597B', '#FF8E53', '#FFD166', '#06D6A0', '#00BBF9', '#9B5DE5'];
 
         // --- Canvas 轉盤控制 ---
@@ -349,29 +359,24 @@
                 const startAngle = currentAngle + i * sliceAngle;
                 const endAngle = startAngle + sliceAngle;
 
-                // 繪製多巴胺色塊
                 ctx.beginPath();
                 ctx.moveTo(centerX, centerY);
                 ctx.arc(centerX, centerY, radius, startAngle, endAngle);
                 ctx.fillStyle = colors[i % colors.length];
                 ctx.fill();
                 
-                // 乾淨的白色分隔線
                 ctx.lineWidth = 4; 
                 ctx.strokeStyle = '#FFFFFF';
                 ctx.stroke();
 
-                // 寫上可愛圓體字
                 ctx.save();
                 ctx.translate(centerX, centerY);
                 ctx.rotate(startAngle + sliceAngle / 2);
                 ctx.textAlign = "right";
                 ctx.textBaseline = "middle";
                 ctx.fillStyle = "#FFFFFF";
-                
                 ctx.font = "bold 42px 'Zen Maru Gothic', 'PingFang TC', sans-serif";
                 
-                // 加上輕微文字陰影，確保在亮黃/亮色背景下文字依舊清晰 scannable
                 ctx.shadowColor = "rgba(0, 0, 0, 0.12)";
                 ctx.shadowBlur = 4;
                 ctx.shadowOffsetX = 1;
@@ -381,7 +386,6 @@
                 ctx.restore();
             }
 
-            // 轉盤中心點白色小圓盤
             ctx.beginPath();
             ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
             ctx.fillStyle = '#FFFFFF';
@@ -429,7 +433,11 @@
             if(historyData.length > 50) historyData.pop();
             localStorage.setItem('wheelHistory', JSON.stringify(historyData));
 
-            setTimeout(() => { alert(`🎉 抽中了：${winner}`); }, 200);
+            // 💡 修正：不再使用 native alert()，改為將文字塞入客製化彈窗並開啟
+            setTimeout(() => { 
+                document.getElementById('resultText').innerHTML = `抽中了：<br><span style="color:#FF597B; font-size:1.6rem;">${winner}</span>`;
+                openModal('resultModal');
+            }, 200);
         }
 
         // --- 主題管理邏輯 ---
@@ -493,7 +501,7 @@
             ).join('');
         }
 
-        // --- 編輯功能 ---
+        // --- 模態框通用控制 ---
         function openModal(id) {
             document.getElementById(id).classList.add('active');
             if(id === 'editModal') {
