@@ -602,7 +602,6 @@
         }
         .floating-unpaid-item:last-child { border-bottom: none; }
 
-
         /* 懸浮提醒：未完成與待收款放在同一組 */
         .floating-reminder-badges {
             display: flex;
@@ -791,6 +790,22 @@
                 margin-bottom: 0.75rem !important;
             }
         }
+
+        /* 本次修正：匯出圖片專用 CSS，解決 html2canvas 文字偏下的問題，統一將文字往上偏移 2px */
+        .export-capture span,
+        .export-capture h2,
+        .export-capture div.leading-tight,
+        .export-capture div.leading-snug,
+        .export-capture div.note-display,
+        .export-capture div.as-display-text,
+        .export-capture i.lucide {
+            position: relative !important;
+            top: -2px !important;
+        }
+        /* 防止 span 內的 icon 被雙重偏移 (例如 PASS 標籤內的 icon) */
+        .export-capture span i.lucide {
+            top: 0 !important;
+        }
     </style>
 </head>
 <body class="bg-[#faf9f6] min-h-screen text-slate-700">
@@ -929,7 +944,6 @@
                     </button>
                 </div>
                 
-                <!-- 本次修正：縮小 padding (px-2 py-4 md:p-6) 以更貼近左右邊界 -->
                 <div id="xingfuExportArea" class="bg-white px-2 py-4 md:p-6 rounded-3xl shadow-sm border border-slate-200">
                     <div class="flex items-center gap-2 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-slate-100 px-2 md:px-0">
                         <i data-lucide="building-2" class="w-6 h-6 text-emerald-600"></i>
@@ -1327,7 +1341,7 @@
                 const lineStr = `${dateOnly}｜${name}｜${servicesStr}`;
                 lines.push(lineStr);
 
-                // 本次修正：改為更緊湊的行高 (leading-tight) 與間距 (pb-1 mb-1)
+                // 改為更緊湊的行高 (leading-tight) 與間距 (pb-1 mb-1)
                 html += `
                 <div class="text-[0.8rem] border-b border-slate-100 last:border-0 pb-1 mb-1 last:mb-0 last:pb-0 text-slate-700 leading-tight flex items-start">
                     <span class="font-mono text-emerald-600">${dateOnly}</span>
@@ -1373,6 +1387,9 @@
             const originalShadow = el.style.boxShadow;
             el.style.border = 'none';
             el.style.boxShadow = 'none';
+            
+            // 本次修正：加入匯出專用 class，讓內部文字與圖示往上移 2px
+            el.classList.add('export-capture');
 
             try {
                 const canvas = await html2canvas(el, {
@@ -1462,6 +1479,9 @@
                 // 恢復樣式與按鈕狀態
                 el.style.border = originalBorder;
                 el.style.boxShadow = originalShadow;
+                // 移除匯出專用 class
+                el.classList.remove('export-capture');
+                
                 btn.innerHTML = originalHTML;
                 lucide.createIcons();
             }
@@ -2088,7 +2108,7 @@
                     <td data-label="服務明細" class="px-6 py-2 text-slate-600">
                         <div class="leading-tight">${services.join('、')}</div>
                         ${i.note ? `<div class="text-[11px] text-slate-400 note-display mt-0.5">備註: ${i.note}</div>` : ''}
-                        ${asDisplay ? `<div class="text-[11px] text-rose-500 font-medium mt-0.5">${asDisplay}</div>` : ''}
+                        ${asDisplay ? `<div class="text-[11px] text-rose-500 font-medium mt-0.5 as-display-text">${asDisplay}</div>` : ''}
                     </td>
                     <td data-label="金額帳目" class="px-6 py-4 text-slate-600 font-medium">
                         <div class="record-metric-grid">
@@ -2209,6 +2229,9 @@
             el.style.setProperty('background-color', '#ffffff', 'important');
             el.style.setProperty('border-top', 'none', 'important'); 
             
+            // 本次修正：加入匯出專屬 class 讓文字往上移 2px
+            el.classList.add('export-capture');
+            
             contentTds.forEach(td => {
                 td.style.setProperty('position', 'relative', 'important');
                 td.style.setProperty('top', '-8px', 'important');
@@ -2238,6 +2261,10 @@
             }).then(canvas => {
                 actionCell.style.display = 'flex';
                 iconsToHide.forEach(icon => icon.style.removeProperty('display'));
+                
+                // 移除匯出專屬 class
+                el.classList.remove('export-capture');
+                
                 el.style.width = originalWidth;
                 el.style.removeProperty('background-color');
                 el.style.removeProperty('border-top');
