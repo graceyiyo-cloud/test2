@@ -28,6 +28,10 @@
         /* 本次修正：加上 !important 確保能蓋過 ID 選擇器的 display 屬性 */
         .hidden { display: none !important; }
         
+        /* 本次修正：隱藏導覽列溢出的滾動條 */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
         /* 已完成狀態：改成上方單一細線，不再使用左側直線 */
         .completed-row { 
             background-color: #f6f8fb !important; 
@@ -804,22 +808,21 @@
     </section>
 
     <div id="mainApp" class="hidden">
-        <!-- 本次修正：移除 sticky top-0 z-50 -->
-        <nav class="bg-slate-600 text-white py-2 px-4 shadow-md">
+        <!-- 本次修正：調整標題不換行、按鈕區支援橫向滾動避免擠壓 -->
+        <nav class="bg-slate-600 text-white py-2 px-3 md:px-4 shadow-md">
             <div class="container mx-auto flex justify-between items-center">
-                <h1 class="text-lg font-bold tracking-widest">冷氣清洗紀錄</h1>
-                <div class="flex space-x-2">
-                    <!-- 新增：幸福家獨立頁面按鈕 -->
-                    <button onclick="showXingfuPage()" class="flex items-center px-3 py-1.5 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.8rem] font-medium active:scale-95 whitespace-nowrap">
+                <h1 class="text-base md:text-lg font-bold tracking-widest whitespace-nowrap shrink-0 mr-2 md:mr-4">冷氣清洗紀錄</h1>
+                <div class="flex items-center gap-1.5 md:gap-2 overflow-x-auto hide-scrollbar pb-0.5">
+                    <button onclick="showXingfuPage()" class="flex items-center px-2 py-1.5 md:px-3 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.75rem] md:text-[0.8rem] font-medium active:scale-95 whitespace-nowrap shrink-0">
                         <i data-lucide="building-2" class="btn-icon"></i>幸福家
                     </button>
-                    <button onclick="showPage('listPage')" class="flex items-center px-3 py-1.5 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.8rem] font-medium active:scale-95 whitespace-nowrap">
+                    <button onclick="showPage('listPage')" class="flex items-center px-2 py-1.5 md:px-3 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.75rem] md:text-[0.8rem] font-medium active:scale-95 whitespace-nowrap shrink-0">
                         <i data-lucide="list" class="btn-icon"></i>清單
                     </button>
-                    <button onclick="prepareNewForm()" class="flex items-center px-3 py-1.5 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.8rem] font-medium active:scale-95 whitespace-nowrap">
+                    <button onclick="prepareNewForm()" class="flex items-center px-2 py-1.5 md:px-3 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.75rem] md:text-[0.8rem] font-medium active:scale-95 whitespace-nowrap shrink-0">
                         <i data-lucide="pen-line" class="btn-icon"></i>填寫
                     </button>
-                    <button onclick="handleLogout()" class="flex items-center px-3 py-1.5 bg-slate-700 hover:bg-rose-600 border border-slate-500 rounded-lg transition-all text-[0.8rem] font-medium active:scale-95 whitespace-nowrap">
+                    <button onclick="handleLogout()" class="flex items-center px-2 py-1.5 md:px-3 bg-slate-700 hover:bg-rose-600 border border-slate-500 rounded-lg transition-all text-[0.75rem] md:text-[0.8rem] font-medium active:scale-95 whitespace-nowrap shrink-0">
                         <i data-lucide="log-out" class="btn-icon"></i>登出
                     </button>
                 </div>
@@ -912,7 +915,7 @@
                 </form>
             </section>
 
-            <!-- 新增：幸福家專屬清單頁面 -->
+            <!-- 幸福家專屬清單頁面 -->
             <section id="xingfuPage" class="hidden desktop-half-width">
                 <div class="flex justify-end gap-2 mb-4">
                     <button onclick="copyXingfuText(this)" class="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-[0.8rem] font-bold transition-all border border-slate-200 shadow-sm active:scale-95">
@@ -924,11 +927,11 @@
                 </div>
                 
                 <div id="xingfuExportArea" class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <div class="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-2 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-slate-100">
                         <i data-lucide="building-2" class="w-6 h-6 text-emerald-600"></i>
                         <h2 class="text-xl font-bold text-slate-800 tracking-wider">幸福家最新清洗紀錄</h2>
                     </div>
-                    <div id="xingfuList" class="space-y-4">
+                    <div id="xingfuList" class="space-y-0">
                         <!-- JS 動態寫入內容 -->
                     </div>
                 </div>
@@ -1269,7 +1272,7 @@
             renderXingfuRecords();
         };
 
-        // 新增：渲染幸福家專屬清單
+        // 本次修正：渲染幸福家專屬清單（移除金額與調整稱呼）
         function renderXingfuRecords() {
             // 過濾包含 "幸福家" 的紀錄
             const xRecords = allRecords.filter(r => (r.customerName || '').includes('幸福家'));
@@ -1300,12 +1303,19 @@
             let html = '';
             latestRecords.forEach(i => {
                 const dateOnly = (i.bookingTime || '').substring(0, 10);
-                const name = i.customerName;
                 
-                // 完美照搬原有服務明細組合邏輯
+                // 本次修正：移除「幸福家-」或「幸福家」開頭字樣
+                const name = (i.customerName || '').replace(/幸福家-?/g, '').trim();
+                
+                // 本次修正：剔除冷氣明細中的單價金額 (*1500元)
+                let cleanedAcBrand = '';
+                if (i.acBrand) {
+                    cleanedAcBrand = i.acBrand.split('+').map(part => part.split('*')[0]).join('、');
+                }
+                
                 let services = [];
                 const acTitle = `冷氣${i.acCount}台`;
-                if(i.acCount > 0) services.push(i.acBrand ? `${acTitle}：${i.acBrand}` : acTitle);
+                if(i.acCount > 0) services.push(cleanedAcBrand ? `${acTitle}：${cleanedAcBrand}` : acTitle);
                 if(i.wmCount > 0) services.push(`洗衣機${i.wmCount}台`);
                 if(i.wtCount > 0) services.push(`水塔${i.wtCount}口`);
                 const servicesStr = services.join('、');
@@ -1314,14 +1324,14 @@
                 const lineStr = `${dateOnly}｜${name}｜${servicesStr}`;
                 lines.push(lineStr);
 
-                // 畫面上渲染，支援自動換行顯示
+                // 本次修正：畫面上渲染，調小字體、調緊行高及外距
                 html += `
-                <div class="text-[0.9rem] border-b border-slate-100 last:border-0 pb-3 mb-3 last:mb-0 last:pb-0 text-slate-700 leading-relaxed">
+                <div class="text-[0.8rem] border-b border-slate-100 last:border-0 pb-1.5 mb-1.5 last:mb-0 last:pb-0 text-slate-700 leading-snug flex items-start">
                     <span class="font-mono text-emerald-600">${dateOnly}</span>
-                    <span class="text-slate-300 mx-1">｜</span>
+                    <span class="text-slate-300 mx-0.5">｜</span>
                     <span class="font-bold text-slate-800">${name}</span>
-                    <span class="text-slate-300 mx-1">｜</span>
-                    <span class="break-words">${servicesStr}</span>
+                    <span class="text-slate-300 mx-0.5">｜</span>
+                    <span class="break-words flex-1">${servicesStr}</span>
                 </div>`;
             });
 
