@@ -1340,8 +1340,9 @@
                 const lineStr = `${dateOnly}｜${name}｜${servicesStr}`;
                 lines.push(lineStr);
 
+                // 改為舒適的行高 (leading-relaxed) 與間距 (pb-2 mb-2)
                 html += `
-                <div class="text-[0.8rem] border-b border-slate-100 last:border-0 pb-1 mb-1 last:mb-0 last:pb-0 text-slate-700 leading-tight flex items-start">
+                <div class="text-[0.8rem] border-b border-slate-100 last:border-0 pb-2 mb-2 last:mb-0 last:pb-0 text-slate-700 leading-relaxed flex items-start">
                     <span class="font-mono text-emerald-600">${dateOnly}</span>
                     <span class="text-slate-300 mx-0.5">｜</span>
                     <span class="font-bold text-slate-800 whitespace-nowrap">${name}</span>
@@ -2076,7 +2077,7 @@
                 let detailsHtml = '';
                 
                 if (i.acCount > 0) {
-                    detailsHtml += `<div class="font-bold text-emerald-700 text-[12px] mb-1">冷氣${i.acCount}台</div>`;
+                    detailsHtml += `<div class="font-bold text-emerald-700 text-[16px] mb-1">冷氣${i.acCount}台</div>`;
                     let hasAcDetails = false;
                     
                     if (i.acBrand) {
@@ -2090,12 +2091,12 @@
                                 
                                 let labelStr = `<span>${brand}</span>`;
                                 if (price !== null) {
-                                    labelStr += ` <span class="text-slate-400 text-[10px]">($${price.toLocaleString()} &times; ${qty})</span>`;
+                                    labelStr += ` <span class="text-slate-400 text-[13.5px]">($${price.toLocaleString()} &times; ${qty})</span>`;
                                 } else {
                                     labelStr += ` <span>- ${qty}台</span>`;
                                 }
                                 
-                                detailsHtml += `<div class="flex justify-between items-start py-0.5 text-[11.5px] text-slate-600 leading-tight">
+                                detailsHtml += `<div class="flex justify-between items-start py-0.5 text-[15.5px] text-slate-600 leading-tight">
                                     <div class="flex-1 pr-2 truncate">${labelStr}</div>
                                     <div class="font-bold text-right shrink-0"><span>${subtotal !== null ? '$' + subtotal.toLocaleString() : ''}</span></div>
                                 </div>`;
@@ -2104,7 +2105,7 @@
                         });
                     }
                     if (!hasAcDetails) {
-                         detailsHtml += `<div class="flex justify-between items-start py-0.5 text-[11.5px] text-slate-600 leading-tight">
+                         detailsHtml += `<div class="flex justify-between items-start py-0.5 text-[15.5px] text-slate-600 leading-tight">
                             <div class="flex-1 pr-2 truncate"><span>機型未填 - ${i.acCount}台</span></div>
                             <div class="font-bold text-right shrink-0"></div>
                         </div>`;
@@ -2112,11 +2113,11 @@
                 }
                 
                 if (i.wmCount > 0) {
-                    detailsHtml += `<div class="font-bold text-blue-600 text-[12px] ${i.acCount > 0 ? 'mt-2' : ''} mb-1">洗衣機${i.wmCount}台</div>`;
+                    detailsHtml += `<div class="font-bold text-blue-600 text-[16px] ${i.acCount > 0 ? 'mt-2' : ''} mb-1">洗衣機${i.wmCount}台</div>`;
                 }
                 
                 if (i.wtCount > 0) {
-                    detailsHtml += `<div class="font-bold text-purple-600 text-[12px] ${(i.acCount > 0 || i.wmCount > 0) ? 'mt-2' : ''} mb-1">水塔${i.wtCount}口</div>`;
+                    detailsHtml += `<div class="font-bold text-purple-600 text-[16px] ${(i.acCount > 0 || i.wmCount > 0) ? 'mt-2' : ''} mb-1">水塔${i.wtCount}口</div>`;
                 }
                 
                 if (i.assistantDetail) {
@@ -2124,7 +2125,7 @@
                     i.assistantDetail.split(',').forEach(s => {
                         const [n, a] = s.split(':');
                         const amt = parseInt(a) || 0;
-                        detailsHtml += `<div class="flex justify-between items-start py-0.5 text-[11.5px] text-rose-500 leading-tight font-medium">
+                        detailsHtml += `<div class="flex justify-between items-start py-0.5 text-[15.5px] text-rose-500 leading-tight font-medium">
                             <div class="flex-1 pr-2 truncate"><span>小幫手：${n}</span></div>
                             <div class="font-bold text-right shrink-0"><span>-$${amt.toLocaleString()}</span></div>
                         </div>`;
@@ -2155,7 +2156,7 @@
                     </td>
                     <td data-label="服務明細" class="px-6 py-2 text-slate-600">
                         ${detailsHtml}
-                        ${i.note ? `<div class="text-[11px] text-slate-400 note-display border-t border-slate-100/60 mt-1 pt-1.5">備註: ${i.note}</div>` : ''}
+                        ${i.note ? `<div class="text-[15px] text-slate-400 note-display border-t border-slate-100/60 mt-1 pt-1.5">備註: ${i.note}</div>` : ''}
                     </td>
                     <td data-label="金額帳目" class="px-6 py-4">
                         <div class="border-t border-slate-200 border-dashed pt-3 mt-1">
