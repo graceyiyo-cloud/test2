@@ -257,7 +257,6 @@
             font-size: 0.92rem;
         }
 
-        /* 本次修改：僅針對下方紀錄列表強制水平排列 */
         .record-metric-grid .metric-box-label {
             display: inline !important; 
             margin-right: 4px;
@@ -518,7 +517,7 @@
         td[data-label="金額帳目"] { 
             padding-top: 0.7rem !important; 
             margin-top: 0.7rem; 
-            border-top: 2px dashed #cbd5e1 !important; color: #1e293b; font-size: 0.9rem; font-weight: 700;
+            color: #1e293b; font-size: 0.9rem; font-weight: 700;
         }
         td.action-cell {
             border-top: 1px solid #e2e8f0 !important; 
@@ -791,7 +790,7 @@
             }
         }
 
-        /* 本次修正：匯出圖片專用 CSS，解決 html2canvas 文字偏下的問題，統一將文字往上偏移 2px */
+        /* 匯出圖片專用 CSS，解決 html2canvas 文字偏下的問題，統一將文字往上偏移 2px */
         .export-capture span,
         .export-capture h2,
         .export-capture div.leading-tight,
@@ -1341,7 +1340,6 @@
                 const lineStr = `${dateOnly}｜${name}｜${servicesStr}`;
                 lines.push(lineStr);
 
-                // 改為更緊湊的行高 (leading-tight) 與間距 (pb-1 mb-1)
                 html += `
                 <div class="text-[0.8rem] border-b border-slate-100 last:border-0 pb-1 mb-1 last:mb-0 last:pb-0 text-slate-700 leading-tight flex items-start">
                     <span class="font-mono text-emerald-600">${dateOnly}</span>
@@ -1388,7 +1386,7 @@
             el.style.border = 'none';
             el.style.boxShadow = 'none';
             
-            // 本次修正：加入匯出專用 class，讓內部文字與圖示往上移 2px
+            // 匯出專用 class，讓內部文字與圖示往上移 2px
             el.classList.add('export-capture');
 
             try {
@@ -2069,18 +2067,18 @@
             lucide.createIcons();
         };
 
-        // 本次修正：將服務明細字串統一拆解，轉換為固定寬度比例之 Table 排版，並補上千分位格式
+        // 本次修正：捨棄 table，全數改為 Flexbox 確保一列一列左邊項目右邊金額，並消除底部帳目的方塊色塊
         function renderRecords(data) {
             const list = document.getElementById('recordList');
             list.innerHTML = data.map(i => {
                 
-                // 動態產生表格內容
+                // 使用 div.flex 取代 table，完全避開全域 css 的衝突
                 let detailsHtml = '';
                 
                 if (i.acCount > 0) {
                     detailsHtml += `<div class="font-bold text-emerald-700 text-[12px] mb-1">冷氣${i.acCount}台</div>`;
                     let hasAcDetails = false;
-                    detailsHtml += '<table class="w-full text-[11.5px] text-slate-600 mb-1" style="table-layout: fixed;"><colgroup><col class="w-2/3"><col class="w-1/3"></colgroup><tbody>';
+                    
                     if (i.acBrand) {
                         i.acBrand.split('+').forEach(item => {
                             const match = item.match(/(.*)-(\d+)台(?:\*(\d+)元)?/);
@@ -2097,33 +2095,41 @@
                                     labelStr += ` <span>- ${qty}台</span>`;
                                 }
                                 
-                                detailsHtml += `<tr><td class="py-0.5 align-top truncate pr-2">${labelStr}</td><td class="py-0.5 text-right font-bold align-top"><span>${subtotal !== null ? '$' + subtotal.toLocaleString() : ''}</span></td></tr>`;
+                                detailsHtml += `<div class="flex justify-between items-start py-0.5 text-[11.5px] text-slate-600 leading-tight">
+                                    <div class="flex-1 pr-2 truncate">${labelStr}</div>
+                                    <div class="font-bold text-right shrink-0"><span>${subtotal !== null ? '$' + subtotal.toLocaleString() : ''}</span></div>
+                                </div>`;
                                 hasAcDetails = true;
                             }
                         });
                     }
                     if (!hasAcDetails) {
-                         detailsHtml += `<tr><td class="py-0.5 align-top truncate pr-2"><span>機型未填 - ${i.acCount}台</span></td><td class="py-0.5 text-right font-bold align-top"></td></tr>`;
+                         detailsHtml += `<div class="flex justify-between items-start py-0.5 text-[11.5px] text-slate-600 leading-tight">
+                            <div class="flex-1 pr-2 truncate"><span>機型未填 - ${i.acCount}台</span></div>
+                            <div class="font-bold text-right shrink-0"></div>
+                        </div>`;
                     }
-                    detailsHtml += '</tbody></table>';
                 }
                 
                 if (i.wmCount > 0) {
-                    detailsHtml += `<div class="font-bold text-blue-600 text-[12px] mb-1">洗衣機${i.wmCount}台</div>`;
+                    detailsHtml += `<div class="font-bold text-blue-600 text-[12px] ${i.acCount > 0 ? 'mt-2' : ''} mb-1">洗衣機${i.wmCount}台</div>`;
                 }
                 
                 if (i.wtCount > 0) {
-                    detailsHtml += `<div class="font-bold text-purple-600 text-[12px] mb-1">水塔${i.wtCount}口</div>`;
+                    detailsHtml += `<div class="font-bold text-purple-600 text-[12px] ${(i.acCount > 0 || i.wmCount > 0) ? 'mt-2' : ''} mb-1">水塔${i.wtCount}口</div>`;
                 }
                 
                 if (i.assistantDetail) {
-                    detailsHtml += '<table class="w-full text-[11.5px] text-slate-600 mb-1 mt-1" style="table-layout: fixed;"><colgroup><col class="w-2/3"><col class="w-1/3"></colgroup><tbody>';
+                    detailsHtml += `<div class="mt-2 pt-1.5 border-t border-slate-100 border-dashed">`;
                     i.assistantDetail.split(',').forEach(s => {
                         const [n, a] = s.split(':');
                         const amt = parseInt(a) || 0;
-                        detailsHtml += `<tr><td class="py-0.5 align-top text-rose-500 font-medium truncate pr-2"><span>小幫手：${n}</span></td><td class="py-0.5 text-right font-bold text-rose-500 align-top"><span>-$${amt.toLocaleString()}</span></td></tr>`;
+                        detailsHtml += `<div class="flex justify-between items-start py-0.5 text-[11.5px] text-rose-500 leading-tight font-medium">
+                            <div class="flex-1 pr-2 truncate"><span>小幫手：${n}</span></div>
+                            <div class="font-bold text-right shrink-0"><span>-$${amt.toLocaleString()}</span></div>
+                        </div>`;
                     });
-                    detailsHtml += '</tbody></table>';
+                    detailsHtml += `</div>`;
                 }
 
                 let isComp = i.status === 'completed';
@@ -2151,19 +2157,21 @@
                         ${detailsHtml}
                         ${i.note ? `<div class="text-[11px] text-slate-400 note-display border-t border-slate-100/60 mt-1 pt-1.5">備註: ${i.note}</div>` : ''}
                     </td>
-                    <td data-label="金額帳目" class="px-6 py-4 text-slate-600 font-medium">
-                        <div class="record-metric-grid">
-                            <div class="metric-box metric-box-rev">
-                                <span class="metric-box-label">收入</span>
-                                <span class="metric-box-value">$${i.totalAmount.toLocaleString()}</span>
-                            </div>
-                            <div class="metric-box metric-box-exp">
-                                <span class="metric-box-label">支出</span>
-                                <span class="metric-box-value">$${i.assistantPay.toLocaleString()}</span>
-                            </div>
-                            <div class="metric-box metric-box-net">
-                                <span class="metric-box-label">淨利</span>
-                                <span class="metric-box-value">$${(i.totalAmount - i.assistantPay).toLocaleString()}</span>
+                    <td data-label="金額帳目" class="px-6 py-4">
+                        <div class="border-t border-slate-200 border-dashed pt-3 mt-1">
+                            <div class="flex justify-between items-center text-[0.85rem] leading-none">
+                                <div class="flex-1 text-center border-r border-slate-200/80">
+                                    <span class="text-slate-400 text-[10px] mr-1">收入</span>
+                                    <span class="font-bold text-slate-600"><span>$${i.totalAmount.toLocaleString()}</span></span>
+                                </div>
+                                <div class="flex-1 text-center border-r border-slate-200/80">
+                                    <span class="text-slate-400 text-[10px] mr-1">支出</span>
+                                    <span class="font-bold text-rose-500"><span>$${i.assistantPay.toLocaleString()}</span></span>
+                                </div>
+                                <div class="flex-1 text-center">
+                                    <span class="text-slate-400 text-[10px] mr-1">淨利</span>
+                                    <span class="font-bold text-emerald-600"><span>$${(i.totalAmount - i.assistantPay).toLocaleString()}</span></span>
+                                </div>
                             </div>
                         </div>
                     </td>
@@ -2257,8 +2265,6 @@
             const actionCell = el.querySelector('.action-cell');
             const contentTds = el.querySelectorAll('td:not(.action-cell)');
             const customerTd = el.querySelector('td[data-label="客戶"]');
-            const metricGrid = el.querySelector('.record-metric-grid');
-            const metricBoxesWithLines = el.querySelectorAll('.record-metric-grid .metric-box:not(:last-child)');
             const iconsToHide = el.querySelectorAll('.lucide-phone, .lucide-map-pin, button[onclick^="copyText"]');
             
             actionCell.style.display = 'none';
@@ -2270,7 +2276,7 @@
             el.style.setProperty('background-color', '#ffffff', 'important');
             el.style.setProperty('border-top', 'none', 'important'); 
             
-            // 本次修正：加入匯出專屬 class 讓文字往上移 2px
+            // 匯出專屬 class 讓文字往上移 2px
             el.classList.add('export-capture');
             
             contentTds.forEach(td => {
@@ -2278,22 +2284,10 @@
                 td.style.setProperty('top', '-8px', 'important');
             });
 
-            if (metricGrid) {
-                metricGrid.style.setProperty('margin-top', '-13px', 'important');
-            }
-
             if (customerTd) {
                 customerTd.style.setProperty('margin-top', '-10px', 'important');
             }
             
-            metricBoxesWithLines.forEach(box => {
-                box.style.setProperty('border-right', 'none', 'important');
-                box.style.setProperty('background-image', 'linear-gradient(to bottom, transparent 15px, #e2e8f0 15px)', 'important');
-                box.style.setProperty('background-size', '1px 100%', 'important');
-                box.style.setProperty('background-repeat', 'no-repeat', 'important');
-                box.style.setProperty('background-position', 'right', 'important');
-            });
-
             html2canvas(el, {
                 scale: 2, 
                 backgroundColor: "#ffffff", 
@@ -2313,21 +2307,10 @@
                     td.style.removeProperty('position');
                     td.style.removeProperty('top');
                 });
-                if (metricGrid) {
-                    metricGrid.style.removeProperty('margin-top');
-                }
                 if (customerTd) {
                     customerTd.style.removeProperty('margin-top');
                 }
                 
-                metricBoxesWithLines.forEach(box => {
-                    box.style.removeProperty('border-right');
-                    box.style.removeProperty('background-image');
-                    box.style.removeProperty('background-size');
-                    box.style.removeProperty('background-repeat');
-                    box.style.removeProperty('background-position');
-                });
-
                 const framedCanvas = document.createElement('canvas');
                 const ctx = framedCanvas.getContext('2d');
                 const padding = 28;
