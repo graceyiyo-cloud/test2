@@ -514,9 +514,10 @@
             font-weight: 800; font-size: 1.2rem; color: #0f172a; 
             padding-bottom: 0.1rem !important; 
         }
+        /* 本次修正：縮小金額帳目與上方的距離 */
         td[data-label="金額帳目"] { 
-            padding-top: 0.7rem !important; 
-            margin-top: 0.7rem; 
+            padding-top: 0.2rem !important; 
+            margin-top: 0.2rem; 
             color: #1e293b; font-size: 0.9rem; font-weight: 700;
         }
         td.action-cell {
@@ -2159,7 +2160,7 @@
                         ${i.note ? `<div class="text-[15px] text-slate-400 note-display border-t border-slate-100/60 mt-1 pt-1.5">備註: ${i.note}</div>` : ''}
                     </td>
                     <td data-label="金額帳目" class="px-6 py-4">
-                        <div class="border-t border-slate-200 border-dashed pt-3 mt-1">
+                        <div class="border-t border-slate-200 border-dashed pt-2 mt-0">
                             <div class="flex justify-between items-center text-[0.85rem] leading-none">
                                 <div class="flex-1 text-center border-r border-slate-200/80">
                                     <span class="text-slate-400 text-[10px] mr-1">收入</span>
