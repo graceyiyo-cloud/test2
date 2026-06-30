@@ -2075,44 +2075,56 @@
             list.innerHTML = data.map(i => {
                 
                 // 動態產生表格內容
-                let detailsHtml = '<table class="w-full text-[11.5px] text-slate-600 mb-1" style="table-layout: fixed;"><colgroup><col class="w-2/3"><col class="w-1/3"></colgroup><tbody>';
-                let hasAcDetails = false;
+                let detailsHtml = '';
                 
                 if (i.acCount > 0) {
+                    detailsHtml += `<div class="font-bold text-emerald-700 text-[12px] mb-1">冷氣${i.acCount}台</div>`;
+                    let hasAcDetails = false;
+                    detailsHtml += '<table class="w-full text-[11.5px] text-slate-600 mb-1" style="table-layout: fixed;"><colgroup><col class="w-2/3"><col class="w-1/3"></colgroup><tbody>';
                     if (i.acBrand) {
                         i.acBrand.split('+').forEach(item => {
                             const match = item.match(/(.*)-(\d+)台(?:\*(\d+)元)?/);
                             if (match) {
                                 const brand = match[1];
-                                const qty = match[2];
+                                const qty = parseInt(match[2]);
                                 const price = match[3] ? parseInt(match[3]) : null;
-                                const subtotal = price !== null ? (parseInt(qty) * price) : null;
-                                detailsHtml += `<tr><td class="py-0.5 align-top truncate pr-2"><span>${brand} - ${qty}台</span></td><td class="py-0.5 text-right font-bold align-top"><span>${subtotal !== null ? '$' + subtotal.toLocaleString() : ''}</span></td></tr>`;
+                                const subtotal = price !== null ? (qty * price) : null;
+                                
+                                let labelStr = `<span>${brand}</span>`;
+                                if (price !== null) {
+                                    labelStr += ` <span class="text-slate-400 text-[10px]">($${price.toLocaleString()} &times; ${qty})</span>`;
+                                } else {
+                                    labelStr += ` <span>- ${qty}台</span>`;
+                                }
+                                
+                                detailsHtml += `<tr><td class="py-0.5 align-top truncate pr-2">${labelStr}</td><td class="py-0.5 text-right font-bold align-top"><span>${subtotal !== null ? '$' + subtotal.toLocaleString() : ''}</span></td></tr>`;
                                 hasAcDetails = true;
                             }
                         });
                     }
                     if (!hasAcDetails) {
-                        detailsHtml += `<tr><td class="py-0.5 align-top truncate pr-2"><span>冷氣 - ${i.acCount}台</span></td><td class="py-0.5 text-right font-bold align-top"></td></tr>`;
+                         detailsHtml += `<tr><td class="py-0.5 align-top truncate pr-2"><span>機型未填 - ${i.acCount}台</span></td><td class="py-0.5 text-right font-bold align-top"></td></tr>`;
                     }
+                    detailsHtml += '</tbody></table>';
                 }
                 
                 if (i.wmCount > 0) {
-                    detailsHtml += `<tr><td class="py-0.5 align-top truncate pr-2"><span>洗衣機 - ${i.wmCount}台</span></td><td class="py-0.5 text-right font-bold align-top"></td></tr>`;
+                    detailsHtml += `<div class="font-bold text-blue-600 text-[12px] mb-1">洗衣機${i.wmCount}台</div>`;
                 }
                 
                 if (i.wtCount > 0) {
-                    detailsHtml += `<tr><td class="py-0.5 align-top truncate pr-2"><span>水塔 - ${i.wtCount}口</span></td><td class="py-0.5 text-right font-bold align-top"></td></tr>`;
+                    detailsHtml += `<div class="font-bold text-purple-600 text-[12px] mb-1">水塔${i.wtCount}口</div>`;
                 }
                 
                 if (i.assistantDetail) {
+                    detailsHtml += '<table class="w-full text-[11.5px] text-slate-600 mb-1 mt-1" style="table-layout: fixed;"><colgroup><col class="w-2/3"><col class="w-1/3"></colgroup><tbody>';
                     i.assistantDetail.split(',').forEach(s => {
                         const [n, a] = s.split(':');
                         const amt = parseInt(a) || 0;
                         detailsHtml += `<tr><td class="py-0.5 align-top text-rose-500 font-medium truncate pr-2"><span>小幫手：${n}</span></td><td class="py-0.5 text-right font-bold text-rose-500 align-top"><span>-$${amt.toLocaleString()}</span></td></tr>`;
                     });
+                    detailsHtml += '</tbody></table>';
                 }
-                detailsHtml += '</tbody></table>';
 
                 let isComp = i.status === 'completed';
                 let isPaid = i.payment === 'paid';
