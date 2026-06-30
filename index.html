@@ -18,6 +18,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
         /* 整體字體加大約 10% */
         html { font-size: 110%; }
@@ -48,6 +49,7 @@
             border-top-width: 4px;
             box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
         }
+        
         .stats-card-all {
             background: linear-gradient(180deg, #3d4c63 0%, #344256 100%);
             border-color: #405168;
@@ -105,6 +107,7 @@
             margin-bottom: 0.55rem;
             border-bottom: 1px dashed rgba(148, 163, 184, 0.32);
         }
+        
         .pass-name-block {
             min-width: 0;
             display: flex;
@@ -159,6 +162,7 @@
             font-weight: 900;
             white-space: nowrap;
         }
+        
         .pass-year-theme .pass-avatar,
         .pass-year-theme .pass-qty,
         .pass-year-theme .pass-metric {
@@ -212,6 +216,7 @@
             text-decoration: none;
         }
         .metric-box button { cursor: pointer; }
+        
         .metric-box-rev { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
         .metric-box-exp { background: #fff1f2; border-color: #fecdd3; color: #e11d48; }
         .metric-box-net { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
@@ -667,7 +672,6 @@
             padding: 0.4rem 0;
         }
 
-
         /* 手機版篩選統計與篩選列排版微調 */
         .filter-summary-head {
             gap: 0.5rem;
@@ -808,7 +812,6 @@
     </section>
 
     <div id="mainApp" class="hidden">
-        <!-- 本次修正：調整標題不換行、按鈕區支援橫向滾動避免擠壓 -->
         <nav class="bg-slate-600 text-white py-2 px-3 md:px-4 shadow-md">
             <div class="container mx-auto flex justify-between items-center">
                 <h1 class="text-base md:text-lg font-bold tracking-widest whitespace-nowrap shrink-0 mr-2 md:mr-4">冷氣清洗紀錄</h1>
@@ -926,12 +929,13 @@
                     </button>
                 </div>
                 
-                <div id="xingfuExportArea" class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <div class="flex items-center gap-2 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-slate-100">
+                <!-- 本次修正：縮小 padding (px-2 py-4 md:p-6) 以更貼近左右邊界 -->
+                <div id="xingfuExportArea" class="bg-white px-2 py-4 md:p-6 rounded-3xl shadow-sm border border-slate-200">
+                    <div class="flex items-center gap-2 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-slate-100 px-2 md:px-0">
                         <i data-lucide="building-2" class="w-6 h-6 text-emerald-600"></i>
                         <h2 class="text-xl font-bold text-slate-800 tracking-wider">幸福家最新清洗紀錄</h2>
                     </div>
-                    <div id="xingfuList" class="space-y-0">
+                    <div id="xingfuList" class="space-y-0 px-1 md:px-0">
                         <!-- JS 動態寫入內容 -->
                     </div>
                 </div>
@@ -1183,7 +1187,7 @@
 
         const allowedEmails = ['eroraror@gmail.com', 'graceyiyo@gmail.com'];
 
-        // 新增：暫存幸福家文字供複製使用
+        // 暫存幸福家文字供複製使用
         let xingfuTextContent = "";
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1238,7 +1242,7 @@
                 updateDatalists();
                 filterRecords();
                 
-                // 新增：若正停留在幸福家頁面，自動更新資料
+                // 若正停留在幸福家頁面，自動更新資料
                 const xingfuPage = document.getElementById('xingfuPage');
                 if (xingfuPage && !xingfuPage.classList.contains('hidden')) {
                     renderXingfuRecords();
@@ -1261,18 +1265,17 @@
         window.showPage = (id) => {
             document.getElementById('formPage').classList.toggle('hidden', id !== 'formPage');
             document.getElementById('listPage').classList.toggle('hidden', id !== 'listPage');
-            // 新增：處理幸福家頁面的顯示隱藏
             document.getElementById('xingfuPage').classList.toggle('hidden', id !== 'xingfuPage');
             lucide.createIcons(); 
         };
 
-        // 新增：顯示幸福家頁面並載入資料
+        // 顯示幸福家頁面並載入資料
         window.showXingfuPage = () => {
             showPage('xingfuPage');
             renderXingfuRecords();
         };
 
-        // 本次修正：渲染幸福家專屬清單（移除金額與調整稱呼）
+        // 渲染幸福家專屬清單
         function renderXingfuRecords() {
             // 過濾包含 "幸福家" 的紀錄
             const xRecords = allRecords.filter(r => (r.customerName || '').includes('幸福家'));
@@ -1304,10 +1307,10 @@
             latestRecords.forEach(i => {
                 const dateOnly = (i.bookingTime || '').substring(0, 10);
                 
-                // 本次修正：移除「幸福家-」或「幸福家」開頭字樣
+                // 移除「幸福家-」或「幸福家」開頭字樣
                 const name = (i.customerName || '').replace(/幸福家-?/g, '').trim();
                 
-                // 本次修正：剔除冷氣明細中的單價金額 (*1500元)
+                // 剔除冷氣明細中的單價金額 (*1500元)
                 let cleanedAcBrand = '';
                 if (i.acBrand) {
                     cleanedAcBrand = i.acBrand.split('+').map(part => part.split('*')[0]).join('、');
@@ -1324,12 +1327,12 @@
                 const lineStr = `${dateOnly}｜${name}｜${servicesStr}`;
                 lines.push(lineStr);
 
-                // 本次修正：畫面上渲染，調小字體、調緊行高及外距
+                // 本次修正：改為更緊湊的行高 (leading-tight) 與間距 (pb-1 mb-1)
                 html += `
-                <div class="text-[0.8rem] border-b border-slate-100 last:border-0 pb-1.5 mb-1.5 last:mb-0 last:pb-0 text-slate-700 leading-snug flex items-start">
+                <div class="text-[0.8rem] border-b border-slate-100 last:border-0 pb-1 mb-1 last:mb-0 last:pb-0 text-slate-700 leading-tight flex items-start">
                     <span class="font-mono text-emerald-600">${dateOnly}</span>
                     <span class="text-slate-300 mx-0.5">｜</span>
-                    <span class="font-bold text-slate-800">${name}</span>
+                    <span class="font-bold text-slate-800 whitespace-nowrap">${name}</span>
                     <span class="text-slate-300 mx-0.5">｜</span>
                     <span class="break-words flex-1">${servicesStr}</span>
                 </div>`;
@@ -1340,7 +1343,7 @@
             lucide.createIcons();
         }
 
-        // 新增：一鍵複製純文字功能
+        // 一鍵複製純文字功能
         window.copyXingfuText = (btn) => {
             if (!xingfuTextContent) return;
             navigator.clipboard.writeText(xingfuTextContent).then(() => {
@@ -1356,7 +1359,7 @@
             });
         };
 
-        // 新增：一鍵下載成圖片功能 (完美復刻原有樣式設定)
+        // 一鍵下載成圖片功能
         window.downloadXingfuImage = async (btn) => {
             const el = document.getElementById('xingfuExportArea');
             if (!el) return;
@@ -1805,7 +1808,7 @@
             if (list) list.classList.toggle('hidden');
         };
 
-        // 本次修正：處理進度按鈕點選與配色
+        // 處理進度按鈕點選與配色
         window.setStatusFilter = (val, btn) => {
             currentStatusFilter = val;
             const statusColors = { all: 'bg-slate-200', completed: 'bg-emerald-100', pending: 'bg-amber-100' };
@@ -1818,7 +1821,7 @@
             filterRecords();
         };
 
-        // 本次修正：處理品項按鈕點選與配色
+        // 處理品項按鈕點選與配色
         window.setTypeFilter = (val, btn) => {
             currentTypeFilter = val;
             const typeColors = { all: 'bg-slate-200', ac: 'bg-emerald-100', wm: 'bg-blue-100', wt: 'bg-purple-100' };
