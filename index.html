@@ -1,1081 +1,1225 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>化妝品管理系統</title>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        :root {
-            /* 復古底片風 配色方案 */
-            --bg-color: #EAD7C3;      
-            --card-bg: #F3EBE1;       
-            --primary: #8B9D83;       
-            --secondary: #C57B57;     
-            --text-color: #3C3228;    
-            --border-radius: 12px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>化妝品管理系統</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root {
+  /* 復古底片風 配色方案 */
+  --bg-color: #EAD7C3;
+  --card-bg: #F3EBE1;
+  --primary: #8B9D83;
+  --secondary: #C57B57;
+  --text-color: #3C3228;
+  --border-radius: 12px;
+}
 
-        *, *::before, *::after { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; }
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            overflow-x: hidden; 
-            padding-bottom: 90px; 
-        }
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  overflow-x: hidden;
+  padding-bottom: 90px;
+}
 
-        /* 頂部區域 */
-        header {
-            padding: 20px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .header-title {
-            font-size: 24px;
-            font-weight: bold;
-        }
+/* 頂部區域 */
+header {
+  padding: 20px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-        .header-actions { display: flex; gap: 10px; }
+.header-title {
+  font-size: 24px;
+  font-weight: bold;
+}
 
-        .action-btn {
-            background-color: var(--primary);
-            color: var(--card-bg);
-            border: none;
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
+.header-actions { display: flex; gap: 10px; }
 
-        /* 搜尋列 */
-        .search-container {
-            padding: 0 16px 16px 16px;
-            position: relative;
-        }
+.action-btn {
+  background-color: var(--primary);
+  color: var(--card-bg);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
 
-        .search-input {
-            width: 100%;
-            padding: 12px 16px 12px 42px;
-            border: none;
-            border-radius: 20px;
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            font-size: 14px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-        }
+/* 搜尋列 */
+.search-container {
+  padding: 0 16px 16px 16px;
+  position: relative;
+}
 
-        .search-input:focus {
-            outline: 2px solid var(--primary);
-        }
+.search-input {
+  width: 100%;
+  padding: 12px 16px 12px 42px;
+  border: none;
+  border-radius: 20px;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  font-size: 14px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
 
-        .search-icon {
-            position: absolute;
-            left: 28px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(60, 50, 40, 0.5);
-            pointer-events: none;
-        }
+.search-input:focus { outline: 2px solid var(--primary); }
 
-        /* 手動新增表單區域 (預設隱藏) */
-        .add-form-container {
-            display: none;
-            margin: 0 16px 20px 16px;
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            border: 1px solid rgba(139, 157, 131, 0.3);
-        }
+.search-icon {
+  position: absolute;
+  left: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(60, 50, 40, 0.5);
+  pointer-events: none;
+}
 
-        .add-form-container.active { display: block; }
+/* 手動新增表單區域 (預設隱藏) */
+.add-form-container {
+  display: none;
+  margin: 0 16px 20px 16px;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  border: 1px solid rgba(139, 157, 131, 0.3);
+}
 
-        .form-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--secondary);
-        }
+.add-form-container.active { display: block; }
 
-        .form-group { margin-bottom: 12px; }
+.form-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--secondary);
+}
 
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            margin-bottom: 4px;
-            color: var(--text-color);
-            opacity: 0.8;
-            font-weight: bold;
-        }
+.form-group { margin-bottom: 12px; }
 
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid rgba(60, 50, 40, 0.2);
-            border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.5);
-            color: var(--text-color);
-            font-size: 14px;
-        }
+.form-group label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: var(--text-color);
+  opacity: 0.8;
+  font-weight: bold;
+}
 
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-            background-color: #fff;
-        }
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid rgba(60, 50, 40, 0.2);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.5);
+  color: var(--text-color);
+  font-size: 14px;
+}
 
-        .save-btn {
-            background-color: var(--primary);
-            color: var(--card-bg);
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            width: 100%;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 8px;
-            font-size: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+.form-group input:focus, .form-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background-color: #fff;
+}
 
-        .delete-btn {
-            display: none;
-            background-color: #d9534f;
-            color: #fff;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            width: 100%;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 8px;
-            font-size: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+.save-btn {
+  background-color: var(--primary);
+  color: var(--card-bg);
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  width: 100%;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 8px;
+  font-size: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
-        /* 列表區域與群組折疊樣式 */
-        .product-list {
-            padding: 0 16px;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
+.delete-btn {
+  display: none;
+  background-color: #d9534f;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  width: 100%;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 8px;
+  font-size: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
-        .product-card {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            word-wrap: break-word;
-            transition: opacity 0.3s ease;
-        }
+/* 分類統計區塊 */
+#category-stats {
+  padding: 0 16px 12px 16px;
+  font-weight: bold;
+  color: var(--secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-        .product-card.archived {
-            opacity: 0.5;
-            filter: grayscale(80%);
-        }
+/* 列表區域與群組折疊樣式 */
+.product-list {
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
 
-        .product-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
+.product-card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  word-wrap: break-word;
+  transition: opacity 0.3s ease;
+  position: relative;
+}
 
-        .product-header.expandable { cursor: pointer; }
+.product-card.archived {
+  opacity: 0.5;
+  filter: grayscale(80%);
+}
 
-        .product-info-wrapper {
-            display: flex;
-            align-items: center;
-        }
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
 
-        .thumbnail {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            object-fit: cover;
-            margin-right: 12px;
-            flex-shrink: 0;
-            display: none; /* 有圖片時才顯示 */
-        }
+.product-header.expandable { cursor: pointer; }
 
-        .product-info h3 { margin: 0 0 4px 0; font-size: 16px; display: flex; align-items: center; }
-        .product-info .product-name { color: var(--text-color); }
-        .product-brand { font-size: 12px; color: var(--primary); }
+.product-info-wrapper {
+  display: flex;
+  align-items: center;
+}
 
-        .badge {
-            background-color: var(--secondary);
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
+.thumbnail {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 12px;
+  flex-shrink: 0;
+  display: none;
+}
 
-        .warning-icon {
-            display: none;
-            color: #d9534f;
-            margin-left: 6px;
-        }
-        .warning-icon.active { display: inline-block; }
+.product-info h3 { margin: 0 0 4px 0; font-size: 16px; display: flex; align-items: center; }
+.product-info .product-name { color: var(--text-color); }
+.product-brand { font-size: 12px; color: var(--primary); }
 
-        .expand-icon { transition: transform 0.2s ease; }
-        .expand-icon.expanded { transform: rotate(180deg); }
+/* 補貨提示標籤 */
+.restock-warning {
+  background-color: #d9534f;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  display: none;
+  width: max-content;
+}
+.restock-warning.show { display: inline-block; }
 
-        /* 子品項明細清單 */
-        .product-instances {
-            display: none;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px dashed rgba(60, 50, 40, 0.2);
-        }
-        .product-instances.show { display: block; }
+.badge {
+  background-color: var(--secondary);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
 
-        .instance-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(60, 50, 40, 0.05);
-        }
-        .instance-item:last-child { border-bottom: none; }
-        
-        .instance-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .instance-meta {
-            font-size: 12px;
-            color: rgba(60, 50, 40, 0.7);
-        }
+.warning-icon {
+  display: none;
+  color: #d9534f;
+  margin-left: 6px;
+}
+.warning-icon.active { display: inline-block; }
 
-        /* 辨識載入中遮罩 (進度條) */
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(60, 50, 40, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(4px);
-        }
+.expand-icon { transition: transform 0.2s ease; }
+.expand-icon.expanded { transform: rotate(180deg); }
 
-        .loading-content {
-            background-color: var(--card-bg);
-            padding: 30px;
-            border-radius: 16px;
-            width: 80%;
-            max-width: 320px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
+/* 子品項明細清單 */
+.product-instances {
+  display: none;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(60, 50, 40, 0.2);
+}
+.product-instances.show { display: block; }
 
-        .loading-text {
-            margin: 0 0 16px 0;
-            font-weight: bold;
-            color: var(--text-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
+/* ======== 全新方塊與圈圈排版 ======== */
+.instance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #fff;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  border: 1px solid rgba(139, 157, 131, 0.2);
+}
 
-        .progress-bar-container {
-            width: 100%;
-            height: 8px;
-            background-color: rgba(139, 157, 131, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-        }
+.instance-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background-color: var(--primary);
-            border-radius: 10px;
-            transition: width 0.1s linear;
-        }
+/* 左側方塊 */
+.item-box {
+  width: 48px;
+  height: 48px;
+  background-color: var(--card-bg);
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  font-weight: bold;
+}
+.item-box .qty { font-size: 16px; line-height: 1.2; }
+.item-box .unit { font-size: 10px; color: var(--primary); }
 
-        /* 畫面提示 Toast */
-        .toast {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(60, 50, 40, 0.9);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 14px;
-            z-index: 2000;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .toast.show { opacity: 1; }
+.instance-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
 
-        /* 底部導覽列 */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0; left: 0; width: 100%;
-            background-color: var(--card-bg);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-            z-index: 100;
-        }
+.use-status {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  width: max-content;
+}
+.use-status.active { background-color: var(--primary); color: #fff; }
+.use-status.inactive { background-color: #ccc; color: #fff; }
 
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: rgba(60, 50, 40, 0.5);
-            text-decoration: none;
-            font-size: 10px;
-            gap: 4px;
-            cursor: pointer;
-        }
-        .nav-item.active { color: var(--primary); }
+/* 右側到期圈圈 */
+.instance-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
 
-    </style>
+.expiry-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid var(--primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 1;
+}
+.expiry-circle span { font-size: 9px; font-weight: normal; }
+.expiry-circle.danger { border-color: #d9534f; color: #d9534f; }
+
+.expiry-date-text { font-size: 10px; color: rgba(60, 50, 40, 0.7); }
+
+/* 辨識載入中遮罩 (進度條) */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(60, 50, 40, 0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(4px);
+}
+
+.loading-content {
+  background-color: var(--card-bg);
+  padding: 30px;
+  border-radius: 16px;
+  width: 80%;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.loading-text {
+  margin: 0 0 16px 0;
+  font-weight: bold;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background-color: rgba(139, 157, 131, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background-color: var(--primary);
+  border-radius: 10px;
+  transition: width 0.1s linear;
+}
+
+/* 畫面提示 Toast */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(60, 50, 40, 0.9);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.toast.show { opacity: 1; }
+
+/* 底部導覽列 */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; width: 100%;
+  background-color: var(--card-bg);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: rgba(60, 50, 40, 0.5);
+  text-decoration: none;
+  font-size: 10px;
+  gap: 4px;
+  cursor: pointer;
+}
+.nav-item.active { color: var(--primary); }
+
+</style>
 </head>
 <body>
 
-    <header>
-        <div class="header-title">庫存管理</div>
-        <div class="header-actions">
-            <button class="action-btn" id="btn-camera" title="拍照辨識新增">
-                <i data-lucide="camera"></i>
-            </button>
-            <button class="action-btn" id="btn-manual" title="手動輸入新增" style="background-color: var(--secondary);">
-                <i data-lucide="plus"></i>
-            </button>
-        </div>
-    </header>
+<header>
+  <div class="header-title">庫存管理</div>
+  <div class="header-actions">
+    <button class="action-btn" id="btn-camera" title="拍照辨識新增">
+      <i data-lucide="camera"></i>
+    </button>
+    <button class="action-btn" id="btn-manual" title="手動輸入新增" style="background-color: var(--secondary);">
+      <i data-lucide="plus"></i>
+    </button>
+  </div>
+</header>
 
-    <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;">
+<input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;">
 
-    <div class="search-container">
-        <i data-lucide="search" class="search-icon" style="width: 18px; height: 18px;"></i>
-        <input type="text" id="search-input" class="search-input" placeholder="搜尋品牌或產品名稱...">
+<div class="search-container">
+  <i data-lucide="search" class="search-icon" style="width: 18px; height: 18px;"></i>
+  <input type="text" id="search-input" class="search-input" placeholder="搜尋品牌或產品名稱...">
+</div>
+
+<!-- 畫面提示 Toast -->
+<div id="toast" class="toast">訊息提示</div>
+
+<div id="loading-overlay" class="loading-overlay">
+  <div class="loading-content">
+    <h3 class="loading-text">
+      <i data-lucide="scan" style="animation: pulse 2s infinite;"></i>
+      AI 影像辨識中...
+    </h3>
+    <div class="progress-bar-container">
+      <div id="progress-bar" class="progress-bar"></div>
     </div>
+    <p id="loading-status" style="font-size: 12px; color: rgba(60,50,40,0.7); margin-top: 10px;">正在上傳圖片</p>
+  </div>
+</div>
 
-    <!-- 畫面提示 Toast -->
-    <div id="toast" class="toast">訊息提示</div>
+<div class="add-form-container" id="manual-add-form">
+  <div class="form-title">
+    <i data-lucide="sparkles" style="width:20px; height:20px;"></i> 確認新增/編輯品項
+  </div>
 
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="loading-content">
-            <h3 class="loading-text">
-                <i data-lucide="scan" style="animation: pulse 2s infinite;"></i> 
-                AI 影像辨識中...
-            </h3>
-            <div class="progress-bar-container">
-                <div id="progress-bar" class="progress-bar"></div>
-            </div>
-            <p id="loading-status" style="font-size: 12px; color: rgba(60,50,40,0.7); margin-top: 10px;">正在上傳圖片</p>
-        </div>
+  <div class="form-group">
+    <label>產品照片 (可選)</label>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <input type="file" id="form-photo-input" accept="image/*" style="display: none;">
+      <button class="action-btn" id="btn-form-photo" style="width: 36px; height: 36px; background-color: var(--primary);" title="上傳/拍照">
+        <i data-lucide="camera" style="width:16px;"></i>
+      </button>
+      <img id="form-photo-preview" src="" style="display:none; width:40px; height:40px; border-radius:8px; object-fit:cover; border:1px solid rgba(0,0,0,0.1);">
+      <span id="form-photo-clear" style="display:none; color:#d9534f; cursor:pointer; font-size:12px; font-weight:bold;">移除</span>
     </div>
+  </div>
 
-    <div class="add-form-container" id="manual-add-form">
-        <div class="form-title">
-            <i data-lucide="sparkles" style="width:20px; height:20px;"></i> 確認新增品項
-        </div>
-        
-        <div class="form-group">
-            <label>產品照片 (可選)</label>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="file" id="form-photo-input" accept="image/*" style="display: none;">
-                <button class="action-btn" id="btn-form-photo" style="width: 36px; height: 36px; background-color: var(--primary);" title="上傳/拍照">
-                    <i data-lucide="camera" style="width:16px;"></i>
-                </button>
-                <img id="form-photo-preview" src="" style="display:none; width:40px; height:40px; border-radius:8px; object-fit:cover; border:1px solid rgba(0,0,0,0.1);">
-                <span id="form-photo-clear" style="display:none; color:#d9534f; cursor:pointer; font-size:12px; font-weight:bold;">移除</span>
-            </div>
-        </div>
+  <!-- 新增：完整分類連動 -->
+  <div class="form-group">
+    <label>大分類</label>
+    <select id="new-category">
+      <option value="makeup">化妝品</option>
+      <option value="skincare">保養品</option>
+      <option value="supplement">保健品</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>次分類 (可自訂)</label>
+    <select id="new-subcategory"></select>
+    <input type="text" id="new-custom-category" placeholder="請輸入自訂分類名稱" style="display:none; margin-top:8px;">
+  </div>
 
-        <div class="form-group">
-            <label>產品類別</label>
-            <select id="new-category">
-                <option value="makeup">化妝品</option>
-                <option value="skincare">保養品</option>
-                <option value="supplement">保健食品</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>品牌名稱</label>
-            <input type="text" id="new-brand" placeholder="請輸入品牌">
-        </div>
-        <div class="form-group">
-            <label style="display:flex; justify-content:space-between;">
-                產品名稱 <span id="auto-search-status" style="font-size:10px; color:var(--primary); display:none;">AI 自動網搜中...</span>
-            </label>
-            <input type="text" id="new-name" placeholder="請輸入產品名稱 (輸入後自動完善)">
-        </div>
-        <div class="form-group">
-            <label>價格 (TWD)</label>
-            <input type="number" id="new-price" placeholder="例如: 1090">
-        </div>
-        <div class="form-group">
-            <label>數量 / 容量規格</label>
-            <input type="text" id="new-quantity" placeholder="例如: 1 / 3.2g">
-        </div>
-        <div class="form-group">
-            <label>有效期限 (到期日)</label>
-            <input type="date" id="new-expiry">
-        </div>
-        <div class="form-group">
-            <label>存放位置</label>
-            <input type="text" id="new-location" placeholder="例如: 房間櫃子">
-        </div>
-        
-        <button class="save-btn" id="btn-save-new" style="background-color: var(--secondary);">確認無誤，新增至資料庫</button>
-        <button class="delete-btn" id="btn-delete-item">永久刪除此品項</button>
+  <div class="form-group">
+    <label>品牌名稱</label>
+    <input type="text" id="new-brand" placeholder="請輸入品牌">
+  </div>
+  <div class="form-group">
+    <label style="display:flex; justify-content:space-between;">
+      產品名稱 <span id="auto-search-status" style="font-size:10px; color:var(--primary); display:none;">AI 自動網搜中...</span>
+    </label>
+    <input type="text" id="new-name" placeholder="請輸入產品名稱 (輸入後自動完善)">
+  </div>
+  <div class="form-group">
+    <label>價格 (TWD)</label>
+    <input type="number" id="new-price" placeholder="例如: 1090">
+  </div>
+
+  <!-- 新增：容量與單位拆分 -->
+  <div class="form-group">
+    <label>容量與單位</label>
+    <div style="display: flex; gap: 8px;">
+      <input type="number" id="new-volume" placeholder="數量/容量" style="flex: 2;">
+      <select id="new-unit" style="flex: 1;">
+        <option value="ML">ML</option>
+        <option value="CC">CC</option>
+        <option value="克">克</option>
+        <option value="瓶">瓶</option>
+        <option value="罐">罐</option>
+        <option value="盒">盒</option>
+        <option value="個">個</option>
+        <option value="隻">隻</option>
+      </select>
     </div>
+  </div>
+  
+  <!-- 新增：狀態與門檻 -->
+  <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-top: 16px;">
+    <input type="checkbox" id="new-in-use" style="width: 20px; height: 20px;" checked>
+    <label style="margin: 0; font-size: 14px;">目前使用中 (已開封)</label>
+  </div>
+  <div class="form-group">
+    <label>補貨門檻 (若未開封且低於此數量將提示)</label>
+    <input type="number" id="new-threshold" placeholder="例如: 1" value="1">
+  </div>
 
-    <div class="product-list" id="product-list">
-        <!-- 示範群組母卡片 1 -->
-        <div class="product-card" data-category="makeup" data-status="active">
-            <div class="product-header expandable">
-                <div class="product-info-wrapper">
-                    <img src="" class="thumbnail" alt="縮圖">
-                    <div class="product-info">
-                        <div class="product-brand">Dior</div>
-                        <h3 class="product-name">
-                            迪奧癮誘粉漾潤唇膏
-                            <i data-lucide="alert-circle" class="warning-icon active" title="有即將過期的品項！"></i>
-                        </h3>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <div class="badge total-badge">總數: 2</div>
-                    <i data-lucide="chevron-down" class="expand-icon" style="width:20px; height:20px; color:rgba(60,50,40,0.5);"></i>
-                </div>
-            </div>
-            
-            <div class="product-instances show">
-                <!-- 單一實體 1 (即將過期示範) -->
-                <div class="instance-item" data-days="50">
-                    <div class="instance-info">
-                        <div style="color: #d9534f; font-weight: bold; font-size: 12px;">剩餘 50 天</div>
-                        <div class="instance-meta">房間櫃子 • 數量: 1 / 3.2g • $1090</div>
-                    </div>
-                    <div style="display: flex; gap: 12px; align-items: center;">
-                        <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:18px; height:18px; color:var(--secondary);" title="封存至歷史"></i>
-                        <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:18px; height:18px; color:var(--primary);" title="編輯"></i>
-                    </div>
-                </div>
-                <!-- 單一實體 2 -->
-                <div class="instance-item" data-days="200">
-                    <div class="instance-info">
-                        <div style="color: var(--primary); font-weight: bold; font-size: 12px;">剩餘 200 天</div>
-                        <div class="instance-meta">隨身包包 • 數量: 1 / 3.2g • $1250</div>
-                    </div>
-                    <div style="display: flex; gap: 12px; align-items: center;">
-                        <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:18px; height:18px; color:var(--secondary);" title="封存至歷史"></i>
-                        <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:18px; height:18px; color:var(--primary);" title="編輯"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="form-group">
+    <label>有效期限 (到期日)</label>
+    <input type="date" id="new-expiry">
+  </div>
+  <div class="form-group">
+    <label>存放位置</label>
+    <input type="text" id="new-location" placeholder="例如: 房間櫃子">
+  </div>
 
-        <!-- 示範群組母卡片 2 -->
-        <div class="product-card" data-category="makeup" data-status="active">
-            <div class="product-header expandable">
-                <div class="product-info-wrapper">
-                    <img src="" class="thumbnail" alt="縮圖">
-                    <div class="product-info">
-                        <div class="product-brand">GIORGIO ARMANI</div>
-                        <h3 class="product-name">
-                            輕透亮絲粉底
-                            <i data-lucide="alert-circle" class="warning-icon" title="有即將過期的品項！"></i>
-                        </h3>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <div class="badge total-badge">總數: 1</div>
-                    <i data-lucide="chevron-down" class="expand-icon" style="width:20px; height:20px; color:rgba(60,50,40,0.5);"></i>
-                </div>
-            </div>
-            
-            <div class="product-instances">
-                <div class="instance-item" data-days="365">
-                    <div class="instance-info">
-                        <div style="color: var(--primary); font-weight: bold; font-size: 12px;">剩餘 365 天</div>
-                        <div class="instance-meta">化妝台 • 數量: 1 / 30ml • $2400</div>
-                    </div>
-                    <div style="display: flex; gap: 12px; align-items: center;">
-                        <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:18px; height:18px; color:var(--secondary);" title="封存至歷史"></i>
-                        <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:18px; height:18px; color:var(--primary);" title="編輯"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+  <button class="save-btn" id="btn-save-new" style="background-color: var(--secondary);">確認無誤，新增至資料庫</button>
+  <button class="delete-btn" id="btn-delete-item">永久刪除此品項</button>
+</div>
 
-    <nav class="bottom-nav">
-        <a class="nav-item active" data-target-category="makeup"><i data-lucide="sparkles"></i><span>化妝品</span></a>
-        <a class="nav-item" data-target-category="skincare"><i data-lucide="droplets"></i><span>保養品</span></a>
-        <a class="nav-item" data-target-category="supplement"><i data-lucide="pill"></i><span>保健品</span></a>
-        <!-- 將設定替換為歷史 -->
-        <a class="nav-item" data-target-category="history"><i data-lucide="archive"></i><span>歷史</span></a>
-    </nav>
+<!-- 新增：雙重統計區塊 -->
+<div id="category-stats">
+  <span id="stat-category-name">化妝品</span>
+  <span>品項: <span id="stat-unique-count">0</span> | 總物品: <span id="stat-total-count">0</span></span>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+<div class="product-list" id="product-list">
+  <!-- 此處初始為空，將由 JS 動態生成。您原有的測試資料已轉為新排版邏輯儲存 -->
+</div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAqSxxH5LhsKSV2NPDzQFOSHn_rQNv588k",
-            authDomain: "url-sorting.firebaseapp.com",
-            databaseURL: "https://url-sorting-default-rtdb.firebaseio.com",
-            projectId: "url-sorting",
-            storageBucket: "url-sorting.firebasestorage.app",
-            messagingSenderId: "576779796443",
-            appId: "1:576779796443:web:ff98b5b55049f7b7e0f1fe",
-            measurementId: "G-0L44SJTSLQ"
+<nav class="bottom-nav">
+  <a class="nav-item active" data-target-category="makeup"><i data-lucide="sparkles"></i><span>化妝品</span></a>
+  <a class="nav-item" data-target-category="skincare"><i data-lucide="droplets"></i><span>保養品</span></a>
+  <a class="nav-item" data-target-category="supplement"><i data-lucide="pill"></i><span>保健品</span></a>
+  <a class="nav-item" data-target-category="history"><i data-lucide="archive"></i><span>歷史</span></a>
+</nav>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAqSxxH5LhsKSV2NPDzQFOSHn_rQNv588k",
+  authDomain: "url-sorting.firebaseapp.com",
+  databaseURL: "https://url-sorting-default-rtdb.firebaseio.com",
+  projectId: "url-sorting",
+  storageBucket: "url-sorting.firebasestorage.app",
+  messagingSenderId: "576779796443",
+  appId: "1:576779796443:web:ff98b5b55049f7b7e0f1fe",
+  measurementId: "G-0L44SJTSLQ"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// API KEY
+const apiKey = ""; 
+
+async function fetchWithRetry(url, options, retries = 5) {
+  const delays = ;
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise(res => setTimeout(res, delays[i]));
+    }
+  }
+}
+
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = error => reject(error);
+});
+
+function showMessage(msg) {
+  const toast = document.getElementById('toast');
+  toast.innerText = msg;
+  toast.classList.add('show');
+  setTimeout(() => { toast.classList.remove('show'); }, 3000);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+
+  let currentEditCard = null; 
+  let currentPhotoBase64 = null; 
+
+  // --- 分類與次分類連動設定 ---
+  const categoryMap = {
+    makeup: ['底妝類', '眼妝類', '眉妝類', '唇妝類', '頰彩類', '香水', '自訂分類'],
+    skincare: ['清潔類', '潤澤保養類', '防曬隔離類', '自訂分類'],
+    supplement: ['維他命', '益生菌', '自訂分類']
+  };
+
+  const catSelect = document.getElementById('new-category');
+  const subCatSelect = document.getElementById('new-subcategory');
+  const customCatInput = document.getElementById('new-custom-category');
+
+  function updateSubcategories() {
+    const cat = catSelect.value;
+    subCatSelect.innerHTML = '';
+    if(categoryMap[cat]){
+      categoryMap[cat].forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub;
+        opt.innerText = sub;
+        subCatSelect.appendChild(opt);
+      });
+    }
+    checkCustomCat();
+  }
+
+  function checkCustomCat() {
+    if (subCatSelect.value === '自訂分類') {
+      customCatInput.style.display = 'block';
+    } else {
+      customCatInput.style.display = 'none';
+    }
+  }
+
+  catSelect.addEventListener('change', updateSubcategories);
+  subCatSelect.addEventListener('change', checkCustomCat);
+  updateSubcategories(); // 初始化
+
+  // --- 計算雙重統計資料 (品項數 & 物品數) ---
+  function updateCategoryStats() {
+    const activeNav = document.querySelector('.nav-item.active');
+    if(!activeNav) return;
+    const targetCategory = activeNav.getAttribute('data-target-category');
+    const catNameText = activeNav.querySelector('span').innerText;
+    
+    document.getElementById('stat-category-name').innerText = targetCategory === 'history' ? '歷史紀錄' : catNameText;
+
+    let uniqueCount = 0;
+    let totalItemsCount = 0;
+
+    document.querySelectorAll('.product-card').forEach(card => {
+      if (card.style.display !== 'none') {
+        uniqueCount++;
+        const instances = card.querySelectorAll('.instance-item');
+        totalItemsCount += instances.length;
+      }
+    });
+
+    document.getElementById('stat-unique-count').innerText = uniqueCount;
+    document.getElementById('stat-total-count').innerText = totalItemsCount;
+  }
+
+  // --- 表單照片上傳與預覽 ---
+  const formPhotoBtn = document.getElementById('btn-form-photo');
+  const formPhotoInput = document.getElementById('form-photo-input');
+  const formPhotoPreview = document.getElementById('form-photo-preview');
+  const formPhotoClear = document.getElementById('form-photo-clear');
+
+  function clearPhotoPreview() {
+    currentPhotoBase64 = null;
+    formPhotoInput.value = "";
+    formPhotoPreview.src = "";
+    formPhotoPreview.style.display = 'none';
+    formPhotoClear.style.display = 'none';
+  }
+
+  formPhotoBtn.addEventListener('click', (e) => { e.preventDefault(); formPhotoInput.click(); });
+  formPhotoInput.addEventListener('change', async (e) => {
+    const file = e.target.files;
+    if (file) {
+      try {
+        const b64 = await fileToBase64(file);
+        currentPhotoBase64 = b64;
+        formPhotoPreview.src = b64;
+        formPhotoPreview.style.display = 'block';
+        formPhotoClear.style.display = 'inline';
+      } catch(err) {
+        showMessage("圖片處理失敗");
+      }
+    }
+  });
+  formPhotoClear.addEventListener('click', clearPhotoPreview);
+
+  // --- 搜尋功能 ---
+  const searchInput = document.getElementById('search-input');
+  searchInput.addEventListener('input', (e) => {
+    const keyword = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.product-card');
+    const isHistoryTab = document.querySelector('.nav-item[data-target-category="history"]').classList.contains('active');
+
+    cards.forEach(card => {
+      const brand = card.querySelector('.product-brand').innerText.toLowerCase();
+      const name = card.querySelector('.product-name').innerText.toLowerCase();
+      const cardStatus = card.dataset.status || 'active';
+      const matchesCategory = isHistoryTab ? (cardStatus === 'archived') : (cardStatus === 'active');
+
+      if (matchesCategory && (brand.includes(keyword) || name.includes(keyword))) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    updateCategoryStats();
+  });
+
+  // --- 底部導覽列切換 ---
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const targetCategory = item.getAttribute('data-target-category');
+      navItems.forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+
+      document.querySelectorAll('.product-card').forEach(card => {
+        const cardStatus = card.dataset.status || 'active';
+        if (targetCategory === 'history') {
+          card.style.display = (cardStatus === 'archived') ? 'block' : 'none';
+        } else {
+          if (cardStatus === 'active' && card.dataset.category === targetCategory) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        }
+      });
+      updateCategoryStats();
+    });
+  });
+
+  // --- 拍照與真實 AI 辨識 ---
+  const cameraBtn = document.getElementById('btn-camera');
+  const cameraInput = document.getElementById('camera-input');
+  const overlay = document.getElementById('loading-overlay');
+  const progressBar = document.getElementById('progress-bar');
+  const loadingStatus = document.getElementById('loading-status');
+  const addForm = document.getElementById('manual-add-form');
+
+  cameraBtn.addEventListener('click', () => cameraInput.click());
+
+  cameraInput.addEventListener('change', async (event) => {
+    const file = event.target.files;
+    if (file) {
+      overlay.style.display = 'flex';
+      progressBar.style.width = '30%';
+      loadingStatus.innerText = "正在萃取影像特徵...";
+      try {
+        const base64Data = await fileToBase64(file);
+        const base64String = base64Data.split(',')[1];
+        const mimeType = file.type || 'image/jpeg';
+
+        currentPhotoBase64 = base64Data;
+        formPhotoPreview.src = base64Data;
+        formPhotoPreview.style.display = 'block';
+        formPhotoClear.style.display = 'inline';
+
+        progressBar.style.width = '60%';
+        loadingStatus.innerText = "串接 AI 影像辨識中...";
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        const payload = {
+          contents: [{
+            role: "user",
+            parts: [
+              { text: "分析此產品圖片，辨識出品牌名稱與產品全名，並判斷類別。回傳嚴格的 JSON 格式，包含三個 key: 'brand' (字串), 'name' (字串), 'category' (字串，必須是 'makeup', 'skincare', 或 'supplement' 其中之一)。" },
+              { inlineData: { mimeType: mimeType, data: base64String } }
+            ]
+          }],
+          generationConfig: { responseMimeType: "application/json" }
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
+        const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
 
-        // 【重要提示】如果您將這份程式碼下載到本地端(自己的電腦或手機)執行，請務必在此填寫您的 Gemini API Key！
-        const apiKey = ""; 
-        
-        async function fetchWithRetry(url, options, retries = 5) {
-            const delays = [1000, 2000, 4000, 8000, 16000];
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    return await response.json();
-                } catch (err) {
-                    if (i === retries - 1) throw err;
-                    await new Promise(res => setTimeout(res, delays[i]));
-                }
+        progressBar.style.width = '100%';
+        loadingStatus.innerText = "資料解析完成！";
+
+        setTimeout(() => {
+          overlay.style.display = 'none';
+          progressBar.style.width = '0%';
+          loadingStatus.innerText = "正在上傳圖片";
+
+          const text = result.candidates?.?.content?.parts?.?.text;
+          if (text) {
+            const data = JSON.parse(text);
+            document.getElementById('new-brand').value = data.brand || "";
+            document.getElementById('new-name').value = data.name || "";
+            if (data.category) {
+              document.getElementById('new-category').value = data.category;
+              updateSubcategories();
             }
+          }
+
+          currentEditCard = null;
+          document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
+          document.getElementById('btn-delete-item').style.display = "none";
+          addForm.classList.add('active');
+          addForm.scrollIntoView({ behavior: 'smooth' });
+          cameraInput.value = "";
+        }, 500);
+
+      } catch (error) {
+        console.error("Camera API Error:", error);
+        showMessage("AI 辨識失敗，若為本地執行請檢查 API Key");
+        overlay.style.display = 'none';
+        progressBar.style.width = '0%';
+        cameraInput.value = "";
+      }
+    }
+  });
+
+  // --- 手動新增按鈕 ---
+  document.getElementById('btn-manual').addEventListener('click', () => {
+    currentEditCard = null;
+    document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
+    document.getElementById('btn-delete-item').style.display = "none";
+
+    clearPhotoPreview();
+    document.getElementById('new-brand').value = '';
+    document.getElementById('new-name').value = '';
+    document.getElementById('new-price').value = '';
+    document.getElementById('new-volume').value = '';
+    document.getElementById('new-in-use').checked = true;
+    document.getElementById('new-threshold').value = '1';
+    document.getElementById('new-expiry').value = '';
+    document.getElementById('new-location').value = '';
+
+    addForm.classList.toggle('active');
+    if(addForm.classList.contains('active')) addForm.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // --- 品項名稱自動網搜補全 ---
+  let searchTimeout;
+  const newNameInput = document.getElementById('new-name');
+  const newBrandInput = document.getElementById('new-brand');
+  const autoSearchStatus = document.getElementById('auto-search-status');
+
+  newNameInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    const keyword = e.target.value.trim();
+    if (keyword.length < 2) return;
+
+    searchTimeout = setTimeout(async () => {
+      if (!apiKey) return; 
+      autoSearchStatus.style.display = 'inline';
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        const payload = {
+          contents: [{ parts: [{ text: `根據關鍵字 "${keyword}"，透過網路搜尋尋找官方確切的化妝品/保養品品牌名稱與完整全名。回傳嚴格的 JSON 格式，包含 'brand' 與 'name' 兩個 key。` }] }],
+          tools: [{ "google_search": {} }],
+          generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { brand: {type: "STRING"}, name: {type: "STRING"} } } }
+        };
+        const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const text = result.candidates?.?.content?.parts?.?.text;
+        if(text) {
+          const data = JSON.parse(text);
+          if (data.brand && !newBrandInput.value) newBrandInput.value = data.brand;
+          if (data.name) newNameInput.value = data.name;
         }
-        
-        const fileToBase64 = (file) => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
+      } catch (err) {} finally {
+        autoSearchStatus.style.display = 'none';
+      }
+    }, 1500);
+  });
 
-        // 全局 Toast 提示函數
-        function showMessage(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+  // --- 更新母卡片狀態 (總數、過期警告與補貨提示) ---
+  function updateCardStatus(card) {
+    const instances = card.querySelectorAll('.instance-item');
+    const totalBadge = card.querySelector('.total-badge');
+    const warningIcon = card.querySelector('.warning-icon');
+    
+    if (instances.length === 0) { 
+      card.remove(); 
+      updateCategoryStats(); 
+      return; 
+    }
+    
+    if (totalBadge) totalBadge.innerText = `總數: ${instances.length}`;
+
+    let hasExpiring = false;
+    let unopenedCount = 0;
+    let currentThreshold = 0;
+
+    instances.forEach(inst => {
+      const days = parseInt(inst.dataset.days || "999", 10);
+      const inUse = inst.dataset.inuse === 'true';
+      const thres = parseInt(inst.dataset.threshold || "0", 10);
+      
+      if (days <= 60) hasExpiring = true;
+      if (!inUse) unopenedCount++;
+      currentThreshold = Math.max(currentThreshold, thres); 
+    });
+
+    let restockWarning = card.querySelector('.restock-warning');
+    if (!restockWarning) {
+      restockWarning = document.createElement('div');
+      restockWarning.className = 'restock-warning';
+      restockWarning.innerText = '庫存過低需補貨';
+      card.querySelector('.product-info').appendChild(restockWarning);
+    }
+    
+    if (currentThreshold > 0 && unopenedCount < currentThreshold) {
+      restockWarning.classList.add('show');
+    } else {
+      restockWarning.classList.remove('show');
+    }
+
+    if (warningIcon) {
+      if (hasExpiring) warningIcon.classList.add('active');
+      else warningIcon.classList.remove('active');
+    }
+  }
+
+  // --- 事件代理：監聽列表中的互動 (展開、編輯、封存) ---
+  document.getElementById('product-list').addEventListener('click', (e) => {
+    // 展開/摺疊
+    const header = e.target.closest('.product-header.expandable');
+    if (header && !e.target.closest('.edit-btn') && !e.target.closest('.archive-btn')) {
+      const instances = header.nextElementSibling;
+      const icon = header.querySelector('.expand-icon');
+      if (instances && instances.classList.contains('show')) {
+        instances.classList.remove('show');
+        if (icon) icon.classList.remove('expanded');
+      } else if (instances) {
+        instances.classList.add('show');
+        if (icon) icon.classList.add('expanded');
+      }
+      return;
+    }
+
+    // 編輯
+    const editBtn = e.target.closest('.edit-btn');
+    if (editBtn) {
+      const instance = editBtn.closest('.instance-item');
+      const parentCard = instance.closest('.product-card');
+      currentEditCard = instance;
+
+      const rawName = parentCard.querySelector('.product-name').childNodes?.textContent || "";
+      const brand = parentCard.querySelector('.product-brand').innerText.trim();
+      const category = parentCard.dataset.category || 'makeup';
+
+      const thumb = parentCard.querySelector('.thumbnail');
+      if(thumb && thumb.src && thumb.style.display !== 'none') {
+        currentPhotoBase64 = thumb.src;
+        formPhotoPreview.src = thumb.src;
+        formPhotoPreview.style.display = 'block';
+        formPhotoClear.style.display = 'inline';
+      } else {
+        clearPhotoPreview();
+      }
+
+      document.getElementById('new-name').value = rawName.trim();
+      document.getElementById('new-brand').value = brand;
+      document.getElementById('new-category').value = category;
+      updateSubcategories();
+
+      const subcat = instance.dataset.subcategory || '';
+      document.getElementById('new-subcategory').value = subcat;
+      if(document.getElementById('new-subcategory').value !== subcat) {
+        document.getElementById('new-subcategory').value = '自訂分類';
+        document.getElementById('new-custom-category').value = subcat;
+      }
+      checkCustomCat();
+
+      document.getElementById('new-volume').value = instance.dataset.volume || '';
+      document.getElementById('new-unit').value = instance.dataset.unit || 'ML';
+      document.getElementById('new-price').value = instance.dataset.price || '';
+      document.getElementById('new-in-use').checked = instance.dataset.inuse === 'true';
+      document.getElementById('new-threshold').value = instance.dataset.threshold || '1';
+      document.getElementById('new-expiry').value = instance.dataset.expiry || '';
+      document.getElementById('new-location').value = instance.dataset.location || '';
+
+      document.getElementById('btn-save-new').innerText = "儲存修改";
+      document.getElementById('btn-delete-item').style.display = "block";
+
+      addForm.classList.add('active');
+      addForm.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    // 封存(移至歷史)
+    const archiveBtn = e.target.closest('.archive-btn');
+    if (archiveBtn) {
+      if(confirm("確定要將這個物品封存至歷史紀錄嗎？")) {
+        const instance = archiveBtn.closest('.instance-item');
+        const parentCard = instance.closest('.product-card');
+
+        const historyCard = parentCard.cloneNode(true);
+        historyCard.dataset.status = 'archived';
+        historyCard.classList.add('archived');
+        historyCard.style.display = 'none';
+
+        const clonedInstances = historyCard.querySelector('.product-instances');
+        clonedInstances.innerHTML = '';
+        const clonedItem = instance.cloneNode(true);
+
+        clonedItem.querySelector('.archive-btn')?.remove();
+        clonedItem.querySelector('.edit-btn')?.remove();
+        clonedInstances.appendChild(clonedItem);
+
+        historyCard.querySelector('.total-badge').innerText = '總數: 1';
+        document.getElementById('product-list').appendChild(historyCard);
+
+        instance.remove();
+        updateCardStatus(parentCard);
+        updateCategoryStats();
+
+        showMessage("已移至歷史紀錄");
+      }
+      return;
+    }
+  });
+
+  // --- 刪除按鈕 ---
+  document.getElementById('btn-delete-item').addEventListener('click', () => {
+    if (currentEditCard && confirm("確定要永久刪除這個品項嗎？")) {
+      const parentCard = currentEditCard.closest('.product-card');
+      currentEditCard.remove();
+      if(parentCard) updateCardStatus(parentCard);
+      updateCategoryStats();
+
+      showMessage("已成功刪除品項");
+      currentEditCard = null;
+      document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
+      document.getElementById('btn-delete-item').style.display = "none";
+      addForm.classList.remove('active');
+    }
+  });
+
+  // --- 儲存表單按鈕 (核心排版重構區) ---
+  document.getElementById('btn-save-new').addEventListener('click', () => {
+    const name = document.getElementById('new-name').value.trim();
+    const brand = document.getElementById('new-brand').value.trim();
+    const category = document.getElementById('new-category').value;
+    
+    let subCategory = document.getElementById('new-subcategory').value;
+    if (subCategory === '自訂分類') {
+      subCategory = document.getElementById('new-custom-category').value.trim() || '未分類';
+    }
+
+    const price = document.getElementById('new-price').value || "";
+    const volume = document.getElementById('new-volume').value || "1";
+    const unit = document.getElementById('new-unit').value || "個";
+    const inUse = document.getElementById('new-in-use').checked;
+    const threshold = parseInt(document.getElementById('new-threshold').value) || 0;
+    const expiry = document.getElementById('new-expiry').value;
+    const location = document.getElementById('new-location').value || "未指定";
+
+    if (!name) { showMessage("請確認產品名稱欄位有資料！"); return; }
+
+    let daysLeft = 999;
+    let formattedExpiry = "未填到期日";
+    if(expiry) {
+      const diff = new Date(expiry) - new Date();
+      daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      formattedExpiry = expiry;
+    }
+
+    const dangerClass = daysLeft <= 60 ? 'danger' : '';
+    const useStatusHtml = inUse ? '<div class="use-status active">使用中</div>' : '<div class="use-status inactive">未開封</div>';
+
+    // 產生內部 HTML
+    const innerInstanceHtml = `
+      <div class="instance-left">
+        <div class="item-box">
+          <div class="qty">${volume}</div>
+          <div class="unit">${unit}</div>
+        </div>
+        <div class="instance-details">
+          <div style="font-weight:bold; color:var(--text-color);">${location}</div>
+          <div>次分類: ${subCategory}</div>
+          ${useStatusHtml}
+          <div style="display: flex; gap: 12px; align-items: center; margin-top: 4px;">
+            <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:16px; height:16px; color:var(--secondary);" title="封存"></i>
+            <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:16px; height:16px; color:var(--primary);" title="編輯"></i>
+          </div>
+        </div>
+      </div>
+      <div class="instance-right">
+        <div class="expiry-circle ${dangerClass}">
+          ${daysLeft > 999 ? '∞' : daysLeft} <span>天</span>
+        </div>
+        <div class="expiry-date-text">${formattedExpiry}</div>
+      </div>
+    `;
+
+    if (currentEditCard) {
+      const parentCard = currentEditCard.closest('.product-card');
+      parentCard.querySelector('.product-name').innerHTML = `${name} <i data-lucide="alert-circle" class="warning-icon" style="width: 16px; height: 16px;"></i>`;
+      parentCard.querySelector('.product-brand').innerText = brand || '';
+
+      const thumb = parentCard.querySelector('.thumbnail');
+      if (currentPhotoBase64) {
+        thumb.src = currentPhotoBase64;
+        thumb.style.display = 'block';
+      } else {
+        thumb.style.display = 'none';
+      }
+
+      currentEditCard.dataset.days = daysLeft;
+      currentEditCard.dataset.inuse = inUse;
+      currentEditCard.dataset.threshold = threshold;
+      currentEditCard.dataset.volume = volume;
+      currentEditCard.dataset.unit = unit;
+      currentEditCard.dataset.subcategory = subCategory;
+      currentEditCard.dataset.price = price;
+      currentEditCard.dataset.expiry = expiry;
+      currentEditCard.dataset.location = location;
+
+      currentEditCard.innerHTML = innerInstanceHtml;
+      updateCardStatus(parentCard);
+      lucide.createIcons();
+      showMessage(`修改成功：${name}`);
+      currentEditCard = null;
+      document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
+      document.getElementById('btn-delete-item').style.display = "none";
+    } else {
+      let targetCard = null;
+      document.querySelectorAll('.product-card[data-status="active"]').forEach(card => {
+        const cName = card.querySelector('.product-name').childNodes?.textContent?.trim() || "";
+        const cBrand = card.querySelector('.product-brand').innerText.trim();
+        if (cName === name && cBrand === brand) targetCard = card;
+      });
+
+      const instanceWrapperHtml = `
+      <div class="instance-item" data-days="${daysLeft}" data-inuse="${inUse}" data-threshold="${threshold}" data-volume="${volume}" data-unit="${unit}" data-subcategory="${subCategory}" data-price="${price}" data-expiry="${expiry}" data-location="${location}">
+        ${innerInstanceHtml}
+      </div>`;
+
+      if (targetCard) {
+        targetCard.querySelector('.product-instances').insertAdjacentHTML('beforeend', instanceWrapperHtml);
+        if (currentPhotoBase64) {
+          const thumb = targetCard.querySelector('.thumbnail');
+          thumb.src = currentPhotoBase64;
+          thumb.style.display = 'block';
         }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-
-            let currentEditCard = null; // 指向被編輯的 `.instance-item`
-            let currentPhotoBase64 = null; // 暫存使用者上傳的照片
-
-            // --- 0. 表單照片上傳與預覽邏輯 ---
-            const formPhotoBtn = document.getElementById('btn-form-photo');
-            const formPhotoInput = document.getElementById('form-photo-input');
-            const formPhotoPreview = document.getElementById('form-photo-preview');
-            const formPhotoClear = document.getElementById('form-photo-clear');
-
-            function clearPhotoPreview() {
-                currentPhotoBase64 = null;
-                formPhotoInput.value = "";
-                formPhotoPreview.src = "";
-                formPhotoPreview.style.display = 'none';
-                formPhotoClear.style.display = 'none';
-            }
-
-            formPhotoBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                formPhotoInput.click();
-            });
-
-            formPhotoInput.addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    try {
-                        const b64 = await fileToBase64(file);
-                        currentPhotoBase64 = b64;
-                        formPhotoPreview.src = b64;
-                        formPhotoPreview.style.display = 'block';
-                        formPhotoClear.style.display = 'inline';
-                    } catch(err) {
-                        showMessage("圖片處理失敗");
-                    }
-                }
-            });
-
-            formPhotoClear.addEventListener('click', clearPhotoPreview);
-
-            // --- 1. 即時搜尋功能 ---
-            const searchInput = document.getElementById('search-input');
-            searchInput.addEventListener('input', (e) => {
-                const keyword = e.target.value.toLowerCase();
-                const cards = document.querySelectorAll('.product-card');
-                
-                cards.forEach(card => {
-                    const brand = card.querySelector('.product-brand').innerText.toLowerCase();
-                    const name = card.querySelector('.product-name').innerText.toLowerCase();
-                    
-                    // 同時需要考慮目前是否在歷史分類中
-                    const isHistoryTab = document.querySelector('.nav-item[data-target-category="history"]').classList.contains('active');
-                    const cardStatus = card.dataset.status || 'active';
-                    
-                    const matchesCategory = isHistoryTab ? (cardStatus === 'archived') : (cardStatus === 'active');
-                    
-                    if (matchesCategory && (brand.includes(keyword) || name.includes(keyword))) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            });
-
-            // --- 1.5 底部導覽列切換與過濾邏輯 ---
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    const targetCategory = item.getAttribute('data-target-category');
-                    
-                    navItems.forEach(n => n.classList.remove('active'));
-                    item.classList.add('active');
-
-                    document.querySelectorAll('.product-card').forEach(card => {
-                        const cardStatus = card.dataset.status || 'active';
-                        
-                        if (targetCategory === 'history') {
-                            // 歷史標籤：只顯示 archived 的卡片
-                            card.style.display = (cardStatus === 'archived') ? 'block' : 'none';
-                        } else {
-                            // 其他標籤：過濾 category 且必須是 active
-                            if (cardStatus === 'active' && card.dataset.category === targetCategory) {
-                                card.style.display = 'block';
-                            } else {
-                                card.style.display = 'none';
-                            }
-                        }
-                    });
-                });
-            });
-
-            // --- 2. 拍照與真實 AI 辨識流程 ---
-            const cameraBtn = document.getElementById('btn-camera');
-            const cameraInput = document.getElementById('camera-input');
-            const overlay = document.getElementById('loading-overlay');
-            const progressBar = document.getElementById('progress-bar');
-            const loadingStatus = document.getElementById('loading-status');
-            const addForm = document.getElementById('manual-add-form');
-
-            cameraBtn.addEventListener('click', () => cameraInput.click());
-
-            cameraInput.addEventListener('change', async (event) => {
-                const file = event.target.files[0];
-                if (file) {
-                    overlay.style.display = 'flex';
-                    progressBar.style.width = '30%';
-                    loadingStatus.innerText = "正在萃取影像特徵...";
-                    
-                    try {
-                        const base64Data = await fileToBase64(file);
-                        const base64String = base64Data.split(',')[1];
-                        const mimeType = file.type || 'image/jpeg';
-                        
-                        // 同時自動設定給表單照片預覽
-                        currentPhotoBase64 = base64Data;
-                        formPhotoPreview.src = base64Data;
-                        formPhotoPreview.style.display = 'block';
-                        formPhotoClear.style.display = 'inline';
-                        
-                        progressBar.style.width = '60%';
-                        loadingStatus.innerText = "串接 AI 影像辨識中...";
-
-                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-                        const payload = {
-                            contents: [{
-                                role: "user",
-                                parts: [
-                                    { text: "分析此產品圖片，辨識出品牌名稱與產品全名，並判斷類別。回傳嚴格的 JSON 格式，包含三個 key: 'brand' (字串), 'name' (字串), 'category' (字串，必須是 'makeup', 'skincare', 或 'supplement' 其中之一)。" },
-                                    { inlineData: { mimeType: mimeType, data: base64String } }
-                                ]
-                            }],
-                            generationConfig: { responseMimeType: "application/json" }
-                        };
-
-                        const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                        
-                        progressBar.style.width = '100%';
-                        loadingStatus.innerText = "資料解析完成！";
-
-                        setTimeout(() => {
-                            overlay.style.display = 'none';
-                            progressBar.style.width = '0%'; 
-                            loadingStatus.innerText = "正在上傳圖片"; 
-                            
-                            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                            if (text) {
-                                const data = JSON.parse(text);
-                                document.getElementById('new-brand').value = data.brand || "";
-                                document.getElementById('new-name').value = data.name || "";
-                                if (data.category) document.getElementById('new-category').value = data.category;
-                            }
-                            
-                            currentEditCard = null; 
-                            document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
-                            document.getElementById('btn-delete-item').style.display = "none";
-                            addForm.classList.add('active');
-                            addForm.scrollIntoView({ behavior: 'smooth' });
-                            cameraInput.value = ""; 
-                        }, 500);
-
-                    } catch (error) {
-                        console.error("Camera API Error:", error);
-                        showMessage("AI 辨識失敗，若為本地執行請檢查 API Key");
-                        overlay.style.display = 'none';
-                        progressBar.style.width = '0%';
-                        cameraInput.value = "";
-                    }
-                }
-            });
-
-            // --- 3. 手動新增按鈕邏輯 ---
-            document.getElementById('btn-manual').addEventListener('click', () => {
-                currentEditCard = null;
-                document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
-                document.getElementById('btn-delete-item').style.display = "none"; 
-                
-                clearPhotoPreview();
-                document.getElementById('new-brand').value = '';
-                document.getElementById('new-name').value = '';
-                document.getElementById('new-price').value = '';
-                document.getElementById('new-quantity').value = '';
-                document.getElementById('new-expiry').value = '';
-                document.getElementById('new-location').value = '';
-                
-                addForm.classList.toggle('active');
-                if(addForm.classList.contains('active')) addForm.scrollIntoView({ behavior: 'smooth' });
-            });
-
-            // --- 4. 品項名稱自動網搜補全邏輯 (Debounce + Grounding) ---
-            let searchTimeout;
-            const newNameInput = document.getElementById('new-name');
-            const newBrandInput = document.getElementById('new-brand');
-            const autoSearchStatus = document.getElementById('auto-search-status');
-
-            newNameInput.addEventListener('input', (e) => {
-                clearTimeout(searchTimeout);
-                const keyword = e.target.value.trim();
-                if (keyword.length < 2) return; 
-
-                searchTimeout = setTimeout(async () => {
-                    if (!apiKey) return; // 避免本地無 key 時報錯
-                    autoSearchStatus.style.display = 'inline';
-                    try {
-                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-                        const payload = {
-                            contents: [{ parts: [{ text: `根據關鍵字 "${keyword}"，透過網路搜尋尋找官方確切的化妝品/保養品品牌名稱與完整全名。回傳嚴格的 JSON 格式，包含 'brand' 與 'name' 兩個 key。` }] }],
-                            tools: [{ "google_search": {} }],
-                            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { brand: {type: "STRING"}, name: {type: "STRING"} } } }
-                        };
-                        const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                        if(text) {
-                            const data = JSON.parse(text);
-                            if (data.brand && !newBrandInput.value) newBrandInput.value = data.brand;
-                            if (data.name) newNameInput.value = data.name;
-                        }
-                    } catch (err) {
-                        // 靜默處理
-                    } finally {
-                        autoSearchStatus.style.display = 'none';
-                    }
-                }, 1500); 
-            });
-
-            // --- 4.5 更新母卡片狀態 (總數與過期警告) ---
-            function updateCardStatus(card) {
-                const instances = card.querySelectorAll('.instance-item');
-                const totalBadge = card.querySelector('.total-badge');
-                const warningIcon = card.querySelector('.warning-icon');
-                
-                if (instances.length === 0) {
-                    card.remove(); 
-                    return;
-                }
-                
-                if (totalBadge) totalBadge.innerText = `總數: ${instances.length}`;
-                
-                let hasExpiring = false;
-                instances.forEach(inst => {
-                    const days = parseInt(inst.dataset.days || "999", 10);
-                    if (days <= 60) hasExpiring = true; 
-                });
-                
-                if (warningIcon) {
-                    if (hasExpiring) warningIcon.classList.add('active');
-                    else warningIcon.classList.remove('active');
-                }
-            }
-
-            // --- 5. 事件代理：監聽列表中的互動 (展開、編輯、封存) ---
-            document.getElementById('product-list').addEventListener('click', (e) => {
-                
-                // A. 處理母卡片展開/摺疊
-                const header = e.target.closest('.product-header.expandable');
-                if (header && !e.target.closest('.edit-btn') && !e.target.closest('.archive-btn')) {
-                    const instances = header.nextElementSibling;
-                    const icon = header.querySelector('.expand-icon');
-                    if (instances && instances.classList.contains('show')) {
-                        instances.classList.remove('show');
-                        if (icon) icon.classList.remove('expanded');
-                    } else if (instances) {
-                        instances.classList.add('show');
-                        if (icon) icon.classList.add('expanded');
-                    }
-                    return;
-                }
-
-                // B. 處理子品項編輯
-                const editBtn = e.target.closest('.edit-btn'); 
-                if (editBtn) {
-                    const instance = editBtn.closest('.instance-item');
-                    const parentCard = instance.closest('.product-card');
-                    currentEditCard = instance; 
-                    
-                    const rawName = parentCard.querySelector('.product-name').childNodes[0]?.textContent || "";
-                    const name = rawName.trim();
-                    const brand = parentCard.querySelector('.product-brand').innerText.trim();
-                    const category = parentCard.dataset.category || 'makeup';
-                    
-                    const thumb = parentCard.querySelector('.thumbnail');
-                    if(thumb && thumb.src && thumb.style.display !== 'none') {
-                        currentPhotoBase64 = thumb.src;
-                        formPhotoPreview.src = thumb.src;
-                        formPhotoPreview.style.display = 'block';
-                        formPhotoClear.style.display = 'inline';
-                    } else {
-                        clearPhotoPreview();
-                    }
-
-                    document.getElementById('new-name').value = name;
-                    document.getElementById('new-brand').value = brand;
-                    document.getElementById('new-category').value = category;
-
-                    document.getElementById('btn-save-new').innerText = "儲存修改";
-                    document.getElementById('btn-delete-item').style.display = "block"; 
-                    
-                    addForm.classList.add('active');
-                    addForm.scrollIntoView({ behavior: 'smooth' });
-                    return;
-                }
-
-                // C. 處理單一品項封存(移至歷史)
-                const archiveBtn = e.target.closest('.archive-btn');
-                if (archiveBtn) {
-                    if(confirm("確定要將這個物品封存至歷史紀錄嗎？")) {
-                        const instance = archiveBtn.closest('.instance-item');
-                        const parentCard = instance.closest('.product-card');
-                        
-                        // 建立一個獨立的歷史卡片 (為了結構簡單，直接從原卡片剝離出來)
-                        const historyCard = parentCard.cloneNode(true);
-                        historyCard.dataset.status = 'archived';
-                        historyCard.classList.add('archived');
-                        historyCard.style.display = 'none'; // 先隱藏，因為目前不在歷史頁籤
-                        
-                        // 清理複製卡片中的多餘子項，只保留被點擊的這個
-                        const clonedInstances = historyCard.querySelector('.product-instances');
-                        clonedInstances.innerHTML = '';
-                        const clonedItem = instance.cloneNode(true);
-                        
-                        // 移除歷史紀錄中的操作按鈕 (封存與編輯)，使其成為純檢視
-                        clonedItem.querySelector('.archive-btn')?.remove();
-                        clonedItem.querySelector('.edit-btn')?.remove();
-                        clonedInstances.appendChild(clonedItem);
-                        
-                        // 更新歷史卡片總數為 1
-                        historyCard.querySelector('.total-badge').innerText = '總數: 1';
-                        
-                        // 加入 DOM
-                        document.getElementById('product-list').appendChild(historyCard);
-                        
-                        // 刪除原卡片中的該實體
-                        instance.remove();
-                        updateCardStatus(parentCard);
-                        
-                        showMessage("已移至歷史紀錄");
-                    }
-                    return;
-                }
-            });
-            
-            // --- 5.5 刪除按鈕邏輯 ---
-            document.getElementById('btn-delete-item').addEventListener('click', () => {
-                if (currentEditCard && confirm("確定要永久刪除這個品項嗎？")) {
-                    const parentCard = currentEditCard.closest('.product-card');
-                    currentEditCard.remove();
-                    
-                    if(parentCard) updateCardStatus(parentCard); 
-                    
-                    showMessage("已成功刪除品項");
-                    currentEditCard = null;
-                    document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
-                    document.getElementById('btn-delete-item').style.display = "none";
-                    addForm.classList.remove('active');
-                }
-            });
-
-            // --- 6. 儲存表單按鈕 (支援群組化與多實體) ---
-            document.getElementById('btn-save-new').addEventListener('click', () => {
-                const name = document.getElementById('new-name').value.trim();
-                const brand = document.getElementById('new-brand').value.trim();
-                const category = document.getElementById('new-category').value;
-                const price = document.getElementById('new-price').value || "未知";
-                const quantity = document.getElementById('new-quantity').value || "1";
-                const expiry = document.getElementById('new-expiry').value;
-                const location = document.getElementById('new-location').value || "未指定";
-
-                if (!name) {
-                    showMessage("請確認產品名稱欄位有資料！");
-                    return;
-                }
-
-                // 計算剩餘天數
-                let daysLeft = 999;
-                let daysText = "未填到期日";
-                if(expiry) {
-                    const diff = new Date(expiry) - new Date();
-                    daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                    daysText = `剩餘 ${daysLeft} 天 (${expiry})`;
-                }
-
-                if (currentEditCard) {
-                    // 1. 更新既有子品項
-                    const parentCard = currentEditCard.closest('.product-card');
-                    parentCard.querySelector('.product-name').innerHTML = `${name} <i data-lucide="alert-circle" class="warning-icon" style="width: 16px; height: 16px;" title="有即將過期的品項！"></i>`;
-                    parentCard.querySelector('.product-brand').innerText = brand || '';
-                    
-                    // 更新縮圖
-                    const thumb = parentCard.querySelector('.thumbnail');
-                    if (currentPhotoBase64) {
-                        thumb.src = currentPhotoBase64;
-                        thumb.style.display = 'block';
-                    } else {
-                        thumb.style.display = 'none';
-                    }
-                    
-                    const infoDiv = currentEditCard.querySelector('.instance-info');
-                    infoDiv.innerHTML = `
-                        <div style="color: ${daysLeft <= 60 ? '#d9534f' : 'var(--primary)'}; font-weight: bold; font-size: 12px;">${daysText}</div>
-                        <div class="instance-meta">${location} • 數量: ${quantity} • $${price}</div>
-                    `;
-                    currentEditCard.dataset.days = daysLeft;
-                    
-                    updateCardStatus(parentCard); 
-                    lucide.createIcons();
-                    
-                    showMessage(`修改成功：${name}`);
-                    currentEditCard = null;
-                    document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
-                    document.getElementById('btn-delete-item').style.display = "none";
-                } else {
-                    // 2. 新增模式：尋找同名同品牌母群組
-                    let targetCard = null;
-                    document.querySelectorAll('.product-card[data-status="active"]').forEach(card => {
-                        const cName = card.querySelector('.product-name').childNodes[0]?.textContent?.trim() || "";
-                        const cBrand = card.querySelector('.product-brand').innerText.trim();
-                        if (cName === name && cBrand === brand) {
-                            targetCard = card;
-                        }
-                    });
-
-                    const instanceHtml = `
-                        <div class="instance-item" data-days="${daysLeft}">
-                            <div class="instance-info">
-                                <div style="color: ${daysLeft <= 60 ? '#d9534f' : 'var(--primary)'}; font-weight: bold; font-size: 12px;">${daysText}</div>
-                                <div class="instance-meta">${location} • 數量: ${quantity} • $${price}</div>
-                            </div>
-                            <div style="display: flex; gap: 12px; align-items: center;">
-                                <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:18px; height:18px; color:var(--secondary);" title="封存至歷史"></i>
-                                <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:18px; height:18px; color:var(--primary);" title="編輯"></i>
-                            </div>
-                        </div>
-                    `;
-
-                    if (targetCard) {
-                        targetCard.querySelector('.product-instances').insertAdjacentHTML('beforeend', instanceHtml);
-                        
-                        // 若新項目有照片，更新母群組照片
-                        if (currentPhotoBase64) {
-                            const thumb = targetCard.querySelector('.thumbnail');
-                            thumb.src = currentPhotoBase64;
-                            thumb.style.display = 'block';
-                        }
-                        
-                        updateCardStatus(targetCard);
-                    } else {
-                        // 建立新群組母卡片
-                        const photoStyle = currentPhotoBase64 ? 'display: block;' : 'display: none;';
-                        const photoSrc = currentPhotoBase64 || '';
-                        
-                        const newCardHtml = `
-                            <div class="product-card" data-category="${category}" data-status="active">
-                                <div class="product-header expandable">
-                                    <div class="product-info-wrapper">
-                                        <img src="${photoSrc}" class="thumbnail" style="${photoStyle}" alt="縮圖">
-                                        <div class="product-info">
-                                            <div class="product-brand">${brand}</div>
-                                            <h3 class="product-name">${name} <i data-lucide="alert-circle" class="warning-icon" style="width: 16px; height: 16px;" title="有即將過期的品項！"></i></h3>
-                                        </div>
-                                    </div>
-                                    <div style="display: flex; gap: 8px; align-items: center;">
-                                        <div class="badge total-badge">總數: 1</div>
-                                        <i data-lucide="chevron-down" class="expand-icon" style="width:20px; height:20px; color:rgba(60,50,40,0.5);"></i>
-                                    </div>
-                                </div>
-                                <div class="product-instances show">
-                                    ${instanceHtml}
-                                </div>
-                            </div>
-                        `;
-                        document.getElementById('product-list').insertAdjacentHTML('afterbegin', newCardHtml);
-                        const newlyAdded = document.getElementById('product-list').firstElementChild;
-                        updateCardStatus(newlyAdded);
-                    }
-                    lucide.createIcons();
-                    
-                    showMessage(`儲存成功：${name}`);
-                }
-                addForm.classList.remove('active');
-                clearPhotoPreview();
-                
-                // 強制切換回對應的分類以看到剛新增的物品
-                document.querySelector(`.nav-item[data-target-category="${category}"]`).click();
-            });
-        });
-    </script>
+        updateCardStatus(targetCard);
+      } else {
+        const photoStyle = currentPhotoBase64 ? 'display: block;' : 'display: none;';
+        const photoSrc = currentPhotoBase64 || '';
+        const newCardHtml = `
+        <div class="product-card" data-category="${category}" data-status="active">
+          <div class="product-header expandable">
+            <div class="product-info-wrapper">
+              <img src="${photoSrc}" class="thumbnail" style="${photoStyle}" alt="縮圖">
+              <div class="product-info">
+                <div class="product-brand">${brand}</div>
+                <h3 class="product-name">${name} <i data-lucide="alert-circle" class="warning-icon" style="width: 16px; height: 16px;"></i></h3>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div class="badge total-badge">總數: 1</div>
+              <i data-lucide="chevron-down" class="expand-icon" style="width:20px; height:20px; color:rgba(60,50,40,0.5);"></i>
+            </div>
+          </div>
+          <div class="product-instances show">
+            ${instanceWrapperHtml}
+          </div>
+        </div>
+        `;
+        document.getElementById('product-list').insertAdjacentHTML('afterbegin', newCardHtml);
+        const newlyAdded = document.getElementById('product-list').firstElementChild;
+        updateCardStatus(newlyAdded);
+      }
+      lucide.createIcons();
+      showMessage(`儲存成功：${name}`);
+    }
+    
+    addForm.classList.remove('active');
+    clearPhotoPreview();
+    document.querySelector(`.nav-item[data-target-category="${category}"]`).click();
+    updateCategoryStats();
+  });
+});
+</script>
 </body>
 </html>
