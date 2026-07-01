@@ -548,7 +548,7 @@
         /* 懸浮待收提醒組件樣式 */
         #floatingUnpaidWrap {
             position: fixed;
-            bottom: 24px;
+            bottom: 84px; /* 本次調整：由原本 24px 上調為 84px 避開底部導覽列 */
             right: 24px;
             z-index: 1000;
             display: flex;
@@ -827,27 +827,15 @@
     </section>
 
     <div id="mainApp" class="hidden">
-        <nav class="bg-slate-600 text-white py-2 px-3 md:px-4 shadow-md">
-            <div class="container mx-auto flex justify-between items-center">
-                <h1 class="text-base md:text-lg font-bold tracking-widest whitespace-nowrap shrink-0 mr-2 md:mr-4">冷氣清洗紀錄</h1>
-                <div class="flex items-center gap-1.5 md:gap-2 overflow-x-auto hide-scrollbar pb-0.5">
-                    <button onclick="showXingfuPage()" class="flex items-center px-2 py-1.5 md:px-3 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.75rem] md:text-[0.8rem] font-medium active:scale-95 whitespace-nowrap shrink-0">
-                        <i data-lucide="building-2" class="btn-icon"></i>幸福家
-                    </button>
-                    <button onclick="showPage('listPage')" class="flex items-center px-2 py-1.5 md:px-3 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.75rem] md:text-[0.8rem] font-medium active:scale-95 whitespace-nowrap shrink-0">
-                        <i data-lucide="list" class="btn-icon"></i>清單
-                    </button>
-                    <button onclick="prepareNewForm()" class="flex items-center px-2 py-1.5 md:px-3 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.75rem] md:text-[0.8rem] font-medium active:scale-95 whitespace-nowrap shrink-0">
-                        <i data-lucide="pen-line" class="btn-icon"></i>填寫
-                    </button>
-                    <button onclick="handleLogout()" class="flex items-center px-2 py-1.5 md:px-3 bg-slate-700 hover:bg-rose-600 border border-slate-500 rounded-lg transition-all text-[0.75rem] md:text-[0.8rem] font-medium active:scale-95 whitespace-nowrap shrink-0">
-                        <i data-lucide="log-out" class="btn-icon"></i>登出
-                    </button>
-                </div>
+        <!-- 頂部標題列 (自然隨畫面滾動隱藏) -->
+        <header class="bg-slate-600 text-white py-3 px-3 md:px-4 shadow-md">
+            <div class="container mx-auto flex justify-center items-center">
+                <h1 class="text-base md:text-lg font-bold tracking-widest whitespace-nowrap shrink-0">冷氣清洗紀錄</h1>
             </div>
-        </nav>
+        </header>
 
-        <div class="container mx-auto px-1.5 md:px-4 py-6">
+        <!-- 主要內容區 (增加 pb-24 確保底部內容不被新加入的固定導覽列遮擋) -->
+        <div class="container mx-auto px-1.5 md:px-4 pt-6 pb-24">
             
             <section id="formPage" class="hidden max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
                 <h2 class="text-xl font-bold mb-6 text-slate-800 flex items-center gap-2">
@@ -1164,6 +1152,26 @@
                 <span id="unpaidCountBadge" class="unpaid-count-dot">0</span>
             </button>
         </div>
+
+        <!-- 底部導覽列 (固定在最下方) -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-slate-600 text-white pt-2 px-3 md:px-4 shadow-[0_-4px_12px_rgba(0,0,0,0.15)] z-[80]" style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom));">
+            <div class="container mx-auto flex justify-center items-center">
+                <div class="flex items-center justify-center gap-1.5 md:gap-3 overflow-x-auto hide-scrollbar w-full">
+                    <button onclick="showXingfuPage()" class="flex items-center px-2 py-1.5 md:px-3 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.75rem] md:text-[0.8rem] font-medium active:scale-95 whitespace-nowrap shrink-0">
+                        <i data-lucide="building-2" class="btn-icon"></i>幸福家
+                    </button>
+                    <button onclick="showPage('listPage')" class="flex items-center px-2 py-1.5 md:px-3 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.75rem] md:text-[0.8rem] font-medium active:scale-95 whitespace-nowrap shrink-0">
+                        <i data-lucide="list" class="btn-icon"></i>清單
+                    </button>
+                    <button onclick="prepareNewForm()" class="flex items-center px-2 py-1.5 md:px-3 bg-slate-500 hover:bg-slate-400 border border-slate-400/50 rounded-lg transition-all text-[0.75rem] md:text-[0.8rem] font-medium active:scale-95 whitespace-nowrap shrink-0">
+                        <i data-lucide="pen-line" class="btn-icon"></i>填寫
+                    </button>
+                    <button onclick="handleLogout()" class="flex items-center px-2 py-1.5 md:px-3 bg-slate-700 hover:bg-rose-600 border border-slate-500 rounded-lg transition-all text-[0.75rem] md:text-[0.8rem] font-medium active:scale-95 whitespace-nowrap shrink-0">
+                        <i data-lucide="log-out" class="btn-icon"></i>登出
+                    </button>
+                </div>
+            </div>
+        </nav>
     </div>
 
     <script type="module">
