@@ -8,18 +8,15 @@
     <style>
         :root {
             /* 復古底片風 配色方案 */
-            --bg-color: #EAD7C3;      /* 復古羊皮紙色 */
-            --card-bg: #F3EBE1;       /* 暖奶油色 */
-            --primary: #8B9D83;       /* 鼠尾草綠 */
-            --secondary: #C57B57;     /* 紅磚陶土色 */
-            --text-color: #3C3228;    /* 深咖啡色 */
+            --bg-color: #EAD7C3;      
+            --card-bg: #F3EBE1;       
+            --primary: #8B9D83;       
+            --secondary: #C57B57;     
+            --text-color: #3C3228;    
             --border-radius: 12px;
         }
 
-        /* 基礎重置與防溢出設定 */
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -27,8 +24,8 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            overflow-x: hidden; /* 絕對禁止水平卷軸 */
-            padding-bottom: 90px; /* 為底部導覽列預留空間 */
+            overflow-x: hidden; 
+            padding-bottom: 90px; 
         }
 
         /* 頂部區域 */
@@ -44,10 +41,7 @@
             font-weight: bold;
         }
 
-        .header-actions {
-            display: flex;
-            gap: 10px;
-        }
+        .header-actions { display: flex; gap: 10px; }
 
         .action-btn {
             background-color: var(--primary);
@@ -63,7 +57,37 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
-        /* 手動新增表單（預設隱藏） */
+        /* 搜尋列 */
+        .search-container {
+            padding: 0 16px 16px 16px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            border: none;
+            border-radius: 20px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            font-size: 14px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .search-input:focus {
+            outline: 2px solid var(--primary);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 28px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(60, 50, 40, 0.5);
+            pointer-events: none;
+        }
+
+        /* 手動新增表單區域 (預設隱藏) */
         .add-form-container {
             display: none;
             margin: 0 16px 20px 16px;
@@ -74,9 +98,7 @@
             border: 1px solid rgba(139, 157, 131, 0.3);
         }
 
-        .add-form-container.active {
-            display: block; /* 點擊 + 號時展開 */
-        }
+        .add-form-container.active { display: block; }
 
         .form-title {
             font-size: 18px;
@@ -88,62 +110,7 @@
             color: var(--secondary);
         }
 
-        /* 列表區域 (響應式卡片) */
-        .product-list {
-            padding: 0 16px;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
-
-        .product-card {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            word-wrap: break-word;
-        }
-
-        .product-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-
-        .product-info h3 {
-            margin: 0 0 4px 0;
-            font-size: 16px;
-        }
-
-        .product-brand {
-            font-size: 12px;
-            color: var(--primary);
-        }
-
-        .product-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(60, 50, 40, 0.1);
-        }
-
-        .badge {
-            background-color: var(--secondary);
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        /* 表單共用欄位樣式 */
-        .form-group {
-            margin-bottom: 12px;
-        }
+        .form-group { margin-bottom: 12px; }
 
         .form-group label {
             display: block;
@@ -170,17 +137,6 @@
             background-color: #fff;
         }
 
-        .inline-edit-form {
-            display: none;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px dashed var(--primary);
-        }
-        
-        .inline-edit-form.active {
-            display: block;
-        }
-
         .save-btn {
             background-color: var(--primary);
             color: var(--card-bg);
@@ -195,12 +151,104 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
+        /* 列表區域 */
+        .product-list {
+            padding: 0 16px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .product-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            word-wrap: break-word;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .product-info h3 { margin: 0 0 4px 0; font-size: 16px; }
+        .product-info .product-name { color: var(--text-color); }
+        .product-brand { font-size: 12px; color: var(--primary); }
+
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(60, 50, 40, 0.1);
+        }
+
+        .badge {
+            background-color: var(--secondary);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* 辨識載入中遮罩 (進度條) */
+        .loading-overlay {
+            display: none; /* 預設隱藏 */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(60, 50, 40, 0.8); /* 深色半透明遮罩 */
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-content {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            width: 80%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .loading-text {
+            margin: 0 0 16px 0;
+            font-weight: bold;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(139, 157, 131, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 10px;
+            transition: width 0.1s linear;
+        }
+
         /* 底部導覽列 */
         .bottom-nav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+            bottom: 0; left: 0; width: 100%;
             background-color: var(--card-bg);
             display: flex;
             justify-content: space-around;
@@ -220,10 +268,8 @@
             gap: 4px;
             cursor: pointer;
         }
+        .nav-item.active { color: var(--primary); }
 
-        .nav-item.active {
-            color: var(--primary);
-        }
     </style>
 </head>
 <body>
@@ -240,9 +286,29 @@
         </div>
     </header>
 
+    <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;">
+
+    <div class="search-container">
+        <i data-lucide="search" class="search-icon" style="width: 18px; height: 18px;"></i>
+        <input type="text" id="search-input" class="search-input" placeholder="搜尋品牌或產品名稱...">
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <h3 class="loading-text">
+                <i data-lucide="scan" style="animation: pulse 2s infinite;"></i> 
+                AI 影像辨識中...
+            </h3>
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <p id="loading-status" style="font-size: 12px; color: rgba(60,50,40,0.7); margin-top: 10px;">正在上傳圖片</p>
+        </div>
+    </div>
+
     <div class="add-form-container" id="manual-add-form">
         <div class="form-title">
-            <i data-lucide="plus-circle" style="width:20px; height:20px;"></i> 手動新增品項
+            <i data-lucide="sparkles" style="width:20px; height:20px;"></i> 確認新增品項
         </div>
         <div class="form-group">
             <label>產品類別</label>
@@ -253,7 +319,7 @@
             </select>
         </div>
         <div class="form-group">
-            <label>品牌名稱 (如: Dior, GIORGIO ARMANI)</label>
+            <label>品牌名稱</label>
             <input type="text" id="new-brand" placeholder="請輸入品牌">
         </div>
         <div class="form-group">
@@ -274,17 +340,17 @@
         </div>
         <div class="form-group">
             <label>存放位置</label>
-            <input type="text" id="new-location" placeholder="例如: 房間櫃子、化妝包">
+            <input type="text" id="new-location" placeholder="例如: 房間櫃子">
         </div>
-        <button class="save-btn" id="btn-save-new" style="background-color: var(--secondary);">確認新增至資料庫</button>
+        <button class="save-btn" id="btn-save-new" style="background-color: var(--secondary);">確認無誤，新增至資料庫</button>
     </div>
 
-    <div class="product-list">
+    <div class="product-list" id="product-list">
         <div class="product-card">
             <div class="product-header">
                 <div class="product-info">
                     <div class="product-brand">Dior</div>
-                    <h3>迪奧癮誘粉漾潤唇膏</h3>
+                    <h3 class="product-name">迪奧癮誘粉漾潤唇膏</h3>
                 </div>
                 <div class="badge">剩餘 50 天</div>
             </div>
@@ -292,57 +358,36 @@
                 <span>數量: 1 / 3.2g</span>
                 <span>房間櫃子</span>
             </div>
-            <div class="product-meta" style="border:none; padding-top:4px; margin-top:0;">
-                <span style="font-weight: bold;">$1,090</span>
-                <button style="background:none; border:none; color:var(--primary); cursor:pointer; display:flex; align-items:center; gap:4px;" class="btn-toggle-edit" data-target="edit-1">
-                    <i data-lucide="pencil" style="width:14px; height:14px;"></i> 編輯
-                </button>
-            </div>
+        </div>
 
-            <div id="edit-1" class="inline-edit-form">
-                <div class="form-group">
-                    <label>商品名稱</label>
-                    <input type="text" value="迪奧癮誘粉漾潤唇膏">
+        <div class="product-card">
+            <div class="product-header">
+                <div class="product-info">
+                    <div class="product-brand">GIORGIO ARMANI</div>
+                    <h3 class="product-name">輕透亮絲粉底</h3>
                 </div>
-                <div class="form-group">
-                    <label>存放位置</label>
-                    <input type="text" value="房間櫃子">
-                </div>
-                <div class="form-group">
-                    <label>到期日</label>
-                    <input type="date" value="2026-08-03">
-                </div>
-                <button class="save-btn btn-save-inline">儲存變更</button>
+                <div class="badge" style="background-color: var(--primary);">剩餘 365 天</div>
+            </div>
+            <div class="product-meta">
+                <span>數量: 1 / 30ml</span>
+                <span>化妝台</span>
             </div>
         </div>
     </div>
 
     <nav class="bottom-nav">
-        <a class="nav-item active">
-            <i data-lucide="sparkles"></i>
-            <span>化妝品</span>
-        </a>
-        <a class="nav-item">
-            <i data-lucide="droplets"></i>
-            <span>保養品</span>
-        </a>
-        <a class="nav-item">
-            <i data-lucide="pill"></i>
-            <span>保健品</span>
-        </a>
-        <a class="nav-item">
-            <i data-lucide="settings"></i>
-            <span>設定</span>
-        </a>
+        <a class="nav-item active"><i data-lucide="sparkles"></i><span>化妝品</span></a>
+        <a class="nav-item"><i data-lucide="droplets"></i><span>保養品</span></a>
+        <a class="nav-item"><i data-lucide="pill"></i><span>保健品</span></a>
+        <a class="nav-item"><i data-lucide="settings"></i><span>設定</span></a>
     </nav>
 
     <script type="module">
-        // 1. 載入 Firebase 核心模組
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-        // 2. Firebase 配置碼
+        // 您的 Firebase 配置
         const firebaseConfig = {
             apiKey: "AIzaSyAqSxxH5LhsKSV2NPDzQFOSHn_rQNv588k",
             authDomain: "url-sorting.firebaseapp.com",
@@ -354,93 +399,102 @@
             measurementId: "G-0L44SJTSLQ"
         };
 
-        // 3. 初始化 Firebase
-        let db, storage;
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            storage = getStorage(app);
-            console.log("✅ 連線成功！Firebase 模組已穩固載入。");
-        } catch (error) {
-            console.error("❌ Firebase 初始化失敗：", error);
-        }
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
 
-        // 4. 利用 DOM 監聽器完美解決按鈕沒反應的問題
         window.addEventListener('DOMContentLoaded', () => {
-            // 初始化 Lucide 圖示
             lucide.createIcons();
 
-            // 綁定 [拍照辨識按鈕]
-            const cameraBtn = document.getElementById('btn-camera');
-            if (cameraBtn) {
-                cameraBtn.addEventListener('click', () => {
-                    alert(`【拍照功能觸發】\n即將開啟手機相機拍照並上傳至：\n${firebaseConfig.storageBucket}\n稍後會串接 Google Vision API 自動填入資料。`);
-                });
-            }
-
-            // 綁定 [手動新增按鈕] (+號控制表單顯示/隱藏)
-            const manualBtn = document.getElementById('btn-manual');
-            const addForm = document.getElementById('manual-add-form');
-            if (manualBtn && addForm) {
-                manualBtn.addEventListener('click', () => {
-                    addForm.classList.toggle('active');
-                    // 順暢滾動到表單位置
-                    if(addForm.classList.contains('active')){
-                        addForm.scrollIntoView({ behavior: 'smooth' });
+            // --- 1. 即時搜尋功能 ---
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', (e) => {
+                const keyword = e.target.value.toLowerCase();
+                const cards = document.querySelectorAll('.product-card');
+                
+                cards.forEach(card => {
+                    const brand = card.querySelector('.product-brand').innerText.toLowerCase();
+                    const name = card.querySelector('.product-name').innerText.toLowerCase();
+                    // 如果品牌或名稱包含關鍵字，就顯示，否則隱藏
+                    if (brand.includes(keyword) || name.includes(keyword)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
                     }
-                });
-            }
-
-            // 綁定 [確認手動新增儲存按鈕]
-            const saveNewBtn = document.getElementById('btn-save-new');
-            if (saveNewBtn) {
-                saveNewBtn.addEventListener('click', async () => {
-                    const brand = document.getElementById('new-brand').value;
-                    const name = document.getElementById('new-name').value;
-                    const category = document.getElementById('new-category').value;
-                    const price = document.getElementById('new-price').value;
-                    const quantity = document.getElementById('new-quantity').value;
-                    const expiry = document.getElementById('new-expiry').value;
-                    const location = document.getElementById('new-location').value;
-
-                    if (!name) {
-                        alert("請至少輸入「產品名稱」才能新增喔！");
-                        return;
-                    }
-
-                    // 這裡預留了將資料寫入 Firebase Firestore 的標準語法
-                    try {
-                        console.log("正在嘗試寫入資料到 Firestore...", { brand, name, category, price, quantity, expiry, location });
-                        alert(`🎉 模擬新增成功！\n名稱：${name}\n此動作已與 Firebase 連動，下一步我們將串接真實的資料庫讀取流程。`);
-                        
-                        // 這是正式寫入資料庫的語法，等我們建立好資料表即可解除註解：
-                        // await addDoc(collection(db, "products"), { brand, name, category, price, quantity, expiry, location, createdAt: new Date() });
-                        
-                        addForm.classList.remove('active'); // 隱藏表單
-                    } catch (e) {
-                        console.error("寫入失敗: ", e);
-                    }
-                });
-            }
-
-            // 處理列表中卡片的 [編輯] 按鈕原地切換
-            const toggleEditBtns = document.querySelectorAll('.btn-toggle-edit');
-            toggleEditBtns.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const targetId = btn.getAttribute('data-target');
-                    const form = document.getElementById(targetId);
-                    if (form) form.classList.toggle('active');
                 });
             });
 
-            // 處理卡片內編輯表單的 [儲存變更]
-            const saveInlineBtns = document.querySelectorAll('.btn-save-inline');
-            saveInlineBtns.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const form = e.target.closest('.inline-edit-form');
-                    if (form) form.classList.remove('active');
-                    alert("變更已模擬更新！");
-                });
+            // --- 2. 拍照與進度條模擬流程 ---
+            const cameraBtn = document.getElementById('btn-camera');
+            const cameraInput = document.getElementById('camera-input');
+            const overlay = document.getElementById('loading-overlay');
+            const progressBar = document.getElementById('progress-bar');
+            const loadingStatus = document.getElementById('loading-status');
+            const addForm = document.getElementById('manual-add-form');
+
+            // 點擊按鈕，觸發隱藏的相機
+            cameraBtn.addEventListener('click', () => {
+                cameraInput.click(); 
+            });
+
+            // 拍完照片後的處理
+            cameraInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    // 1. 顯示進度遮罩
+                    overlay.style.display = 'flex';
+                    let progress = 0;
+                    
+                    // 2. 模擬上傳與 API 辨識的進度 (約 3 秒)
+                    const interval = setInterval(() => {
+                        progress += 5;
+                        progressBar.style.width = progress + '%';
+                        
+                        // 動態切換文字狀態
+                        if (progress === 30) loadingStatus.innerText = "正在萃取影像特徵...";
+                        if (progress === 60) loadingStatus.innerText = "串接 Google Vision API...";
+                        if (progress === 85) loadingStatus.innerText = "資料解析完成！";
+
+                        if (progress >= 100) {
+                            clearInterval(interval);
+                            
+                            // 延遲一點點關閉遮罩，讓視覺順暢
+                            setTimeout(() => {
+                                overlay.style.display = 'none';
+                                progressBar.style.width = '0%'; // 重置
+                                loadingStatus.innerText = "正在上傳圖片"; 
+                                
+                                // 3. 自動填入「模擬辨識出」的資料並展開表單
+                                document.getElementById('new-brand').value = "Dior";
+                                document.getElementById('new-name').value = "超完美持久柔光粉底液";
+                                document.getElementById('new-category').value = "makeup";
+                                
+                                addForm.classList.add('active');
+                                addForm.scrollIntoView({ behavior: 'smooth' });
+                                
+                                // 清空 input 檔案，讓下次點擊可以重複觸發
+                                cameraInput.value = ""; 
+                            }, 500);
+                        }
+                    }, 150); // 每 150 毫秒跑一次
+                }
+            });
+
+            // 手動新增按鈕邏輯
+            document.getElementById('btn-manual').addEventListener('click', () => {
+                addForm.classList.toggle('active');
+                if(addForm.classList.contains('active')) addForm.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            // 儲存表單按鈕
+            document.getElementById('btn-save-new').addEventListener('click', () => {
+                const name = document.getElementById('new-name').value;
+                if (!name) {
+                    alert("請確認產品名稱欄位有資料！");
+                    return;
+                }
+                alert(`儲存成功：${name}\n(此動作已準備好寫入 Firestore)`);
+                addForm.classList.remove('active');
             });
         });
     </script>
