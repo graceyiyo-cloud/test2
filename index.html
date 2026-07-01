@@ -151,7 +151,22 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* 列表區域 */
+        .delete-btn {
+            display: none;
+            background-color: #d9534f;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* 列表區域與群組折疊樣式 */
         .product-list {
             padding: 0 16px;
             display: grid;
@@ -165,29 +180,40 @@
             padding: 16px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             word-wrap: break-word;
-            transition: opacity 0.3s, filter 0.3s;
+            transition: opacity 0.3s ease;
+        }
+
+        .product-card.archived {
+            opacity: 0.5;
+            filter: grayscale(80%);
         }
 
         .product-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 12px;
         }
 
-        .product-info h3 { margin: 0 0 4px 0; font-size: 16px; }
+        .product-header.expandable { cursor: pointer; }
+
+        .product-info-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .thumbnail {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 12px;
+            flex-shrink: 0;
+            display: none; /* 有圖片時才顯示 */
+        }
+
+        .product-info h3 { margin: 0 0 4px 0; font-size: 16px; display: flex; align-items: center; }
         .product-info .product-name { color: var(--text-color); }
         .product-brand { font-size: 12px; color: var(--primary); }
-
-        .product-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(60, 50, 40, 0.1);
-        }
 
         .badge {
             background-color: var(--secondary);
@@ -198,22 +224,50 @@
             font-weight: bold;
         }
 
-        /* 新增：歷史紀錄專屬視覺特效 */
-        .product-card[data-status="history"] {
-            opacity: 0.65;
-            filter: grayscale(0.2);
+        .warning-icon {
+            display: none;
+            color: #d9534f;
+            margin-left: 6px;
         }
+        .warning-icon.active { display: inline-block; }
+
+        .expand-icon { transition: transform 0.2s ease; }
+        .expand-icon.expanded { transform: rotate(180deg); }
+
+        /* 子品項明細清單 */
+        .product-instances {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed rgba(60, 50, 40, 0.2);
+        }
+        .product-instances.show { display: block; }
+
+        .instance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(60, 50, 40, 0.05);
+        }
+        .instance-item:last-child { border-bottom: none; }
         
-        .product-card[data-status="history"] .archive-btn {
-            display: none; /* 在歷史清單中隱藏封存按鈕 */
+        .instance-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .instance-meta {
+            font-size: 12px;
+            color: rgba(60, 50, 40, 0.7);
         }
 
         /* 辨識載入中遮罩 (進度條) */
         .loading-overlay {
-            display: none; 
+            display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(60, 50, 40, 0.8); 
+            background-color: rgba(60, 50, 40, 0.8);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -255,6 +309,26 @@
             border-radius: 10px;
             transition: width 0.1s linear;
         }
+
+        /* 畫面提示 Toast */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(60, 50, 40, 0.9);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .toast.show { opacity: 1; }
 
         /* 底部導覽列 */
         .bottom-nav {
@@ -304,6 +378,9 @@
         <input type="text" id="search-input" class="search-input" placeholder="搜尋品牌或產品名稱...">
     </div>
 
+    <!-- 畫面提示 Toast -->
+    <div id="toast" class="toast">訊息提示</div>
+
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-content">
             <h3 class="loading-text">
@@ -322,13 +399,15 @@
             <i data-lucide="sparkles" style="width:20px; height:20px;"></i> 確認新增品項
         </div>
         
-        <!-- 新增: 照片上傳欄位，無縫融合原樣式 -->
         <div class="form-group">
             <label>產品照片 (可選)</label>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <button type="button" id="btn-upload-photo" style="padding: 10px 14px; border: 1px solid rgba(60, 50, 40, 0.2); background-color: rgba(255, 255, 255, 0.5); color: var(--text-color); border-radius: 8px; cursor: pointer; font-size: 14px; flex-shrink: 0;">選擇照片</button>
-                <img id="form-image-preview" src="" style="width: 42px; height: 42px; object-fit: cover; border-radius: 6px; display: none; border: 1px solid rgba(60,50,40,0.1);">
-                <input type="file" id="new-photo-input" accept="image/*" style="display: none;">
+                <input type="file" id="form-photo-input" accept="image/*" style="display: none;">
+                <button class="action-btn" id="btn-form-photo" style="width: 36px; height: 36px; background-color: var(--primary);" title="上傳/拍照">
+                    <i data-lucide="camera" style="width:16px;"></i>
+                </button>
+                <img id="form-photo-preview" src="" style="display:none; width:40px; height:40px; border-radius:8px; object-fit:cover; border:1px solid rgba(0,0,0,0.1);">
+                <span id="form-photo-clear" style="display:none; color:#d9534f; cursor:pointer; font-size:12px; font-weight:bold;">移除</span>
             </div>
         </div>
 
@@ -366,52 +445,87 @@
             <label>存放位置</label>
             <input type="text" id="new-location" placeholder="例如: 房間櫃子">
         </div>
+        
         <button class="save-btn" id="btn-save-new" style="background-color: var(--secondary);">確認無誤，新增至資料庫</button>
+        <button class="delete-btn" id="btn-delete-item">永久刪除此品項</button>
     </div>
 
     <div class="product-list" id="product-list">
-        <!-- 嚴謹補上 data-status 預設值，並包裝縮圖容器 -->
+        <!-- 示範群組母卡片 1 -->
         <div class="product-card" data-category="makeup" data-status="active">
-            <div class="product-header">
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <img class="product-thumb" src="" style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; display: none;">
+            <div class="product-header expandable">
+                <div class="product-info-wrapper">
+                    <img src="" class="thumbnail" alt="縮圖">
                     <div class="product-info">
                         <div class="product-brand">Dior</div>
-                        <h3 class="product-name">迪奧癮誘粉漾潤唇膏</h3>
+                        <h3 class="product-name">
+                            迪奧癮誘粉漾潤唇膏
+                            <i data-lucide="alert-circle" class="warning-icon active" title="有即將過期的品項！"></i>
+                        </h3>
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    <div class="badge">剩餘 50 天</div>
-                    <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:16px; height:16px; color:var(--primary);" title="編輯"></i>
-                    <!-- 新增: 封存按鈕 -->
-                    <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:16px; height:16px; color:var(--secondary);" title="移至歷史紀錄"></i>
+                    <div class="badge total-badge">總數: 2</div>
+                    <i data-lucide="chevron-down" class="expand-icon" style="width:20px; height:20px; color:rgba(60,50,40,0.5);"></i>
                 </div>
             </div>
-            <div class="product-meta">
-                <span>數量: 1 / 3.2g</span>
-                <span>房間櫃子</span>
+            
+            <div class="product-instances show">
+                <!-- 單一實體 1 (即將過期示範) -->
+                <div class="instance-item" data-days="50">
+                    <div class="instance-info">
+                        <div style="color: #d9534f; font-weight: bold; font-size: 12px;">剩餘 50 天</div>
+                        <div class="instance-meta">房間櫃子 • 數量: 1 / 3.2g • $1090</div>
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:18px; height:18px; color:var(--secondary);" title="封存至歷史"></i>
+                        <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:18px; height:18px; color:var(--primary);" title="編輯"></i>
+                    </div>
+                </div>
+                <!-- 單一實體 2 -->
+                <div class="instance-item" data-days="200">
+                    <div class="instance-info">
+                        <div style="color: var(--primary); font-weight: bold; font-size: 12px;">剩餘 200 天</div>
+                        <div class="instance-meta">隨身包包 • 數量: 1 / 3.2g • $1250</div>
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:18px; height:18px; color:var(--secondary);" title="封存至歷史"></i>
+                        <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:18px; height:18px; color:var(--primary);" title="編輯"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- 示範群組母卡片 2 -->
         <div class="product-card" data-category="makeup" data-status="active">
-            <div class="product-header">
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <img class="product-thumb" src="" style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; display: none;">
+            <div class="product-header expandable">
+                <div class="product-info-wrapper">
+                    <img src="" class="thumbnail" alt="縮圖">
                     <div class="product-info">
                         <div class="product-brand">GIORGIO ARMANI</div>
-                        <h3 class="product-name">輕透亮絲粉底</h3>
+                        <h3 class="product-name">
+                            輕透亮絲粉底
+                            <i data-lucide="alert-circle" class="warning-icon" title="有即將過期的品項！"></i>
+                        </h3>
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    <div class="badge" style="background-color: var(--primary);">剩餘 365 天</div>
-                    <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:16px; height:16px; color:var(--primary);" title="編輯"></i>
-                    <!-- 新增: 封存按鈕 -->
-                    <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:16px; height:16px; color:var(--secondary);" title="移至歷史紀錄"></i>
+                    <div class="badge total-badge">總數: 1</div>
+                    <i data-lucide="chevron-down" class="expand-icon" style="width:20px; height:20px; color:rgba(60,50,40,0.5);"></i>
                 </div>
             </div>
-            <div class="product-meta">
-                <span>數量: 1 / 30ml</span>
-                <span>化妝台</span>
+            
+            <div class="product-instances">
+                <div class="instance-item" data-days="365">
+                    <div class="instance-info">
+                        <div style="color: var(--primary); font-weight: bold; font-size: 12px;">剩餘 365 天</div>
+                        <div class="instance-meta">化妝台 • 數量: 1 / 30ml • $2400</div>
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:18px; height:18px; color:var(--secondary);" title="封存至歷史"></i>
+                        <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:18px; height:18px; color:var(--primary);" title="編輯"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -420,8 +534,8 @@
         <a class="nav-item active" data-target-category="makeup"><i data-lucide="sparkles"></i><span>化妝品</span></a>
         <a class="nav-item" data-target-category="skincare"><i data-lucide="droplets"></i><span>保養品</span></a>
         <a class="nav-item" data-target-category="supplement"><i data-lucide="pill"></i><span>保健品</span></a>
-        <!-- 將設定改為歷史 -->
-        <a class="nav-item" data-target-category="history"><i data-lucide="history"></i><span>歷史</span></a>
+        <!-- 將設定替換為歷史 -->
+        <a class="nav-item" data-target-category="history"><i data-lucide="archive"></i><span>歷史</span></a>
     </nav>
 
     <script type="module">
@@ -429,7 +543,6 @@
         import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-        // Firebase 配置保持不變
         const firebaseConfig = {
             apiKey: "AIzaSyAqSxxH5LhsKSV2NPDzQFOSHn_rQNv588k",
             authDomain: "url-sorting.firebaseapp.com",
@@ -445,8 +558,9 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // API 核心
+        // 【重要提示】如果您將這份程式碼下載到本地端(自己的電腦或手機)執行，請務必在此填寫您的 Gemini API Key！
         const apiKey = ""; 
+        
         async function fetchWithRetry(url, options, retries = 5) {
             const delays = [1000, 2000, 4000, 8000, 16000];
             for (let i = 0; i < retries; i++) {
@@ -468,83 +582,81 @@
             reader.onerror = error => reject(error);
         });
 
-        // 建立無干擾訊息提示 (取代 Alert)
+        // 全局 Toast 提示函數
         function showMessage(msg) {
-            let toast = document.getElementById('system-toast');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'system-toast';
-                toast.style.cssText = 'position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(60,50,40,0.9); color:#fff; padding:12px 24px; border-radius:24px; font-size:14px; font-weight:bold; z-index:9999; opacity:0; transition:opacity 0.3s ease; pointer-events:none; box-shadow:0 4px 12px rgba(0,0,0,0.15);';
-                document.body.appendChild(toast);
-            }
+            const toast = document.getElementById('toast');
             toast.innerText = msg;
-            toast.style.opacity = '1';
-            setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
 
-            let currentEditCard = null;
-            let currentUploadedPhoto = ""; // 存放目前選擇的照片 Base64
+            let currentEditCard = null; // 指向被編輯的 `.instance-item`
+            let currentPhotoBase64 = null; // 暫存使用者上傳的照片
 
-            // --- 0. 照片上傳與預覽邏輯 ---
-            const photoInput = document.getElementById('new-photo-input');
-            const photoPreview = document.getElementById('form-image-preview');
-            
-            document.getElementById('btn-upload-photo').addEventListener('click', () => {
-                photoInput.click();
+            // --- 0. 表單照片上傳與預覽邏輯 ---
+            const formPhotoBtn = document.getElementById('btn-form-photo');
+            const formPhotoInput = document.getElementById('form-photo-input');
+            const formPhotoPreview = document.getElementById('form-photo-preview');
+            const formPhotoClear = document.getElementById('form-photo-clear');
+
+            function clearPhotoPreview() {
+                currentPhotoBase64 = null;
+                formPhotoInput.value = "";
+                formPhotoPreview.src = "";
+                formPhotoPreview.style.display = 'none';
+                formPhotoClear.style.display = 'none';
+            }
+
+            formPhotoBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                formPhotoInput.click();
             });
 
-            photoInput.addEventListener('change', async (e) => {
+            formPhotoInput.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (file) {
                     try {
-                        const base64 = await fileToBase64(file);
-                        currentUploadedPhoto = base64;
-                        photoPreview.src = base64;
-                        photoPreview.style.display = 'block';
-                    } catch (error) {
-                        showMessage('照片讀取失敗，請重試');
+                        const b64 = await fileToBase64(file);
+                        currentPhotoBase64 = b64;
+                        formPhotoPreview.src = b64;
+                        formPhotoPreview.style.display = 'block';
+                        formPhotoClear.style.display = 'inline';
+                    } catch(err) {
+                        showMessage("圖片處理失敗");
                     }
                 }
             });
 
-            // 清空照片預覽輔助函式
-            const clearPhotoPreview = () => {
-                currentUploadedPhoto = "";
-                photoPreview.src = "";
-                photoPreview.style.display = 'none';
-                photoInput.value = "";
-            };
+            formPhotoClear.addEventListener('click', clearPhotoPreview);
 
             // --- 1. 即時搜尋功能 ---
             const searchInput = document.getElementById('search-input');
             searchInput.addEventListener('input', (e) => {
                 const keyword = e.target.value.toLowerCase();
-                const currentCategory = document.querySelector('.nav-item.active').getAttribute('data-target-category');
                 const cards = document.querySelectorAll('.product-card');
                 
                 cards.forEach(card => {
-                    const status = card.getAttribute('data-status') || 'active';
-                    // 確保搜尋只在當前分類或歷史紀錄內進行
-                    const isCategoryMatch = (currentCategory === 'history') ? (status === 'history') : (status !== 'history' && card.dataset.category === currentCategory);
+                    const brand = card.querySelector('.product-brand').innerText.toLowerCase();
+                    const name = card.querySelector('.product-name').innerText.toLowerCase();
                     
-                    if (isCategoryMatch) {
-                        const brand = card.querySelector('.product-brand').innerText.toLowerCase();
-                        const name = card.querySelector('.product-name').innerText.toLowerCase();
-                        if (brand.includes(keyword) || name.includes(keyword)) {
-                            card.style.display = 'block';
-                        } else {
-                            card.style.display = 'none';
-                        }
+                    // 同時需要考慮目前是否在歷史分類中
+                    const isHistoryTab = document.querySelector('.nav-item[data-target-category="history"]').classList.contains('active');
+                    const cardStatus = card.dataset.status || 'active';
+                    
+                    const matchesCategory = isHistoryTab ? (cardStatus === 'archived') : (cardStatus === 'active');
+                    
+                    if (matchesCategory && (brand.includes(keyword) || name.includes(keyword))) {
+                        card.style.display = 'block';
                     } else {
                         card.style.display = 'none';
                     }
                 });
             });
 
-            // --- 1.5 底部導覽列切換與過濾邏輯 (支援歷史紀錄) ---
+            // --- 1.5 底部導覽列切換與過濾邏輯 ---
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(item => {
                 item.addEventListener('click', () => {
@@ -553,21 +665,21 @@
                     navItems.forEach(n => n.classList.remove('active'));
                     item.classList.add('active');
 
-                    // 列表過濾
                     document.querySelectorAll('.product-card').forEach(card => {
-                        const status = card.getAttribute('data-status') || 'active';
+                        const cardStatus = card.dataset.status || 'active';
                         
                         if (targetCategory === 'history') {
-                            // 歷史分頁：只顯示 history 狀態
-                            card.style.display = (status === 'history') ? 'block' : 'none';
+                            // 歷史標籤：只顯示 archived 的卡片
+                            card.style.display = (cardStatus === 'archived') ? 'block' : 'none';
                         } else {
-                            // 其他分頁：排除 history 狀態，並匹配 category
-                            card.style.display = (status !== 'history' && card.dataset.category === targetCategory) ? 'block' : 'none';
+                            // 其他標籤：過濾 category 且必須是 active
+                            if (cardStatus === 'active' && card.dataset.category === targetCategory) {
+                                card.style.display = 'block';
+                            } else {
+                                card.style.display = 'none';
+                            }
                         }
                     });
-
-                    // 切換分頁時清空搜尋欄
-                    searchInput.value = '';
                 });
             });
 
@@ -579,9 +691,7 @@
             const loadingStatus = document.getElementById('loading-status');
             const addForm = document.getElementById('manual-add-form');
 
-            cameraBtn.addEventListener('click', () => {
-                cameraInput.click(); 
-            });
+            cameraBtn.addEventListener('click', () => cameraInput.click());
 
             cameraInput.addEventListener('change', async (event) => {
                 const file = event.target.files[0];
@@ -593,14 +703,16 @@
                     try {
                         const base64Data = await fileToBase64(file);
                         const base64String = base64Data.split(',')[1];
+                        const mimeType = file.type || 'image/jpeg';
+                        
+                        // 同時自動設定給表單照片預覽
+                        currentPhotoBase64 = base64Data;
+                        formPhotoPreview.src = base64Data;
+                        formPhotoPreview.style.display = 'block';
+                        formPhotoClear.style.display = 'inline';
                         
                         progressBar.style.width = '60%';
                         loadingStatus.innerText = "串接 AI 影像辨識中...";
-
-                        // 順便把拍到的照片作為表單的產品照片
-                        currentUploadedPhoto = base64Data;
-                        photoPreview.src = base64Data;
-                        photoPreview.style.display = 'block';
 
                         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
                         const payload = {
@@ -608,7 +720,7 @@
                                 role: "user",
                                 parts: [
                                     { text: "分析此產品圖片，辨識出品牌名稱與產品全名，並判斷類別。回傳嚴格的 JSON 格式，包含三個 key: 'brand' (字串), 'name' (字串), 'category' (字串，必須是 'makeup', 'skincare', 或 'supplement' 其中之一)。" },
-                                    { inlineData: { mimeType: file.type, data: base64String } }
+                                    { inlineData: { mimeType: mimeType, data: base64String } }
                                 ]
                             }],
                             generationConfig: { responseMimeType: "application/json" }
@@ -634,13 +746,15 @@
                             
                             currentEditCard = null; 
                             document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
+                            document.getElementById('btn-delete-item').style.display = "none";
                             addForm.classList.add('active');
                             addForm.scrollIntoView({ behavior: 'smooth' });
                             cameraInput.value = ""; 
                         }, 500);
 
                     } catch (error) {
-                        showMessage("AI 辨識發生錯誤，請稍後再試或改用手動輸入。");
+                        console.error("Camera API Error:", error);
+                        showMessage("AI 辨識失敗，若為本地執行請檢查 API Key");
                         overlay.style.display = 'none';
                         progressBar.style.width = '0%';
                         cameraInput.value = "";
@@ -652,8 +766,8 @@
             document.getElementById('btn-manual').addEventListener('click', () => {
                 currentEditCard = null;
                 document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
+                document.getElementById('btn-delete-item').style.display = "none"; 
                 
-                // 清空既有輸入與照片
                 clearPhotoPreview();
                 document.getElementById('new-brand').value = '';
                 document.getElementById('new-name').value = '';
@@ -666,7 +780,7 @@
                 if(addForm.classList.contains('active')) addForm.scrollIntoView({ behavior: 'smooth' });
             });
 
-            // --- 4. 品項名稱自動網搜補全邏輯 ---
+            // --- 4. 品項名稱自動網搜補全邏輯 (Debounce + Grounding) ---
             let searchTimeout;
             const newNameInput = document.getElementById('new-name');
             const newBrandInput = document.getElementById('new-brand');
@@ -678,11 +792,12 @@
                 if (keyword.length < 2) return; 
 
                 searchTimeout = setTimeout(async () => {
+                    if (!apiKey) return; // 避免本地無 key 時報錯
                     autoSearchStatus.style.display = 'inline';
                     try {
                         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
                         const payload = {
-                            contents: [{ parts: [{ text: `根據使用者輸入的化妝品/保養品關鍵字 "${keyword}"，透過網路搜尋尋找官方確切的品牌名稱與完整產品全名。回傳嚴格的 JSON 格式，包含 'brand' 與 'name' 兩個 key。` }] }],
+                            contents: [{ parts: [{ text: `根據關鍵字 "${keyword}"，透過網路搜尋尋找官方確切的化妝品/保養品品牌名稱與完整全名。回傳嚴格的 JSON 格式，包含 'brand' 與 'name' 兩個 key。` }] }],
                             tools: [{ "google_search": {} }],
                             generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { brand: {type: "STRING"}, name: {type: "STRING"} } } }
                         };
@@ -701,36 +816,67 @@
                 }, 1500); 
             });
 
-            // --- 5. 事件代理：監聽編輯與封存按鈕 ---
+            // --- 4.5 更新母卡片狀態 (總數與過期警告) ---
+            function updateCardStatus(card) {
+                const instances = card.querySelectorAll('.instance-item');
+                const totalBadge = card.querySelector('.total-badge');
+                const warningIcon = card.querySelector('.warning-icon');
+                
+                if (instances.length === 0) {
+                    card.remove(); 
+                    return;
+                }
+                
+                if (totalBadge) totalBadge.innerText = `總數: ${instances.length}`;
+                
+                let hasExpiring = false;
+                instances.forEach(inst => {
+                    const days = parseInt(inst.dataset.days || "999", 10);
+                    if (days <= 60) hasExpiring = true; 
+                });
+                
+                if (warningIcon) {
+                    if (hasExpiring) warningIcon.classList.add('active');
+                    else warningIcon.classList.remove('active');
+                }
+            }
+
+            // --- 5. 事件代理：監聽列表中的互動 (展開、編輯、封存) ---
             document.getElementById('product-list').addEventListener('click', (e) => {
                 
-                // 處理移至歷史 (封存) 點擊
-                const archiveBtn = e.target.closest('.archive-btn');
-                if (archiveBtn) {
-                    const card = archiveBtn.closest('.product-card');
-                    card.setAttribute('data-status', 'history');
-                    showMessage("已將品項移至歷史紀錄");
-                    // 重新觸發目前的分類點擊，刷新畫面隱藏該卡片
-                    document.querySelector('.nav-item.active').click();
-                    return; 
+                // A. 處理母卡片展開/摺疊
+                const header = e.target.closest('.product-header.expandable');
+                if (header && !e.target.closest('.edit-btn') && !e.target.closest('.archive-btn')) {
+                    const instances = header.nextElementSibling;
+                    const icon = header.querySelector('.expand-icon');
+                    if (instances && instances.classList.contains('show')) {
+                        instances.classList.remove('show');
+                        if (icon) icon.classList.remove('expanded');
+                    } else if (instances) {
+                        instances.classList.add('show');
+                        if (icon) icon.classList.add('expanded');
+                    }
+                    return;
                 }
 
-                // 處理編輯點擊
+                // B. 處理子品項編輯
                 const editBtn = e.target.closest('.edit-btn'); 
                 if (editBtn) {
-                    const card = editBtn.closest('.product-card');
-                    currentEditCard = card;
-
-                    const name = card.querySelector('.product-name').innerText;
-                    const brand = card.querySelector('.product-brand').innerText;
-                    const category = card.dataset.category || 'makeup';
+                    const instance = editBtn.closest('.instance-item');
+                    const parentCard = instance.closest('.product-card');
+                    currentEditCard = instance; 
                     
-                    // 讀取卡片上的照片
-                    const thumbImg = card.querySelector('.product-thumb');
-                    if (thumbImg && thumbImg.style.display !== 'none' && thumbImg.getAttribute('src')) {
-                        currentUploadedPhoto = thumbImg.getAttribute('src');
-                        photoPreview.src = currentUploadedPhoto;
-                        photoPreview.style.display = 'block';
+                    const rawName = parentCard.querySelector('.product-name').childNodes[0]?.textContent || "";
+                    const name = rawName.trim();
+                    const brand = parentCard.querySelector('.product-brand').innerText.trim();
+                    const category = parentCard.dataset.category || 'makeup';
+                    
+                    const thumb = parentCard.querySelector('.thumbnail');
+                    if(thumb && thumb.src && thumb.style.display !== 'none') {
+                        currentPhotoBase64 = thumb.src;
+                        formPhotoPreview.src = thumb.src;
+                        formPhotoPreview.style.display = 'block';
+                        formPhotoClear.style.display = 'inline';
                     } else {
                         clearPhotoPreview();
                     }
@@ -740,50 +886,195 @@
                     document.getElementById('new-category').value = category;
 
                     document.getElementById('btn-save-new').innerText = "儲存修改";
+                    document.getElementById('btn-delete-item').style.display = "block"; 
+                    
                     addForm.classList.add('active');
                     addForm.scrollIntoView({ behavior: 'smooth' });
+                    return;
+                }
+
+                // C. 處理單一品項封存(移至歷史)
+                const archiveBtn = e.target.closest('.archive-btn');
+                if (archiveBtn) {
+                    if(confirm("確定要將這個物品封存至歷史紀錄嗎？")) {
+                        const instance = archiveBtn.closest('.instance-item');
+                        const parentCard = instance.closest('.product-card');
+                        
+                        // 建立一個獨立的歷史卡片 (為了結構簡單，直接從原卡片剝離出來)
+                        const historyCard = parentCard.cloneNode(true);
+                        historyCard.dataset.status = 'archived';
+                        historyCard.classList.add('archived');
+                        historyCard.style.display = 'none'; // 先隱藏，因為目前不在歷史頁籤
+                        
+                        // 清理複製卡片中的多餘子項，只保留被點擊的這個
+                        const clonedInstances = historyCard.querySelector('.product-instances');
+                        clonedInstances.innerHTML = '';
+                        const clonedItem = instance.cloneNode(true);
+                        
+                        // 移除歷史紀錄中的操作按鈕 (封存與編輯)，使其成為純檢視
+                        clonedItem.querySelector('.archive-btn')?.remove();
+                        clonedItem.querySelector('.edit-btn')?.remove();
+                        clonedInstances.appendChild(clonedItem);
+                        
+                        // 更新歷史卡片總數為 1
+                        historyCard.querySelector('.total-badge').innerText = '總數: 1';
+                        
+                        // 加入 DOM
+                        document.getElementById('product-list').appendChild(historyCard);
+                        
+                        // 刪除原卡片中的該實體
+                        instance.remove();
+                        updateCardStatus(parentCard);
+                        
+                        showMessage("已移至歷史紀錄");
+                    }
+                    return;
+                }
+            });
+            
+            // --- 5.5 刪除按鈕邏輯 ---
+            document.getElementById('btn-delete-item').addEventListener('click', () => {
+                if (currentEditCard && confirm("確定要永久刪除這個品項嗎？")) {
+                    const parentCard = currentEditCard.closest('.product-card');
+                    currentEditCard.remove();
+                    
+                    if(parentCard) updateCardStatus(parentCard); 
+                    
+                    showMessage("已成功刪除品項");
+                    currentEditCard = null;
+                    document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
+                    document.getElementById('btn-delete-item').style.display = "none";
+                    addForm.classList.remove('active');
                 }
             });
 
-            // --- 6. 儲存表單按鈕 ---
+            // --- 6. 儲存表單按鈕 (支援群組化與多實體) ---
             document.getElementById('btn-save-new').addEventListener('click', () => {
-                const name = document.getElementById('new-name').value;
-                const brand = document.getElementById('new-brand').value;
-                
+                const name = document.getElementById('new-name').value.trim();
+                const brand = document.getElementById('new-brand').value.trim();
+                const category = document.getElementById('new-category').value;
+                const price = document.getElementById('new-price').value || "未知";
+                const quantity = document.getElementById('new-quantity').value || "1";
+                const expiry = document.getElementById('new-expiry').value;
+                const location = document.getElementById('new-location').value || "未指定";
+
                 if (!name) {
                     showMessage("請確認產品名稱欄位有資料！");
                     return;
                 }
 
-                if (currentEditCard) {
-                    // 更新既有卡片資料
-                    currentEditCard.querySelector('.product-name').innerText = name;
-                    currentEditCard.querySelector('.product-brand').innerText = brand || '';
-                    
-                    // 更新照片縮圖
-                    const thumbImg = currentEditCard.querySelector('.product-thumb');
-                    if (thumbImg) {
-                        if (currentUploadedPhoto) {
-                            thumbImg.src = currentUploadedPhoto;
-                            thumbImg.style.display = 'block';
-                        } else {
-                            thumbImg.src = '';
-                            thumbImg.style.display = 'none';
-                        }
-                    }
+                // 計算剩餘天數
+                let daysLeft = 999;
+                let daysText = "未填到期日";
+                if(expiry) {
+                    const diff = new Date(expiry) - new Date();
+                    daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                    daysText = `剩餘 ${daysLeft} 天 (${expiry})`;
+                }
 
+                if (currentEditCard) {
+                    // 1. 更新既有子品項
+                    const parentCard = currentEditCard.closest('.product-card');
+                    parentCard.querySelector('.product-name').innerHTML = `${name} <i data-lucide="alert-circle" class="warning-icon" style="width: 16px; height: 16px;" title="有即將過期的品項！"></i>`;
+                    parentCard.querySelector('.product-brand').innerText = brand || '';
+                    
+                    // 更新縮圖
+                    const thumb = parentCard.querySelector('.thumbnail');
+                    if (currentPhotoBase64) {
+                        thumb.src = currentPhotoBase64;
+                        thumb.style.display = 'block';
+                    } else {
+                        thumb.style.display = 'none';
+                    }
+                    
+                    const infoDiv = currentEditCard.querySelector('.instance-info');
+                    infoDiv.innerHTML = `
+                        <div style="color: ${daysLeft <= 60 ? '#d9534f' : 'var(--primary)'}; font-weight: bold; font-size: 12px;">${daysText}</div>
+                        <div class="instance-meta">${location} • 數量: ${quantity} • $${price}</div>
+                    `;
+                    currentEditCard.dataset.days = daysLeft;
+                    
+                    updateCardStatus(parentCard); 
+                    lucide.createIcons();
+                    
                     showMessage(`修改成功：${name}`);
                     currentEditCard = null;
                     document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
+                    document.getElementById('btn-delete-item').style.display = "none";
                 } else {
-                    showMessage(`儲存成功：${name} (準備寫入)`);
+                    // 2. 新增模式：尋找同名同品牌母群組
+                    let targetCard = null;
+                    document.querySelectorAll('.product-card[data-status="active"]').forEach(card => {
+                        const cName = card.querySelector('.product-name').childNodes[0]?.textContent?.trim() || "";
+                        const cBrand = card.querySelector('.product-brand').innerText.trim();
+                        if (cName === name && cBrand === brand) {
+                            targetCard = card;
+                        }
+                    });
+
+                    const instanceHtml = `
+                        <div class="instance-item" data-days="${daysLeft}">
+                            <div class="instance-info">
+                                <div style="color: ${daysLeft <= 60 ? '#d9534f' : 'var(--primary)'}; font-weight: bold; font-size: 12px;">${daysText}</div>
+                                <div class="instance-meta">${location} • 數量: ${quantity} • $${price}</div>
+                            </div>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:18px; height:18px; color:var(--secondary);" title="封存至歷史"></i>
+                                <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:18px; height:18px; color:var(--primary);" title="編輯"></i>
+                            </div>
+                        </div>
+                    `;
+
+                    if (targetCard) {
+                        targetCard.querySelector('.product-instances').insertAdjacentHTML('beforeend', instanceHtml);
+                        
+                        // 若新項目有照片，更新母群組照片
+                        if (currentPhotoBase64) {
+                            const thumb = targetCard.querySelector('.thumbnail');
+                            thumb.src = currentPhotoBase64;
+                            thumb.style.display = 'block';
+                        }
+                        
+                        updateCardStatus(targetCard);
+                    } else {
+                        // 建立新群組母卡片
+                        const photoStyle = currentPhotoBase64 ? 'display: block;' : 'display: none;';
+                        const photoSrc = currentPhotoBase64 || '';
+                        
+                        const newCardHtml = `
+                            <div class="product-card" data-category="${category}" data-status="active">
+                                <div class="product-header expandable">
+                                    <div class="product-info-wrapper">
+                                        <img src="${photoSrc}" class="thumbnail" style="${photoStyle}" alt="縮圖">
+                                        <div class="product-info">
+                                            <div class="product-brand">${brand}</div>
+                                            <h3 class="product-name">${name} <i data-lucide="alert-circle" class="warning-icon" style="width: 16px; height: 16px;" title="有即將過期的品項！"></i></h3>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                        <div class="badge total-badge">總數: 1</div>
+                                        <i data-lucide="chevron-down" class="expand-icon" style="width:20px; height:20px; color:rgba(60,50,40,0.5);"></i>
+                                    </div>
+                                </div>
+                                <div class="product-instances show">
+                                    ${instanceHtml}
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('product-list').insertAdjacentHTML('afterbegin', newCardHtml);
+                        const newlyAdded = document.getElementById('product-list').firstElementChild;
+                        updateCardStatus(newlyAdded);
+                    }
+                    lucide.createIcons();
+                    
+                    showMessage(`儲存成功：${name}`);
                 }
-                
                 addForm.classList.remove('active');
+                clearPhotoPreview();
+                
+                // 強制切換回對應的分類以看到剛新增的物品
+                document.querySelector(`.nav-item[data-target-category="${category}"]`).click();
             });
-            
-            // 初始化：主動觸發第一項分類的點擊以確保顯示正確
-            document.querySelector('.nav-item.active').click();
         });
     </script>
 </body>
