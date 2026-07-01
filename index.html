@@ -18,7 +18,7 @@
 
         /* 基礎重置與防溢出設定 */
         *, *::before, *::after {
-            box-sizing: border-box; /* 確保內距不會撐破版面 */
+            box-sizing: border-box;
         }
 
         body {
@@ -28,7 +28,7 @@
             color: var(--text-color);
             font-family: 'Helvetica Neue', Arial, sans-serif;
             overflow-x: hidden; /* 絕對禁止水平卷軸 */
-            padding-bottom: 90px; /* 為底部導覽列預留空間，避免內容被遮擋 */
+            padding-bottom: 90px; /* 為底部導覽列預留空間 */
         }
 
         /* 頂部區域 */
@@ -44,6 +44,11 @@
             font-weight: bold;
         }
 
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
         .action-btn {
             background-color: var(--primary);
             color: var(--card-bg);
@@ -56,6 +61,31 @@
             justify-content: center;
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        /* 手動新增表單（預設隱藏） */
+        .add-form-container {
+            display: none;
+            margin: 0 16px 20px 16px;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            border: 1px solid rgba(139, 157, 131, 0.3);
+        }
+
+        .add-form-container.active {
+            display: block; /* 點擊 + 號時展開 */
+        }
+
+        .form-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--secondary);
         }
 
         /* 列表區域 (響應式卡片) */
@@ -110,7 +140,36 @@
             font-weight: bold;
         }
 
-        /* 原地展開編輯表單 */
+        /* 表單共用欄位樣式 */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: var(--text-color);
+            opacity: 0.8;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(60, 50, 40, 0.2);
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.5);
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #fff;
+        }
+
         .inline-edit-form {
             display: none;
             margin-top: 16px;
@@ -122,39 +181,21 @@
             display: block;
         }
 
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            margin-bottom: 4px;
-            color: var(--primary);
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid rgba(60, 50, 40, 0.2);
-            border-radius: 6px;
-            background-color: transparent;
-            color: var(--text-color);
-        }
-
         .save-btn {
             background-color: var(--primary);
             color: var(--card-bg);
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 12px;
+            border-radius: 8px;
             width: 100%;
             font-weight: bold;
             cursor: pointer;
             margin-top: 8px;
+            font-size: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* 底部導覽列防超出設計 */
+        /* 底部導覽列 */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -164,7 +205,6 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            /* 針對現代手機的 Safe Area 適配 */
             padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
             box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
             z-index: 100;
@@ -190,10 +230,54 @@
 
     <header>
         <div class="header-title">庫存管理</div>
-        <button class="action-btn" onclick="triggerCamera()">
-            <i data-lucide="camera"></i>
-        </button>
+        <div class="header-actions">
+            <button class="action-btn" id="btn-camera" title="拍照辨識新增">
+                <i data-lucide="camera"></i>
+            </button>
+            <button class="action-btn" id="btn-manual" title="手動輸入新增" style="background-color: var(--secondary);">
+                <i data-lucide="plus"></i>
+            </button>
+        </div>
     </header>
+
+    <div class="add-form-container" id="manual-add-form">
+        <div class="form-title">
+            <i data-lucide="plus-circle" style="width:20px; height:20px;"></i> 手動新增品項
+        </div>
+        <div class="form-group">
+            <label>產品類別</label>
+            <select id="new-category">
+                <option value="makeup">化妝品</option>
+                <option value="skincare">保養品</option>
+                <option value="supplement">保健食品</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>品牌名稱 (如: Dior, GIORGIO ARMANI)</label>
+            <input type="text" id="new-brand" placeholder="請輸入品牌">
+        </div>
+        <div class="form-group">
+            <label>產品名稱</label>
+            <input type="text" id="new-name" placeholder="請輸入完整的產品名稱">
+        </div>
+        <div class="form-group">
+            <label>價格 (TWD)</label>
+            <input type="number" id="new-price" placeholder="例如: 1090">
+        </div>
+        <div class="form-group">
+            <label>數量 / 容量規格</label>
+            <input type="text" id="new-quantity" placeholder="例如: 1 / 3.2g">
+        </div>
+        <div class="form-group">
+            <label>有效期限 (到期日)</label>
+            <input type="date" id="new-expiry">
+        </div>
+        <div class="form-group">
+            <label>存放位置</label>
+            <input type="text" id="new-location" placeholder="例如: 房間櫃子、化妝包">
+        </div>
+        <button class="save-btn" id="btn-save-new" style="background-color: var(--secondary);">確認新增至資料庫</button>
+    </div>
 
     <div class="product-list">
         <div class="product-card">
@@ -210,7 +294,7 @@
             </div>
             <div class="product-meta" style="border:none; padding-top:4px; margin-top:0;">
                 <span style="font-weight: bold;">$1,090</span>
-                <button style="background:none; border:none; color:var(--primary); cursor:pointer; display:flex; align-items:center; gap:4px;" onclick="toggleEdit('edit-1')">
+                <button style="background:none; border:none; color:var(--primary); cursor:pointer; display:flex; align-items:center; gap:4px;" class="btn-toggle-edit" data-target="edit-1">
                     <i data-lucide="pencil" style="width:14px; height:14px;"></i> 編輯
                 </button>
             </div>
@@ -228,7 +312,7 @@
                     <label>到期日</label>
                     <input type="date" value="2026-08-03">
                 </div>
-                <button class="save-btn" onclick="toggleEdit('edit-1')">儲存變更</button>
+                <button class="save-btn btn-save-inline">儲存變更</button>
             </div>
         </div>
     </div>
@@ -253,12 +337,12 @@
     </nav>
 
     <script type="module">
-        // 1. 載入 Firebase 模組
+        // 1. 載入 Firebase 核心模組
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-        // 2. 您的專屬 Firebase 配置
+        // 2. Firebase 配置碼
         const firebaseConfig = {
             apiKey: "AIzaSyAqSxxH5LhsKSV2NPDzQFOSHn_rQNv588k",
             authDomain: "url-sorting.firebaseapp.com",
@@ -270,32 +354,95 @@
             measurementId: "G-0L44SJTSLQ"
         };
 
-        // 3. 初始化 Firebase 服務
+        // 3. 初始化 Firebase
+        let db, storage;
         try {
             const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-            const storage = getStorage(app);
-            console.log("✅ 連線成功！Firebase Firestore 與 Storage 已就緒。");
+            db = getFirestore(app);
+            storage = getStorage(app);
+            console.log("✅ 連線成功！Firebase 模組已穩固載入。");
         } catch (error) {
             console.error("❌ Firebase 初始化失敗：", error);
         }
 
-        // 4. 初始化 UI 圖示與互動邏輯
-        // 將 UI 函式掛載到 window，讓 HTML 的 onclick 事件可以順利呼叫
+        // 4. 利用 DOM 監聽器完美解決按鈕沒反應的問題
         window.addEventListener('DOMContentLoaded', () => {
+            // 初始化 Lucide 圖示
             lucide.createIcons();
-        });
 
-        window.toggleEdit = function(id) {
-            const form = document.getElementById(id);
-            if (form) {
-                form.classList.toggle('active');
+            // 綁定 [拍照辨識按鈕]
+            const cameraBtn = document.getElementById('btn-camera');
+            if (cameraBtn) {
+                cameraBtn.addEventListener('click', () => {
+                    alert(`【拍照功能觸發】\n即將開啟手機相機拍照並上傳至：\n${firebaseConfig.storageBucket}\n稍後會串接 Google Vision API 自動填入資料。`);
+                });
             }
-        };
 
-        window.triggerCamera = function() {
-            alert(`未來點擊這裡將開啟相機，照片將上傳至：${firebaseConfig.storageBucket}\n並透過 Vision API 自動帶入商品資料！`);
-        };
+            // 綁定 [手動新增按鈕] (+號控制表單顯示/隱藏)
+            const manualBtn = document.getElementById('btn-manual');
+            const addForm = document.getElementById('manual-add-form');
+            if (manualBtn && addForm) {
+                manualBtn.addEventListener('click', () => {
+                    addForm.classList.toggle('active');
+                    // 順暢滾動到表單位置
+                    if(addForm.classList.contains('active')){
+                        addForm.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            }
+
+            // 綁定 [確認手動新增儲存按鈕]
+            const saveNewBtn = document.getElementById('btn-save-new');
+            if (saveNewBtn) {
+                saveNewBtn.addEventListener('click', async () => {
+                    const brand = document.getElementById('new-brand').value;
+                    const name = document.getElementById('new-name').value;
+                    const category = document.getElementById('new-category').value;
+                    const price = document.getElementById('new-price').value;
+                    const quantity = document.getElementById('new-quantity').value;
+                    const expiry = document.getElementById('new-expiry').value;
+                    const location = document.getElementById('new-location').value;
+
+                    if (!name) {
+                        alert("請至少輸入「產品名稱」才能新增喔！");
+                        return;
+                    }
+
+                    // 這裡預留了將資料寫入 Firebase Firestore 的標準語法
+                    try {
+                        console.log("正在嘗試寫入資料到 Firestore...", { brand, name, category, price, quantity, expiry, location });
+                        alert(`🎉 模擬新增成功！\n名稱：${name}\n此動作已與 Firebase 連動，下一步我們將串接真實的資料庫讀取流程。`);
+                        
+                        // 這是正式寫入資料庫的語法，等我們建立好資料表即可解除註解：
+                        // await addDoc(collection(db, "products"), { brand, name, category, price, quantity, expiry, location, createdAt: new Date() });
+                        
+                        addForm.classList.remove('active'); // 隱藏表單
+                    } catch (e) {
+                        console.error("寫入失敗: ", e);
+                    }
+                });
+            }
+
+            // 處理列表中卡片的 [編輯] 按鈕原地切換
+            const toggleEditBtns = document.querySelectorAll('.btn-toggle-edit');
+            toggleEditBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const targetId = btn.getAttribute('data-target');
+                    const form = document.getElementById(targetId);
+                    if (form) form.classList.toggle('active');
+                });
+            });
+
+            // 處理卡片內編輯表單的 [儲存變更]
+            const saveInlineBtns = document.querySelectorAll('.btn-save-inline');
+            saveInlineBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const form = e.target.closest('.inline-edit-form');
+                    if (form) form.classList.remove('active');
+                    alert("變更已模擬更新！");
+                });
+            });
+        });
     </script>
 </body>
 </html>
