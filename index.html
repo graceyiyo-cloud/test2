@@ -165,6 +165,7 @@
             padding: 16px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             word-wrap: break-word;
+            transition: opacity 0.3s, filter 0.3s;
         }
 
         .product-header {
@@ -197,12 +198,22 @@
             font-weight: bold;
         }
 
+        /* 新增：歷史紀錄專屬視覺特效 */
+        .product-card[data-status="history"] {
+            opacity: 0.65;
+            filter: grayscale(0.2);
+        }
+        
+        .product-card[data-status="history"] .archive-btn {
+            display: none; /* 在歷史清單中隱藏封存按鈕 */
+        }
+
         /* 辨識載入中遮罩 (進度條) */
         .loading-overlay {
-            display: none; /* 預設隱藏 */
+            display: none; 
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(60, 50, 40, 0.8); /* 深色半透明遮罩 */
+            background-color: rgba(60, 50, 40, 0.8); 
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -310,6 +321,17 @@
         <div class="form-title">
             <i data-lucide="sparkles" style="width:20px; height:20px;"></i> 確認新增品項
         </div>
+        
+        <!-- 新增: 照片上傳欄位，無縫融合原樣式 -->
+        <div class="form-group">
+            <label>產品照片 (可選)</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button type="button" id="btn-upload-photo" style="padding: 10px 14px; border: 1px solid rgba(60, 50, 40, 0.2); background-color: rgba(255, 255, 255, 0.5); color: var(--text-color); border-radius: 8px; cursor: pointer; font-size: 14px; flex-shrink: 0;">選擇照片</button>
+                <img id="form-image-preview" src="" style="width: 42px; height: 42px; object-fit: cover; border-radius: 6px; display: none; border: 1px solid rgba(60,50,40,0.1);">
+                <input type="file" id="new-photo-input" accept="image/*" style="display: none;">
+            </div>
+        </div>
+
         <div class="form-group">
             <label>產品類別</label>
             <select id="new-category">
@@ -323,8 +345,10 @@
             <input type="text" id="new-brand" placeholder="請輸入品牌">
         </div>
         <div class="form-group">
-            <label>產品名稱</label>
-            <input type="text" id="new-name" placeholder="請輸入完整的產品名稱">
+            <label style="display:flex; justify-content:space-between;">
+                產品名稱 <span id="auto-search-status" style="font-size:10px; color:var(--primary); display:none;">AI 自動網搜中...</span>
+            </label>
+            <input type="text" id="new-name" placeholder="請輸入產品名稱 (輸入後自動完善)">
         </div>
         <div class="form-group">
             <label>價格 (TWD)</label>
@@ -346,13 +370,22 @@
     </div>
 
     <div class="product-list" id="product-list">
-        <div class="product-card">
+        <!-- 嚴謹補上 data-status 預設值，並包裝縮圖容器 -->
+        <div class="product-card" data-category="makeup" data-status="active">
             <div class="product-header">
-                <div class="product-info">
-                    <div class="product-brand">Dior</div>
-                    <h3 class="product-name">迪奧癮誘粉漾潤唇膏</h3>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <img class="product-thumb" src="" style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; display: none;">
+                    <div class="product-info">
+                        <div class="product-brand">Dior</div>
+                        <h3 class="product-name">迪奧癮誘粉漾潤唇膏</h3>
+                    </div>
                 </div>
-                <div class="badge">剩餘 50 天</div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <div class="badge">剩餘 50 天</div>
+                    <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:16px; height:16px; color:var(--primary);" title="編輯"></i>
+                    <!-- 新增: 封存按鈕 -->
+                    <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:16px; height:16px; color:var(--secondary);" title="移至歷史紀錄"></i>
+                </div>
             </div>
             <div class="product-meta">
                 <span>數量: 1 / 3.2g</span>
@@ -360,13 +393,21 @@
             </div>
         </div>
 
-        <div class="product-card">
+        <div class="product-card" data-category="makeup" data-status="active">
             <div class="product-header">
-                <div class="product-info">
-                    <div class="product-brand">GIORGIO ARMANI</div>
-                    <h3 class="product-name">輕透亮絲粉底</h3>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <img class="product-thumb" src="" style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; display: none;">
+                    <div class="product-info">
+                        <div class="product-brand">GIORGIO ARMANI</div>
+                        <h3 class="product-name">輕透亮絲粉底</h3>
+                    </div>
                 </div>
-                <div class="badge" style="background-color: var(--primary);">剩餘 365 天</div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <div class="badge" style="background-color: var(--primary);">剩餘 365 天</div>
+                    <i data-lucide="edit-3" class="edit-btn" style="cursor:pointer; width:16px; height:16px; color:var(--primary);" title="編輯"></i>
+                    <!-- 新增: 封存按鈕 -->
+                    <i data-lucide="archive" class="archive-btn" style="cursor:pointer; width:16px; height:16px; color:var(--secondary);" title="移至歷史紀錄"></i>
+                </div>
             </div>
             <div class="product-meta">
                 <span>數量: 1 / 30ml</span>
@@ -376,10 +417,11 @@
     </div>
 
     <nav class="bottom-nav">
-        <a class="nav-item active"><i data-lucide="sparkles"></i><span>化妝品</span></a>
-        <a class="nav-item"><i data-lucide="droplets"></i><span>保養品</span></a>
-        <a class="nav-item"><i data-lucide="pill"></i><span>保健品</span></a>
-        <a class="nav-item"><i data-lucide="settings"></i><span>設定</span></a>
+        <a class="nav-item active" data-target-category="makeup"><i data-lucide="sparkles"></i><span>化妝品</span></a>
+        <a class="nav-item" data-target-category="skincare"><i data-lucide="droplets"></i><span>保養品</span></a>
+        <a class="nav-item" data-target-category="supplement"><i data-lucide="pill"></i><span>保健品</span></a>
+        <!-- 將設定改為歷史 -->
+        <a class="nav-item" data-target-category="history"><i data-lucide="history"></i><span>歷史</span></a>
     </nav>
 
     <script type="module">
@@ -387,7 +429,7 @@
         import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-        // 您的 Firebase 配置
+        // Firebase 配置保持不變
         const firebaseConfig = {
             apiKey: "AIzaSyAqSxxH5LhsKSV2NPDzQFOSHn_rQNv588k",
             authDomain: "url-sorting.firebaseapp.com",
@@ -403,28 +445,133 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
+        // API 核心
+        const apiKey = ""; 
+        async function fetchWithRetry(url, options, retries = 5) {
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return await response.json();
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(res => setTimeout(res, delays[i]));
+                }
+            }
+        }
+        
+        const fileToBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+
+        // 建立無干擾訊息提示 (取代 Alert)
+        function showMessage(msg) {
+            let toast = document.getElementById('system-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'system-toast';
+                toast.style.cssText = 'position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(60,50,40,0.9); color:#fff; padding:12px 24px; border-radius:24px; font-size:14px; font-weight:bold; z-index:9999; opacity:0; transition:opacity 0.3s ease; pointer-events:none; box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+                document.body.appendChild(toast);
+            }
+            toast.innerText = msg;
+            toast.style.opacity = '1';
+            setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+
+            let currentEditCard = null;
+            let currentUploadedPhoto = ""; // 存放目前選擇的照片 Base64
+
+            // --- 0. 照片上傳與預覽邏輯 ---
+            const photoInput = document.getElementById('new-photo-input');
+            const photoPreview = document.getElementById('form-image-preview');
+            
+            document.getElementById('btn-upload-photo').addEventListener('click', () => {
+                photoInput.click();
+            });
+
+            photoInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    try {
+                        const base64 = await fileToBase64(file);
+                        currentUploadedPhoto = base64;
+                        photoPreview.src = base64;
+                        photoPreview.style.display = 'block';
+                    } catch (error) {
+                        showMessage('照片讀取失敗，請重試');
+                    }
+                }
+            });
+
+            // 清空照片預覽輔助函式
+            const clearPhotoPreview = () => {
+                currentUploadedPhoto = "";
+                photoPreview.src = "";
+                photoPreview.style.display = 'none';
+                photoInput.value = "";
+            };
 
             // --- 1. 即時搜尋功能 ---
             const searchInput = document.getElementById('search-input');
             searchInput.addEventListener('input', (e) => {
                 const keyword = e.target.value.toLowerCase();
+                const currentCategory = document.querySelector('.nav-item.active').getAttribute('data-target-category');
                 const cards = document.querySelectorAll('.product-card');
                 
                 cards.forEach(card => {
-                    const brand = card.querySelector('.product-brand').innerText.toLowerCase();
-                    const name = card.querySelector('.product-name').innerText.toLowerCase();
-                    // 如果品牌或名稱包含關鍵字，就顯示，否則隱藏
-                    if (brand.includes(keyword) || name.includes(keyword)) {
-                        card.style.display = 'block';
+                    const status = card.getAttribute('data-status') || 'active';
+                    // 確保搜尋只在當前分類或歷史紀錄內進行
+                    const isCategoryMatch = (currentCategory === 'history') ? (status === 'history') : (status !== 'history' && card.dataset.category === currentCategory);
+                    
+                    if (isCategoryMatch) {
+                        const brand = card.querySelector('.product-brand').innerText.toLowerCase();
+                        const name = card.querySelector('.product-name').innerText.toLowerCase();
+                        if (brand.includes(keyword) || name.includes(keyword)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
                     } else {
                         card.style.display = 'none';
                     }
                 });
             });
 
-            // --- 2. 拍照與進度條模擬流程 ---
+            // --- 1.5 底部導覽列切換與過濾邏輯 (支援歷史紀錄) ---
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetCategory = item.getAttribute('data-target-category');
+                    
+                    navItems.forEach(n => n.classList.remove('active'));
+                    item.classList.add('active');
+
+                    // 列表過濾
+                    document.querySelectorAll('.product-card').forEach(card => {
+                        const status = card.getAttribute('data-status') || 'active';
+                        
+                        if (targetCategory === 'history') {
+                            // 歷史分頁：只顯示 history 狀態
+                            card.style.display = (status === 'history') ? 'block' : 'none';
+                        } else {
+                            // 其他分頁：排除 history 狀態，並匹配 category
+                            card.style.display = (status !== 'history' && card.dataset.category === targetCategory) ? 'block' : 'none';
+                        }
+                    });
+
+                    // 切換分頁時清空搜尋欄
+                    searchInput.value = '';
+                });
+            });
+
+            // --- 2. 拍照與真實 AI 辨識流程 ---
             const cameraBtn = document.getElementById('btn-camera');
             const cameraInput = document.getElementById('camera-input');
             const overlay = document.getElementById('loading-overlay');
@@ -432,70 +579,211 @@
             const loadingStatus = document.getElementById('loading-status');
             const addForm = document.getElementById('manual-add-form');
 
-            // 點擊按鈕，觸發隱藏的相機
             cameraBtn.addEventListener('click', () => {
                 cameraInput.click(); 
             });
 
-            // 拍完照片後的處理
-            cameraInput.addEventListener('change', (event) => {
+            cameraInput.addEventListener('change', async (event) => {
                 const file = event.target.files[0];
                 if (file) {
-                    // 1. 顯示進度遮罩
                     overlay.style.display = 'flex';
-                    let progress = 0;
+                    progressBar.style.width = '30%';
+                    loadingStatus.innerText = "正在萃取影像特徵...";
                     
-                    // 2. 模擬上傳與 API 辨識的進度 (約 3 秒)
-                    const interval = setInterval(() => {
-                        progress += 5;
-                        progressBar.style.width = progress + '%';
+                    try {
+                        const base64Data = await fileToBase64(file);
+                        const base64String = base64Data.split(',')[1];
                         
-                        // 動態切換文字狀態
-                        if (progress === 30) loadingStatus.innerText = "正在萃取影像特徵...";
-                        if (progress === 60) loadingStatus.innerText = "串接 Google Vision API...";
-                        if (progress === 85) loadingStatus.innerText = "資料解析完成！";
+                        progressBar.style.width = '60%';
+                        loadingStatus.innerText = "串接 AI 影像辨識中...";
 
-                        if (progress >= 100) {
-                            clearInterval(interval);
+                        // 順便把拍到的照片作為表單的產品照片
+                        currentUploadedPhoto = base64Data;
+                        photoPreview.src = base64Data;
+                        photoPreview.style.display = 'block';
+
+                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                        const payload = {
+                            contents: [{
+                                role: "user",
+                                parts: [
+                                    { text: "分析此產品圖片，辨識出品牌名稱與產品全名，並判斷類別。回傳嚴格的 JSON 格式，包含三個 key: 'brand' (字串), 'name' (字串), 'category' (字串，必須是 'makeup', 'skincare', 或 'supplement' 其中之一)。" },
+                                    { inlineData: { mimeType: file.type, data: base64String } }
+                                ]
+                            }],
+                            generationConfig: { responseMimeType: "application/json" }
+                        };
+
+                        const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                        
+                        progressBar.style.width = '100%';
+                        loadingStatus.innerText = "資料解析完成！";
+
+                        setTimeout(() => {
+                            overlay.style.display = 'none';
+                            progressBar.style.width = '0%'; 
+                            loadingStatus.innerText = "正在上傳圖片"; 
                             
-                            // 延遲一點點關閉遮罩，讓視覺順暢
-                            setTimeout(() => {
-                                overlay.style.display = 'none';
-                                progressBar.style.width = '0%'; // 重置
-                                loadingStatus.innerText = "正在上傳圖片"; 
-                                
-                                // 3. 自動填入「模擬辨識出」的資料並展開表單
-                                document.getElementById('new-brand').value = "Dior";
-                                document.getElementById('new-name').value = "超完美持久柔光粉底液";
-                                document.getElementById('new-category').value = "makeup";
-                                
-                                addForm.classList.add('active');
-                                addForm.scrollIntoView({ behavior: 'smooth' });
-                                
-                                // 清空 input 檔案，讓下次點擊可以重複觸發
-                                cameraInput.value = ""; 
-                            }, 500);
-                        }
-                    }, 150); // 每 150 毫秒跑一次
+                            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                            if (text) {
+                                const data = JSON.parse(text);
+                                document.getElementById('new-brand').value = data.brand || "";
+                                document.getElementById('new-name').value = data.name || "";
+                                if (data.category) document.getElementById('new-category').value = data.category;
+                            }
+                            
+                            currentEditCard = null; 
+                            document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
+                            addForm.classList.add('active');
+                            addForm.scrollIntoView({ behavior: 'smooth' });
+                            cameraInput.value = ""; 
+                        }, 500);
+
+                    } catch (error) {
+                        showMessage("AI 辨識發生錯誤，請稍後再試或改用手動輸入。");
+                        overlay.style.display = 'none';
+                        progressBar.style.width = '0%';
+                        cameraInput.value = "";
+                    }
                 }
             });
 
-            // 手動新增按鈕邏輯
+            // --- 3. 手動新增按鈕邏輯 ---
             document.getElementById('btn-manual').addEventListener('click', () => {
+                currentEditCard = null;
+                document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
+                
+                // 清空既有輸入與照片
+                clearPhotoPreview();
+                document.getElementById('new-brand').value = '';
+                document.getElementById('new-name').value = '';
+                document.getElementById('new-price').value = '';
+                document.getElementById('new-quantity').value = '';
+                document.getElementById('new-expiry').value = '';
+                document.getElementById('new-location').value = '';
+                
                 addForm.classList.toggle('active');
                 if(addForm.classList.contains('active')) addForm.scrollIntoView({ behavior: 'smooth' });
             });
 
-            // 儲存表單按鈕
+            // --- 4. 品項名稱自動網搜補全邏輯 ---
+            let searchTimeout;
+            const newNameInput = document.getElementById('new-name');
+            const newBrandInput = document.getElementById('new-brand');
+            const autoSearchStatus = document.getElementById('auto-search-status');
+
+            newNameInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const keyword = e.target.value.trim();
+                if (keyword.length < 2) return; 
+
+                searchTimeout = setTimeout(async () => {
+                    autoSearchStatus.style.display = 'inline';
+                    try {
+                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                        const payload = {
+                            contents: [{ parts: [{ text: `根據使用者輸入的化妝品/保養品關鍵字 "${keyword}"，透過網路搜尋尋找官方確切的品牌名稱與完整產品全名。回傳嚴格的 JSON 格式，包含 'brand' 與 'name' 兩個 key。` }] }],
+                            tools: [{ "google_search": {} }],
+                            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { brand: {type: "STRING"}, name: {type: "STRING"} } } }
+                        };
+                        const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if(text) {
+                            const data = JSON.parse(text);
+                            if (data.brand && !newBrandInput.value) newBrandInput.value = data.brand;
+                            if (data.name) newNameInput.value = data.name;
+                        }
+                    } catch (err) {
+                        // 靜默處理
+                    } finally {
+                        autoSearchStatus.style.display = 'none';
+                    }
+                }, 1500); 
+            });
+
+            // --- 5. 事件代理：監聽編輯與封存按鈕 ---
+            document.getElementById('product-list').addEventListener('click', (e) => {
+                
+                // 處理移至歷史 (封存) 點擊
+                const archiveBtn = e.target.closest('.archive-btn');
+                if (archiveBtn) {
+                    const card = archiveBtn.closest('.product-card');
+                    card.setAttribute('data-status', 'history');
+                    showMessage("已將品項移至歷史紀錄");
+                    // 重新觸發目前的分類點擊，刷新畫面隱藏該卡片
+                    document.querySelector('.nav-item.active').click();
+                    return; 
+                }
+
+                // 處理編輯點擊
+                const editBtn = e.target.closest('.edit-btn'); 
+                if (editBtn) {
+                    const card = editBtn.closest('.product-card');
+                    currentEditCard = card;
+
+                    const name = card.querySelector('.product-name').innerText;
+                    const brand = card.querySelector('.product-brand').innerText;
+                    const category = card.dataset.category || 'makeup';
+                    
+                    // 讀取卡片上的照片
+                    const thumbImg = card.querySelector('.product-thumb');
+                    if (thumbImg && thumbImg.style.display !== 'none' && thumbImg.getAttribute('src')) {
+                        currentUploadedPhoto = thumbImg.getAttribute('src');
+                        photoPreview.src = currentUploadedPhoto;
+                        photoPreview.style.display = 'block';
+                    } else {
+                        clearPhotoPreview();
+                    }
+
+                    document.getElementById('new-name').value = name;
+                    document.getElementById('new-brand').value = brand;
+                    document.getElementById('new-category').value = category;
+
+                    document.getElementById('btn-save-new').innerText = "儲存修改";
+                    addForm.classList.add('active');
+                    addForm.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+
+            // --- 6. 儲存表單按鈕 ---
             document.getElementById('btn-save-new').addEventListener('click', () => {
                 const name = document.getElementById('new-name').value;
+                const brand = document.getElementById('new-brand').value;
+                
                 if (!name) {
-                    alert("請確認產品名稱欄位有資料！");
+                    showMessage("請確認產品名稱欄位有資料！");
                     return;
                 }
-                alert(`儲存成功：${name}\n(此動作已準備好寫入 Firestore)`);
+
+                if (currentEditCard) {
+                    // 更新既有卡片資料
+                    currentEditCard.querySelector('.product-name').innerText = name;
+                    currentEditCard.querySelector('.product-brand').innerText = brand || '';
+                    
+                    // 更新照片縮圖
+                    const thumbImg = currentEditCard.querySelector('.product-thumb');
+                    if (thumbImg) {
+                        if (currentUploadedPhoto) {
+                            thumbImg.src = currentUploadedPhoto;
+                            thumbImg.style.display = 'block';
+                        } else {
+                            thumbImg.src = '';
+                            thumbImg.style.display = 'none';
+                        }
+                    }
+
+                    showMessage(`修改成功：${name}`);
+                    currentEditCard = null;
+                    document.getElementById('btn-save-new').innerText = "確認無誤，新增至資料庫";
+                } else {
+                    showMessage(`儲存成功：${name} (準備寫入)`);
+                }
+                
                 addForm.classList.remove('active');
             });
+            
+            // 初始化：主動觸發第一項分類的點擊以確保顯示正確
+            document.querySelector('.nav-item.active').click();
         });
     </script>
 </body>
