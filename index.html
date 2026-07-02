@@ -245,6 +245,7 @@
             padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
             box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
             z-index: 100;
+            overflow-x: auto;
         }
 
         .nav-item {
@@ -256,6 +257,7 @@
             font-size: 10px;
             gap: 4px;
             cursor: pointer;
+            min-width: 60px;
         }
         .nav-item.active { color: var(--primary); }
 
@@ -339,6 +341,12 @@
         .dot.inactive { background-color: #ccc; }
         .expiry-date { font-size: 11px; color: rgba(60,50,40,0.6); font-family: monospace; margin-top: 6px;}
 
+        /* 拖曳清單樣式補充 */
+        .cat-list-item.dragging {
+            opacity: 0.5;
+            background: #f9f9f9;
+        }
+
     </style>
 </head>
 <body>
@@ -398,9 +406,7 @@
         <div class="form-group">
             <label>主類別</label>
             <select id="new-category">
-                <option value="makeup">化妝品</option>
-                <option value="skincare">保養品</option>
-                <option value="supplement">保健食品</option>
+                <!-- 由 JS 動態生成 -->
             </select>
         </div>
         <div class="form-group">
@@ -416,7 +422,12 @@
             <label style="display:flex; justify-content:space-between;">
                 產品名稱 <span id="auto-search-status" style="font-size:10px; color:var(--primary); display:none;">AI 自動網搜中...</span>
             </label>
-            <input type="text" id="new-name" placeholder="請輸入產品名稱 (輸入後自動完善)">
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="new-name" placeholder="請輸入產品名稱" style="flex: 1;">
+                <button class="action-btn" id="btn-ai-search" style="width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0;" title="自動搜尋廠牌與品名">
+                    <i data-lucide="search" style="width:16px;"></i>
+                </button>
+            </div>
         </div>
 
         <div class="form-group" style="display: flex; gap: 10px;">
@@ -462,13 +473,13 @@
         <!-- 化妝品主視圖 (依據截圖建置預設畫面) -->
         <div class="category-view active" data-category="makeup">
             <div class="category-header">
-                <h2>化妝品 <span class="stats"><span style="margin-right:4px;">31件</span> <i data-lucide="package" style="width:18px;"></i> <span style="margin-left:4px;">37</span></span></h2>
+                <h2>化妝品 <span class="stats"></span></h2>
             </div>
             
             <div class="subcategory-group" data-subcategory="粉底液">
                 <div class="subcategory-header">
                     <span class="tree-line">└</span> 粉底液 
-                    <span class="stats" style="margin-left:auto; font-size:12px;">4件 <i data-lucide="package" style="width:14px; margin:0 4px;"></i> 5</span>
+                    <span class="stats" style="margin-left:auto; font-size:12px;"></span>
                 </div>
                 
                 <!-- Card 1: 帶有實體照片，且包含兩筆明細 (展示展開效果) -->
@@ -578,21 +589,53 @@
             </div>
         </div>
         
-        <!-- 歷史視圖 (預設隱藏) -->
+        <!-- 歷史視圖 (原歷史紀錄，目前做為隱藏容器供封存使用) -->
         <div class="category-view" data-category="history">
             <div class="category-header">
                 <h2>歷史紀錄 <span class="stats"></span></h2>
             </div>
-            <!-- 封存的項目會移至此處 -->
+        </div>
+
+        <!-- 設定視圖 (新增) -->
+        <div class="category-view" data-category="settings">
+            <div class="category-header">
+                <h2>設定</h2>
+            </div>
+            
+            <div class="add-form-container active" style="margin: 0; margin-bottom: 20px;">
+                <div class="form-title">
+                    <i data-lucide="list-tree" style="width:20px; height:20px;"></i> 編輯分類
+                </div>
+                <div class="form-group" style="display:flex; gap:8px;">
+                    <input type="text" id="setting-new-cat-name" placeholder="新分類名稱 (例: 隱形眼鏡)" style="flex:1;">
+                    <select id="setting-new-cat-icon" style="width: 80px;">
+                        <option value="sparkles">✨</option>
+                        <option value="droplets">💧</option>
+                        <option value="pill">💊</option>
+                        <option value="package">📦</option>
+                        <option value="shopping-bag">🛍️</option>
+                        <option value="heart">❤️</option>
+                        <option value="star">⭐</option>
+                    </select>
+                    <button class="action-btn" id="btn-add-category" style="width:38px; height:38px; border-radius:8px;">
+                        <i data-lucide="plus" style="width:16px;"></i>
+                    </button>
+                </div>
+                
+                <ul id="setting-category-list" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;">
+                    <!-- JS 動態生成 -->
+                </ul>
+            </div>
         </div>
 
     </div>
 
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" id="bottom-nav">
+        <!-- 由 JS 動態生成，初始保留結構防閃爍 -->
         <a class="nav-item active" data-target-category="makeup"><i data-lucide="sparkles"></i><span>化妝品</span></a>
         <a class="nav-item" data-target-category="skincare"><i data-lucide="droplets"></i><span>保養品</span></a>
         <a class="nav-item" data-target-category="supplement"><i data-lucide="pill"></i><span>保健品</span></a>
-        <a class="nav-item" data-target-category="history"><i data-lucide="archive"></i><span>歷史</span></a>
+        <a class="nav-item" data-target-category="settings"><i data-lucide="settings"></i><span>設定</span></a>
     </nav>
 
     <script type="module">
@@ -650,6 +693,151 @@
 
             let currentEditInstance = null; // 指向 .instance-row 而非母卡片
             let currentPhotoBase64 = null; 
+
+            // --- 0.5 分類動態設定與拖曳邏輯 ---
+            let appCategories = JSON.parse(localStorage.getItem('appCategories')) || [
+                { id: "makeup", name: "化妝品", icon: "sparkles" },
+                { id: "skincare", name: "保養品", icon: "droplets" },
+                { id: "supplement", name: "保健品", icon: "pill" }
+            ];
+
+            function bindNavEvents() {
+                const navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        const targetCategory = item.getAttribute('data-target-category');
+                        navItems.forEach(n => n.classList.remove('active'));
+                        item.classList.add('active');
+
+                        document.querySelectorAll('.category-view').forEach(view => {
+                            view.style.display = (view.dataset.category === targetCategory) ? 'block' : 'none';
+                        });
+                    });
+                });
+            }
+
+            function saveAndRenderCategories() {
+                localStorage.setItem('appCategories', JSON.stringify(appCategories));
+                
+                // 1. 更新底部導覽列
+                const nav = document.getElementById('bottom-nav');
+                const activeView = document.querySelector('.category-view.active');
+                const activeCatId = activeView ? activeView.dataset.category : appCategories[0].id;
+                
+                nav.innerHTML = '';
+                appCategories.forEach(cat => {
+                    const isActive = activeCatId === cat.id ? 'active' : '';
+                    nav.innerHTML += `<a class="nav-item ${isActive}" data-target-category="${cat.id}"><i data-lucide="${cat.icon}"></i><span>${cat.name}</span></a>`;
+                });
+                nav.innerHTML += `<a class="nav-item ${activeCatId === 'settings' ? 'active' : ''}" data-target-category="settings"><i data-lucide="settings"></i><span>設定</span></a>`;
+                bindNavEvents();
+
+                // 2. 更新表單主類別下拉選單
+                const categorySelect = document.getElementById('new-category');
+                const currentVal = categorySelect.value;
+                categorySelect.innerHTML = '';
+                appCategories.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat.id;
+                    opt.textContent = cat.name;
+                    categorySelect.appendChild(opt);
+                });
+                if (appCategories.find(c => c.id === currentVal)) {
+                    categorySelect.value = currentVal;
+                }
+
+                // 3. 渲染設定頁面的拖曳清單
+                renderCategorySettings();
+                updateAllHeaders();
+                lucide.createIcons();
+            }
+
+            function renderCategorySettings() {
+                const list = document.getElementById('setting-category-list');
+                list.innerHTML = '';
+                let draggedItem = null;
+
+                appCategories.forEach((cat, index) => {
+                    const li = document.createElement('li');
+                    li.draggable = true;
+                    li.dataset.id = cat.id;
+                    li.className = 'cat-list-item';
+                    li.style.cssText = "display:flex; align-items:center; background:#fff; padding:10px 12px; border-radius:8px; border:1px solid rgba(0,0,0,0.05); gap:12px; cursor:grab; transition: opacity 0.2s;";
+                    
+                    li.innerHTML = `
+                        <i data-lucide="grip-vertical" style="color:rgba(0,0,0,0.3);"></i>
+                        <i data-lucide="${cat.icon}" style="color:var(--primary); width:18px;"></i>
+                        <span style="flex:1; font-weight:bold; font-size:14px; color:var(--text-color);">${cat.name}</span>
+                        ${appCategories.length > 1 ? `<i data-lucide="trash-2" class="delete-cat-btn" style="color:#d9534f; cursor:pointer; width:16px;" title="刪除分類"></i>` : ''}
+                    `;
+                    
+                    // Drag & Drop 事件
+                    li.addEventListener('dragstart', (e) => {
+                        draggedItem = li;
+                        setTimeout(() => li.classList.add('dragging'), 0);
+                    });
+                    li.addEventListener('dragend', () => {
+                        draggedItem = null;
+                        li.classList.remove('dragging');
+                    });
+                    li.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        const afterElement = getDragAfterElement(list, e.clientY);
+                        if (afterElement == null) {
+                            list.appendChild(draggedItem);
+                        } else {
+                            list.insertBefore(draggedItem, afterElement);
+                        }
+                    });
+                    li.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const newOrderIds = Array.from(list.children).map(item => item.dataset.id);
+                        appCategories = newOrderIds.map(id => appCategories.find(c => c.id === id));
+                        saveAndRenderCategories();
+                    });
+
+                    // 刪除按鈕
+                    const delBtn = li.querySelector('.delete-cat-btn');
+                    if(delBtn) {
+                        delBtn.addEventListener('click', () => {
+                            if(confirm(`確定要刪除分類「${cat.name}」嗎？\n(注意：隸屬於此分類的商品將無法在主畫面顯示)`)) {
+                                appCategories.splice(index, 1);
+                                saveAndRenderCategories();
+                            }
+                        });
+                    }
+                    list.appendChild(li);
+                });
+            }
+
+            function getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.cat-list-item:not(.dragging)')];
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+            // 新增分類按鈕
+            document.getElementById('btn-add-category').addEventListener('click', () => {
+                const nameInput = document.getElementById('setting-new-cat-name');
+                const iconSelect = document.getElementById('setting-new-cat-icon');
+                const name = nameInput.value.trim();
+                if(!name) {
+                    showMessage("請輸入分類名稱");
+                    return;
+                }
+                const newId = 'cat_' + Date.now();
+                appCategories.push({ id: newId, name: name, icon: iconSelect.value });
+                nameInput.value = '';
+                saveAndRenderCategories();
+                showMessage(`已新增分類：${name}`);
+            });
             
             // --- 表單連動：子分類預設清單 ---
             const subcatDefaults = {
@@ -674,7 +862,9 @@
                 updateSubcatList();
                 subcatInput.value = ''; 
             });
-            updateSubcatList(); 
+
+            // 初始化分類與導覽列
+            saveAndRenderCategories();
 
             // --- 0. 表單照片上傳與預覽邏輯 ---
             const formPhotoBtn = document.getElementById('btn-form-photo');
@@ -722,29 +912,16 @@
                     const brand = card.querySelector('.brand').innerText.toLowerCase();
                     const name = card.querySelector('.name').innerText.toLowerCase();
                     
-                    const isHistoryTab = document.querySelector('.nav-item[data-target-category="history"]').classList.contains('active');
+                    const isHistoryTab = document.querySelector('.nav-item[data-target-category="settings"]')?.classList.contains('active'); 
+                    // 備註: 歷史紀錄的搜尋目前只看 active，若需要搜尋封存可在此調整
                     const cardStatus = card.dataset.status || 'active';
-                    const matchesCategory = isHistoryTab ? (cardStatus === 'archived') : (cardStatus === 'active');
+                    const matchesCategory = (cardStatus === 'active');
                     
                     if (matchesCategory && (brand.includes(keyword) || name.includes(keyword))) {
                         card.style.display = 'flex';
                     } else {
                         card.style.display = 'none';
                     }
-                });
-            });
-
-            // --- 1.5 底部導覽列切換與過濾邏輯 ---
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    const targetCategory = item.getAttribute('data-target-category');
-                    navItems.forEach(n => n.classList.remove('active'));
-                    item.classList.add('active');
-
-                    document.querySelectorAll('.category-view').forEach(view => {
-                        view.style.display = (view.dataset.category === targetCategory) ? 'block' : 'none';
-                    });
                 });
             });
 
@@ -783,7 +960,7 @@
                             contents: [{
                                 role: "user",
                                 parts: [
-                                    { text: "分析此產品圖片，辨識出品牌名稱與產品全名，並判斷類別。回傳嚴格的 JSON 格式，包含三個 key: 'brand' (字串), 'name' (字串), 'category' (字串，必須是 'makeup', 'skincare', 或 'supplement' 其中之一)。" },
+                                    { text: "分析此產品圖片，辨識出品牌名稱與產品全名，並判斷類別。回傳嚴格的 JSON 格式，包含三個 key: 'brand' (字串), 'name' (字串), 'category' (字串，請從現有的分類推測，盡量回傳英文id如 makeup, skincare, supplement)。" },
                                     { inlineData: { mimeType: mimeType, data: base64String } }
                                 ]
                             }],
@@ -805,7 +982,7 @@
                                 const data = JSON.parse(text);
                                 document.getElementById('new-brand').value = data.brand || "";
                                 document.getElementById('new-name').value = data.name || "";
-                                if (data.category) {
+                                if (data.category && document.querySelector(`#new-category option[value="${data.category}"]`)) {
                                     document.getElementById('new-category').value = data.category;
                                     updateSubcatList();
                                 }
@@ -851,39 +1028,47 @@
                 if(addForm.classList.contains('active')) addForm.scrollIntoView({ behavior: 'smooth' });
             });
 
-            // --- 4. 品項名稱自動網搜補全邏輯 ---
-            let searchTimeout;
+            // --- 4. 品項名稱自動網搜補全邏輯 (改為點擊放大鏡觸發) ---
+            const btnAiSearch = document.getElementById('btn-ai-search');
             const newNameInput = document.getElementById('new-name');
             const newBrandInput = document.getElementById('new-brand');
             const autoSearchStatus = document.getElementById('auto-search-status');
 
-            newNameInput.addEventListener('input', (e) => {
-                clearTimeout(searchTimeout);
-                const keyword = e.target.value.trim();
-                if (keyword.length < 2) return; 
+            btnAiSearch.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const keyword = `${newBrandInput.value.trim()} ${newNameInput.value.trim()}`.trim();
+                
+                if (keyword.length < 2) {
+                    showMessage("請至少輸入部分品牌或名稱再搜尋！");
+                    return;
+                }
 
-                searchTimeout = setTimeout(async () => {
-                    if (!apiKey) return; 
-                    autoSearchStatus.style.display = 'inline';
-                    try {
-                        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-                        const payload = {
-                            contents: [{ parts: [{ text: `根據關鍵字 "${keyword}"，透過網路搜尋尋找官方確切的化妝品/保養品品牌名稱與完整全名。回傳嚴格的 JSON 格式，包含 'brand' 與 'name' 兩個 key。` }] }],
-                            tools: [{ "google_search": {} }],
-                            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { brand: {type: "STRING"}, name: {type: "STRING"} } } }
-                        };
-                        const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                        if(text) {
-                            const data = JSON.parse(text);
-                            if (data.brand && !newBrandInput.value) newBrandInput.value = data.brand;
-                            if (data.name) newNameInput.value = data.name;
-                        }
-                    } catch (err) {
-                    } finally {
-                        autoSearchStatus.style.display = 'none';
+                if (!apiKey) {
+                    showMessage("尚未設定 API Key，無法使用 AI 搜尋");
+                    return;
+                } 
+
+                autoSearchStatus.style.display = 'inline';
+                try {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                    const payload = {
+                        contents: [{ parts: [{ text: `根據關鍵字 "${keyword}"，透過網路搜尋尋找官方確切的化妝品/保養品/商品品牌名稱與完整全名。回傳嚴格的 JSON 格式，包含 'brand' 與 'name' 兩個 key。` }] }],
+                        tools: [{ "google_search": {} }],
+                        generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { brand: {type: "STRING"}, name: {type: "STRING"} } } }
+                    };
+                    const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if(text) {
+                        const data = JSON.parse(text);
+                        if (data.brand && !newBrandInput.value) newBrandInput.value = data.brand;
+                        if (data.name) newNameInput.value = data.name;
+                        showMessage("已自動補全商品資訊！");
                     }
-                }, 1500); 
+                } catch (err) {
+                    showMessage("自動搜尋失敗，請手動輸入");
+                } finally {
+                    autoSearchStatus.style.display = 'none';
+                }
             });
 
             // --- 4.5 卡片狀態與數量更新 (核心邏輯) ---
@@ -946,10 +1131,11 @@
             }
 
             function updateAllHeaders() {
-                const categories = ['makeup', 'skincare', 'supplement'];
-                const categoryNames = { makeup: '化妝品', skincare: '保養品', supplement: '保健食品' };
+                const categoryNames = {};
+                appCategories.forEach(c => categoryNames[c.id] = c.name);
 
-                categories.forEach(cat => {
+                appCategories.forEach(catObj => {
+                    const cat = catObj.id;
                     const catView = document.querySelector(`.category-view[data-category="${cat}"]`);
                     if (!catView) return;
 
@@ -985,8 +1171,12 @@
                     });
 
                     const catHeader = catView.querySelector('.category-header');
-                    if(catHeader && catItemCount > 0) {
-                        catHeader.innerHTML = `<h2>${categoryNames[cat]} <span class="stats"><span style="margin-right:4px;">${catItemCount}件</span> <i data-lucide="package" style="width:18px;"></i> <span style="margin-left:4px;">${catQtyCount}</span></span></h2>`;
+                    if(catHeader) {
+                        if(catItemCount > 0) {
+                            catHeader.innerHTML = `<h2>${categoryNames[cat]} <span class="stats"><span style="margin-right:4px;">${catItemCount}件</span> <i data-lucide="package" style="width:18px;"></i> <span style="margin-left:4px;">${catQtyCount}</span></span></h2>`;
+                        } else {
+                            catHeader.innerHTML = `<h2>${categoryNames[cat]} <span class="stats"></span></h2>`;
+                        }
                     }
                 });
                 lucide.createIcons();
@@ -1015,7 +1205,7 @@
                     document.getElementById('new-brand').value = card.dataset.brand || '';
                     const rawName = card.querySelector('.name').childNodes[0]?.textContent || "";
                     document.getElementById('new-name').value = rawName.trim();
-                    document.getElementById('new-category').value = card.dataset.category || 'makeup';
+                    document.getElementById('new-category').value = card.dataset.category || appCategories[0].id;
                     updateSubcatList();
                     document.getElementById('new-subcategory').value = card.dataset.subcategory || '';
                     
@@ -1067,7 +1257,10 @@
 
                     document.getElementById('new-name').value = name;
                     document.getElementById('new-brand').value = brand;
-                    document.getElementById('new-category').value = card.dataset.category || 'makeup';
+                    
+                    if(document.querySelector(`#new-category option[value="${card.dataset.category}"]`)) {
+                        document.getElementById('new-category').value = card.dataset.category;
+                    }
                     updateSubcatList();
                     document.getElementById('new-subcategory').value = card.dataset.subcategory || '';
                     document.getElementById('new-qty').value = inst.dataset.qty || '1';
@@ -1115,7 +1308,9 @@
                         historyCard.appendChild(instContainer);
                         
                         let historyView = document.querySelector('.category-view[data-category="history"]');
-                        historyView.appendChild(historyCard);
+                        if(historyView) {
+                            historyView.appendChild(historyCard);
+                        }
                         
                         inst.remove(); // 移除原卡片中的明細
                         updateCardStatus(parentCard); // 若母卡片空了會自動刪除
@@ -1167,6 +1362,22 @@
                     return;
                 }
 
+                // 處理編輯狀態下跨分類或跨品名的邏輯
+                if (currentEditInstance) {
+                    const parentCard = currentEditInstance.closest('.new-product-card');
+                    const oldCat = parentCard.dataset.category;
+                    const oldSubcat = parentCard.dataset.subcategory || '其他';
+                    const oldBrand = parentCard.dataset.brand;
+                    const oldName = parentCard.querySelector('.name').childNodes[0]?.textContent?.trim();
+
+                    // 若分類、子分類、品牌、品名有任一不同，代表應搬移至別的卡片
+                    if (oldCat !== category || oldSubcat !== subcategory || oldBrand !== brand || oldName !== name) {
+                        currentEditInstance.remove();
+                        updateCardStatus(parentCard); // 更新舊卡片，若空了會自動移除
+                        currentEditInstance = null; // 標記為 null 進入下方的新增尋找邏輯
+                    }
+                }
+
                 let needRestockHtml = "";
                 if (usage === '未開封' && qty < threshold) {
                     needRestockHtml = `<span style="color:#d9534f; margin-left:4px; font-weight:bold;">需補貨</span>`;
@@ -1197,10 +1408,9 @@
                 `;
 
                 if (currentEditInstance) {
-                    // 更新既有明細列
+                    // 同分類同品名的就地更新
                     const parentCard = currentEditInstance.closest('.new-product-card');
                     currentEditInstance.insertAdjacentHTML('afterend', instanceHtml);
-                    const newInst = currentEditInstance.nextElementSibling;
                     
                     // 若同時更新了照片，需更新母卡片的圖示
                     if(photoSrc) {
@@ -1211,7 +1421,7 @@
                     currentEditInstance.remove(); // 移除舊的
                     updateCardStatus(parentCard);
                 } else {
-                    // 新增模式：尋找是否已存在相同 [分類+子分類+品牌+名稱] 的母卡片
+                    // 新增/搬移模式：尋找是否已存在相同 [分類+子分類+品牌+名稱] 的母卡片
                     let targetCard = null;
                     const activeCards = document.querySelectorAll('.new-product-card[data-status="active"]');
                     activeCards.forEach(c => {
@@ -1235,7 +1445,9 @@
                             catView.className = 'category-view';
                             catView.dataset.category = category;
                             catView.innerHTML = `<div class="category-header"><h2></h2></div>`;
-                            document.getElementById('product-list').insertBefore(catView, document.querySelector('.category-view[data-category="history"]'));
+                            // 插入在設定前
+                            const settingsView = document.querySelector('.category-view[data-category="settings"]');
+                            document.getElementById('product-list').insertBefore(catView, settingsView);
                         }
 
                         let subGroup = catView.querySelector(`.subcategory-group[data-subcategory="${subcategory}"]`);
@@ -1286,7 +1498,8 @@
                 clearPhotoPreview();
                 
                 // 強制切換回對應的分類
-                document.querySelector(`.nav-item[data-target-category="${category}"]`).click();
+                const targetNav = document.querySelector(`.nav-item[data-target-category="${category}"]`);
+                if(targetNav) targetNav.click();
             });
             
             // 初次載入更新與初始化圖示
